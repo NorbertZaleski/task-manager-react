@@ -1,4 +1,4 @@
-import type { Note } from "../constants/types";
+import type { Note } from "../types/types";
 
 type CardProps = {
     note: Note[];

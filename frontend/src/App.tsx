@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import CardColumn from "./components/CardColumn";
-import notesData from "./constants/notesData";
+import {notesData} from "./constants/notesData";
+import type { Note } from "./types/types";
 
 function App(){
 
-  const [notes, setNotes] = useState([]);
+  const [notes, setNotes] = useState<Note[]>([]);
 
   useEffect(()=>{
     setNotes(notesData)

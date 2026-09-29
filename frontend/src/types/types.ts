@@ -1,5 +1,5 @@
 export type Note = {
-  id: string;
+  id: number;
   content: string;
   category: string;
   isUrgent: boolean;

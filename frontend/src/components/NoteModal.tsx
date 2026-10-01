@@ -1,0 +1,1 @@
+//przybliżenie notatki

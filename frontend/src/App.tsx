@@ -1,32 +1,13 @@
-import { useEffect, useState } from "react";
-import CardColumn from "./components/CardColumn";
-import {notesData} from "./constants/notesData";
-import type { Note } from "./types/types";
+import BoardList from "./components/BoardList";
+import ThemeToggle from "./components/ThemeToggle";
 
 function App(){
 
-  const [notes, setNotes] = useState<Note[]>([]);
-
-  useEffect(()=>{
-    setNotes(notesData)
-  }, [notes]);
-
-  function countUrgent(){
-    return notes.filter(note => note.isUrgent).length;
-  }
-
   return (
     <>
-      <div className="m-2">
-        <div className="flex flex-row text-center justify-between border-2">
-          <h1>Tablica zadań</h1>
-          <div>{notes.length}</div>
-          <div>{countUrgent()}</div>
-        </div>
-        
-        <div className="flex text-center justify-start gap-5">
-          <CardColumn notes={notes}/>
-        </div>
+      <BoardList></BoardList>
+      <div>
+        <ThemeToggle></ThemeToggle>
       </div>
     </>
   )

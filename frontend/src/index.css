@@ -31,15 +31,22 @@
   }
 }
 
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
+.dark {
     --bg:#15171c;
     --panel:#1e2128;
     --text:#f1f1f3;
     --mute:#9aa0ab;
     --line:#f1f1f3;
-    --card:#272b34
-}}
+    --card:#272b34;
+}
+
+@theme {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-text: var(--text);
+  --color-red: var(--red);
+  --color-blue: var(--blue);
+}
 
 #root {
   width: 1126px;

@@ -9,3 +9,13 @@ export const initialBoard: Board = {
     { id: 'done', title: 'Zrobione', color: ''},
   ],
 };
+
+export const secondBoard: Board = {
+  id: 2,
+  title: 'Tablica initial',
+  columns: [
+    { id: 'todo', title: 'Do zrobienia', color: ''},
+    { id: 'doing', title: 'W trakcie', color: ''},
+    { id: 'done', title: 'Zrobione', color: ''},
+  ],
+};

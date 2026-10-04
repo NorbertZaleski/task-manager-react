@@ -5,7 +5,7 @@ function useBoards(){
     const [boards, setBoards] = useState([]);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
 
     const load = useCallback(async ()=> {
         try {
@@ -16,7 +16,8 @@ function useBoards(){
             setError(null);
         } catch (error) {
             console.error('Błąd pobierania tablic:', error);
-            setError(error.message || 'Nie udało się pobrać tablic');
+            const message = error instanceof Error ? error.message : 'Nie udało się pobrać tablic';
+            setError(message);
         } finally {
             setLoading(false);
         }

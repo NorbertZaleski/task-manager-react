@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const getToken = () => localStorage.getItem('token');
 
@@ -28,8 +28,10 @@ export const boardsService = {
             const response = await api.get('/');
             return response.data;
         } catch (error) {
-            console.error('Błąd pobierania tablic:', error);
-            throw error.response?.data || error;
+            if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
         }
     },
 

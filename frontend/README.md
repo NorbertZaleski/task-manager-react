@@ -5,3 +5,5 @@ lucide-react
 back: npm i
 express
 nodemon
+mongoose
+dotenv

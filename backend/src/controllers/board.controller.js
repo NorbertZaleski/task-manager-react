@@ -1,8 +1,9 @@
 import Board from "../models/Board.model.js";
 
-export async function getAllBoards(_, res) {
+export async function getAllBoards(req, res) {
     try {
-        const boards = await Board.find().sort({createdAt: -1});
+        const userId = req.user?._id;
+        const boards = await Board.find({user: userId}).sort({createdAt: -1});
 
         if (!boards) return res.status(404).json({message:"Boards not found"});
 

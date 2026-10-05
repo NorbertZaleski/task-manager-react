@@ -1,10 +1,22 @@
+import Board from "../models/Board.model.js";
 import Note from "../models/Note.model.js";
 
-export async function getAllNotes(_, res) {
+export async function getAllNotes(req, res) {
     try {
-        const notes = await Note.find().sort({createdAt: -1});
+        const {boardId} = req.params;
 
-        if (!notes) return res.status(404).json({message:"Notes not found"});
+        if (!mongoose.isValidObjectId(boardId)) {
+            return res.status(400).json({ message: "Invalid board id" });
+        }
+
+        const board = await Board.findOne({_id: boardId, user: user.params.id});
+        if (!board) return res.status(404).json({message:"Board not found"});
+
+        const notes = await Note.find({board: boardId, user: req.user.id}).sort({createdAt: -1});
+
+        if (!notes || note.board.user.toString() !== req.user.id) {
+            return res.status(404).json({message:"Forbidden"});
+        }
 
         res.status(200).json(notes);
     } catch (error) {
@@ -15,10 +27,11 @@ export async function getAllNotes(_, res) {
 
 export async function getNote(req,res) {
     try {
-        const note = await Note.findById(req.params.id);
+        const note = await Note.findById(req.params.id).populate('board');
 
-        if (!note) return res.status(404).json({message:"Note not found"});
-
+        if (!note || note.board.user.toString() !== req.user.id) {
+            return res.status(404).json({message:"Forbidden"});
+        }
         res.status(200).json(note);
     } catch (error) {
         console.error("Error in getNote controller", error);
@@ -29,10 +42,13 @@ export async function getNote(req,res) {
 export async function createNote(req,res) {
     try {
         const {title, content, category} = req.body;
-        const note = new Note({title, content, category});
 
-        const savedNote = await note.save();
-        res.status(201).json(savedNote);
+        const board = await Board.findOne({_id: board, user: req.user.id});
+        if (!board) return res.status(404).json({message:"Board not found"});
+
+        const note = await Note.create({title, content, category, board: board._id});
+
+        res.status(201).json(note);
     } catch (error) {
         console.error("Error in createNote controller", error);
         res.status(500).json({message:"Internal server error"});

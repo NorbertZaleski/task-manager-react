@@ -29,8 +29,14 @@ export async function getBoard(req,res) {
 
 export async function createBoard(req,res) {
     try {
-        const {title, content, category} = req.body;
-        const board = new Board({title, content, category});
+        const user = req.user?._id;
+        const { title } = req.body;
+
+        if (!user) {
+            return res.status(401).json({message: "Unauthorized"});
+        }
+
+        const board = new Board({user, title});
 
         const savedBoard = await board.save();
         res.status(201).json(savedBoard);
@@ -42,8 +48,8 @@ export async function createBoard(req,res) {
 
 export async function updateBoard(req, res) {
     try {
-        const {title, content, category} = req.body;
-        const updatedBoard = await Board.findByIdAndUpdate(req.params.id, {title, content, category}, {new: true});
+        const { title } = req.body;
+        const updatedBoard = await Board.findByIdAndUpdate(req.params.id, { title }, {new: true});
 
         if (!updatedBoard) return res.status(404).json({message: "Board not found"});
 

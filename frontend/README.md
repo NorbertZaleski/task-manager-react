@@ -7,3 +7,6 @@ express
 nodemon
 mongoose
 dotenv
+@upstash/ratelimit @upstash/redis
+jsonwebtoken
+bcryptjs

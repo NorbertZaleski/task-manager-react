@@ -10,3 +10,6 @@ dotenv
 @upstash/ratelimit @upstash/redis
 jsonwebtoken
 bcryptjs
+
+TODO:
+sprawdzić właściciela w update/delete note oraz board

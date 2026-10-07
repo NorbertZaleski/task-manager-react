@@ -3,17 +3,38 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
 export async function login(req,res){
-    const {email, password} = req.body;
+    try {
+        const {email, password} = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({message:"No email or password"});
+        if (!email || !password) {
+            return res.status(400).json({message:"No email or password"});
+        }
+
+        //znajdz user po email
+        const user = await User.findOne({email});
+
+        if (!user) {
+            return res.status(400).json({message:"Invalid credentials"});
+        }
+
+        //porownaj haslo (bcrypt.compare) i generuj jwt token
+        if (user && (await bcrypt.compare(password, user.password))) {
+            res.json({
+                _id: user.id,
+                name: user.name,
+                email: user.email,
+                token: generateToken(user._id)
+            })
+        } else {
+            res.status(400).json({error:"Invalid credentials"})
+        }
+
+    } catch (error) {
+        console.log("Error in login controller: ", error);
+        res.status(500).json({
+            message:"Internal server error"
+        });
     }
-
-    //znajdz user po email
-    //spradz czy konto jest aktywne
-    //porownaj haslo (bcrypt.compare)
-    //generuj jwt token
-    //
 };
 
 
@@ -22,14 +43,14 @@ export async function register(req, res){
         const {name, email, password} = req.body;
 
         if (!name || !email || !password) {
-            return res.status(400).json({error: "Please add all fields"});
+            return res.status(400).json({message: "Please add all fields"});
         }
 
         //czy user istnieje już?
         const userExists = await User.findOne({email});
 
         if (userExists) {
-            return res.status(400).json({error: "User already exists with that email"});
+            return res.status(400).json({message: "User already exists with that email"});
         }
 
         //hashowanie hasła
@@ -40,15 +61,14 @@ export async function register(req, res){
         const user = await User.create({name, email, password: hashedPassword});
 
         //wygeneruj token jwt
-        const token = jwt.sign(
-            { id: user._id, email: user.email},
-            process.env.JWT_SECRET,
-            {expiresIn: '7d'}
-        );
-
-        res.status(201).json({
-            token
-        })
+        if (user) {
+            res.status(201).json({
+                _id: user.id,
+                name: user.name,
+                email: user.email,
+                token: generateToken(user._id)
+            })
+        }
 
     } catch (error) {
         console.log("Error in register controller: ", error);
@@ -57,3 +77,9 @@ export async function register(req, res){
         });
     }
 };
+
+const generateToken = (id) => {
+    return jwt.sign({id}, process.env.JWT_SECRET, {
+        expiresIn: '7d'
+    });
+}

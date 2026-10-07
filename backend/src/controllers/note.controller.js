@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Board from "../models/Board.model.js";
 import Note from "../models/Note.model.js";
 
@@ -9,14 +10,10 @@ export async function getAllNotes(req, res) {
             return res.status(400).json({ message: "Invalid board id" });
         }
 
-        const board = await Board.findOne({_id: boardId, user: user.params.id});
+        const board = await Board.findOne({_id: boardId, user: req.user.id});
         if (!board) return res.status(404).json({message:"Board not found"});
 
-        const notes = await Note.find({board: boardId, user: req.user.id}).sort({createdAt: -1});
-
-        if (!notes || note.board.user.toString() !== req.user.id) {
-            return res.status(404).json({message:"Forbidden"});
-        }
+        const notes = await Note.find({board: boardId}).sort({createdAt: -1});
 
         res.status(200).json(notes);
     } catch (error) {
@@ -41,14 +38,15 @@ export async function getNote(req,res) {
 
 export async function createNote(req,res) {
     try {
-        const {title, content, category} = req.body;
+        const {board:boardId, title, content, category} = req.body;
 
-        const board = await Board.findOne({_id: board, user: req.user.id});
+        const board = await Board.findOne({_id: boardId, user: req.user.id});
         if (!board) return res.status(404).json({message:"Board not found"});
 
-        const note = await Note.create({title, content, category, board: board._id});
+        const note = new Note({board: board._id, title, content, category});
 
-        res.status(201).json(note);
+        const savedNote = await note.save();
+        res.status(201).json({note: savedNote});
     } catch (error) {
         console.error("Error in createNote controller", error);
         res.status(500).json({message:"Internal server error"});

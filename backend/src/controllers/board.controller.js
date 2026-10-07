@@ -1,11 +1,9 @@
 import Board from "../models/Board.model.js";
+import Note from "../models/Note.model.js";
 
 export async function getAllBoards(req, res) {
     try {
-        const userId = req.user?._id;
-        const boards = await Board.find({user: userId}).sort({createdAt: -1});
-
-        if (!boards) return res.status(404).json({message:"Boards not found"});
+        const boards = await Board.find({user: req.user.id}).sort({createdAt: -1});
 
         res.status(200).json(boards);
     } catch (error) {
@@ -16,11 +14,12 @@ export async function getAllBoards(req, res) {
 
 export async function getBoard(req,res) {
     try {
-        const board = await Board.findById(req.params.id);
-
+        const board = await Board.findOne({_id: req.params.id, user: req.user.id});
         if (!board) return res.status(404).json({message:"Board not found"});
 
-        res.status(200).json(board);
+        const notes = await Note.find({board: board._id});
+
+        res.status(200).json({...board.toObject(), notes});
     } catch (error) {
         console.error("Error in getBoard controller", error);
         res.status(500).json({message:"Internal server error"});
@@ -39,7 +38,7 @@ export async function createBoard(req,res) {
         const board = new Board({user, title});
 
         const savedBoard = await board.save();
-        res.status(201).json(savedBoard);
+        res.status(201).json({id: board._id, board: savedBoard});
     } catch (error) {
         console.error("Error in createBoard controller", error);
         res.status(500).json({message:"Internal server error"});

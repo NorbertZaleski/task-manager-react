@@ -1,5 +1,5 @@
 import express from "express";
-import { createLabel, deleteLabel, getBoardLabels, updateLabel } from "../controllers/label.controller";
+import { createLabel, deleteLabel, getBoardLabels, updateLabel } from "../controllers/label.controller.js";
 
 
 const router = express.Router();

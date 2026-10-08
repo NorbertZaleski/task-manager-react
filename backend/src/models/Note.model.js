@@ -14,9 +14,9 @@ const noteSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    category: {
-        type: String,
-        required: false,
+    labels: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Label",
     },
     }
 }, {timestamps: true}

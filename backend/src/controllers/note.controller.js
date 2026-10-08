@@ -1,16 +1,17 @@
 import mongoose from "mongoose";
 import Board from "../models/Board.model.js";
 import Note from "../models/Note.model.js";
+import Label from "../models/Label.model.js";
 
 export async function getAllNotes(req, res) {
     try {
-        const {boardId} = req.params;
+        const { boardId } = req.params;
 
         if (!mongoose.isValidObjectId(boardId)) {
             return res.status(400).json({ message: "Invalid board id" });
         }
 
-        const board = await Board.findOne({_id: boardId, user: req.user.id});
+        const board = await Board.findOne({_id: boardId, user: req.user.id}).populate("labels", "title color");
         if (!board) return res.status(404).json({message:"Board not found"});
 
         const notes = await Note.find({board: boardId}).sort({createdAt: -1});
@@ -36,14 +37,20 @@ export async function getNote(req,res) {
     }
 };
 
+//FIX routing zmienić aby z adresu brać id board
 export async function createNote(req,res) {
     try {
-        const {board:boardId, title, content, category} = req.body;
+        const { boardId } = req.params;
+        const { title, content, labels} = req.body;
+
+        if (!mongoose.isValidObjectId(boardId)) {
+            return res.status(400).json({ message: "Invalid board ID" });
+        }
 
         const board = await Board.findOne({_id: boardId, user: req.user.id});
         if (!board) return res.status(404).json({message:"Board not found"});
 
-        const note = new Note({board: board._id, title, content, category});
+        const note = new Note({board: board._id, title, content, labels});
 
         const savedNote = await note.save();
         res.status(201).json({note: savedNote});
@@ -55,12 +62,26 @@ export async function createNote(req,res) {
 
 export async function updateNote(req, res) {
     try {
-        const {title, content, category} = req.body;
-        const updatedNote = await Note.findByIdAndUpdate(req.params.id, {title, content, category}, {new: true});
+        const {id} = req.params;
+        const {title, content, labels} = req.body;
 
-        if (!updatedNote) return res.status(404).json({message: "Note not found"});
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: "Invalid note ID" });
+        }
 
-        res.status(200).json("note updated", updateNote);
+        const note = await Note.findById(id).populate("board", "user");
+        if (!note || !note.board) return res.status(404).json({message: "Note not found"});
+
+        if (note.board.user.toString() !== req.user.id()) {
+            return res.status(403).json({message: "Not authorized"});
+        }
+
+        if (title !== undefined) note.title = title;
+        if (content !==undefined) note.content = content;
+
+        await note.save();
+        await note.populate("labels", "title color")
+        res.status(200).json({message: "note updated", note: note});
     } catch (error) {
         console.error("Error in updateNote controller", error);
         res.status(500).json({message:"Internal server error"});
@@ -69,11 +90,17 @@ export async function updateNote(req, res) {
 
 export async function deleteNote(req, res){
     try {
-        const deletedNote = await Note.findByIdAndDelete(req.params.id);
+        const note = await Note.findById(req.params.id).populate("board", "user");
 
-        if (!deletedNote) return res.status(404).json({message: "Note not found"});
+        if (!note || !note.board) return res.status(404).json({message: "Note not found"});
 
-        res.status(200).json("note deleted", deleteNote);
+        if (note.board.user.toString() !== req.user.id) {
+            return res.status(403).json({message: "Not authorized"});
+        }
+
+        await note.deleteOne();
+
+        res.status(200).json({message: "note deleted", note: note});
     } catch (error) {
         console.error("Error in deleteNote controller", error);
         res.status(500).json({message:"Internal server error"});

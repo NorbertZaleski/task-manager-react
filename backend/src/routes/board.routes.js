@@ -4,10 +4,15 @@ import { createBoard, deleteBoard, getAllBoards, getBoard, updateBoard } from ".
 
 const router = express.Router();
 
+
 router.get("/", getAllBoards);
-router.get("/:id", getBoard);
+router.get("/:boardId", getBoard);
+
 router.post("/", createBoard);
-router.put("/:id", updateBoard);
-router.delete("/:id", deleteBoard);
+
+router.put("/:boardId", updateBoard);
+
+router.delete("/:boardId", deleteBoard);
+
 
 export default router;

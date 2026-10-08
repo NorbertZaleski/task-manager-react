@@ -1,4 +1,5 @@
 import Board from "../models/Board.model.js";
+import Label from "../models/Label.model.js";
 import Note from "../models/Note.model.js";
 
 export async function getAllBoards(req, res) {
@@ -14,7 +15,7 @@ export async function getAllBoards(req, res) {
 
 export async function getBoard(req,res) {
     try {
-        const board = await Board.findOne({_id: req.params.id, user: req.user.id});
+        const board = await Board.findOne({_id: req.params.boardId, user: req.user.id});
         if (!board) return res.status(404).json({message:"Board not found"});
 
         const notes = await Note.find({board: board._id});
@@ -48,11 +49,15 @@ export async function createBoard(req,res) {
 export async function updateBoard(req, res) {
     try {
         const { title } = req.body;
-        const updatedBoard = await Board.findByIdAndUpdate(req.params.id, { title }, {new: true});
+        const updatedBoard = await Board.findOneAndUpdate(
+            {_id: req.params.boardId, user: req.user.id}, 
+            { title }, 
+            {new: true, runValidators: true}
+        );
 
         if (!updatedBoard) return res.status(404).json({message: "Board not found"});
 
-        res.status(200).json("Board updated", updateBoard);
+        res.status(200).json({message: "Board updated", board: updatedBoard});
     } catch (error) {
         console.error("Error in updateBoard controller", error);
         res.status(500).json({message:"Internal server error"});
@@ -61,11 +66,17 @@ export async function updateBoard(req, res) {
 
 export async function deleteBoard(req, res){
     try {
-        const deletedBoard = await Board.findByIdAndDelete(req.params.id);
+        const deletedBoard = await Board.findOneAndDelete({
+            _id: req.params.boardId,
+            user: req.user.id,
+        });
 
         if (!deletedBoard) return res.status(404).json({message: "Board not found"});
 
-        res.status(200).json("Board deleted", deleteBoard);
+        await Note.deleteMany({board: deletedBoard._id});
+        await Label.deleteMany({board: deleteBoard._id});
+
+        res.status(200).json({message: "Board deleted", board: deletedBoard});
     } catch (error) {
         console.error("Error in deleteBoard controller", error);
         res.status(500).json({message:"Internal server error"});

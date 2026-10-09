@@ -7,7 +7,6 @@ import useBoards from "./hooks/useBoards";
 
 
 function App(){
-  const [boards, loading, error] = useBoards();
 
   function RootRedirect() {
     const token = localStorage.getItem("token");

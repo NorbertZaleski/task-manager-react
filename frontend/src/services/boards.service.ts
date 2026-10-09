@@ -34,5 +34,15 @@ export const boardsService = {
             throw error;
         }
     },
-
+    getBoard: async () => {
+        try {
+            const response = await api.get('/:boardId');
+            return response.data;
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
+        }
+    },
 }

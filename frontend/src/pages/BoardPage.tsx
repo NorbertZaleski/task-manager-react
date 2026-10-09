@@ -1,14 +1,12 @@
 import BoardList from "../components/BoardList";
-import useBoards from "../hooks/useBoards";
+import useBoard from "../hooks/useBoard";
 
 function BoardPage(){
-    const [boards, loading, error] = useBoards();
+    const [board, loading, error] = useBoard();
 
     if (loading) return <div>Ładowanie...</div>;
     if (error) return <div>Błąd: {error}</div>;
-    if (boards.length === 0) return <div>Nie masz jeszcze żadnych tablic</div>;
-
-    const board = useBoards();
+    if (board.length === 0) return <div>Nie masz jeszcze żadnych tablic</div>;
 
     if (!board) return <p>Ładowanie tablicy...</p>;
 

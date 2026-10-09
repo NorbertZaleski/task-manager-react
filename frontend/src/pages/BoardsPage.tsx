@@ -10,9 +10,9 @@ function BoardsPage({boards}: BoardsProps){
 
     return (
         <>
-            {boards.map((board)=>{
+            {boards.map((board)=>(
                 <BoardCard key={board.id} board={board}></BoardCard>
-            })}
+            ))}
         </>
     )
 }

@@ -1,6 +1,7 @@
 front: npm i
 tailwindcss @tailwindcss/vite
 lucide-react
+react-router
 
 back: npm i
 express

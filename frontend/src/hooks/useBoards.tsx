@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { boardsService } from "../services/boards.service";
+import type { Board } from "../types/types";
 
 function useBoards(){
-    const [boards, setBoards] = useState([]);
-    const [user, setUser] = useState(null);
+    const [boards, setBoards] = useState<Board[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -12,7 +12,6 @@ function useBoards(){
             setLoading(true);
             const response = await boardsService.getBoards();
             setBoards(response);
-            setUser(response.user || null);
             setError(null);
         } catch (error) {
             console.error('Błąd pobierania tablic:', error);
@@ -26,6 +25,8 @@ function useBoards(){
     useEffect(()=> {
         load();
     }, [load]);
+
+    return {boards, loading, error, reload: load};
 }
 
 export default useBoards;

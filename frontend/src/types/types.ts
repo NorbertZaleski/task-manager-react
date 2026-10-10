@@ -1,5 +1,5 @@
 export type Note = {
-  id: number;
+  id: string;
   content: string;
   category: string;
   isUrgent: boolean;
@@ -13,9 +13,8 @@ export type Column = {
 };
 
 export type Board = {
-  id: number;
+  _id: string;
   title: string;
   columns: Column[];
+  notes: Note[];
 };
-
-export type ColumnId = "todo" | "doing" | "done";

@@ -1,9 +1,10 @@
 import axios, { AxiosError } from 'axios';
+import type { Board } from '../types/types';
 
 const getToken = () => localStorage.getItem('token');
 
 const api = axios.create({
-    baseURL: 'http://localhost:5001/boards',
+    baseURL: 'http://localhost:5001/api/boards',
     headers: {
         'Content-Type': 'application/json'
     }
@@ -23,9 +24,9 @@ api.interceptors.request.use(
 
 export const boardsService = {
 
-    getBoards: async () => {
+    getBoards: async (): Promise<Board[]> => {
         try {
-            const response = await api.get('/');
+            const response = await api.get<Board[]>(`/`);
             return response.data;
         } catch (error) {
             if (error instanceof AxiosError) {
@@ -34,9 +35,9 @@ export const boardsService = {
             throw error;
         }
     },
-    getBoard: async () => {
+    getBoard: async (boardId: string): Promise<Board> => {
         try {
-            const response = await api.get('/:boardId');
+            const response = await api.get<Board>(`/${boardId}`);
             return response.data;
         } catch (error) {
             if (error instanceof AxiosError) {

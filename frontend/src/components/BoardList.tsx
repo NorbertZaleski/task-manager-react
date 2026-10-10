@@ -1,26 +1,34 @@
-import { useEffect, useState } from "react";
-import { initialBoard } from "../constants/boardData";
+import { useState } from "react";
 import type { Board, Note } from "../types/types";
 import CardColumn from "./CardColumn";
-import { notesData } from "../constants/notesData";
 
+type BoardListprops = {
+    board: Board;
+};
 
-function BoardList() {
+function BoardList({board}: BoardListprops) {
 
-    const [board] = useState<Board>(initialBoard);
-    const [notes, setNotes] = useState<Note[]>([]);
+    const [notes, setNotes] = useState<Note[]>(board.notes ?? []);
 
     const urgentCount = notes.filter(note => note.isUrgent).length;
 
-    function handleMoveNote(noteId: number, columnId: string) {
+    function handleMoveNote(noteId: string, columnId: string) {
         setNotes((prev)=>
             prev.map((note)=> (note.id === noteId ? {...note, columnId} : note))
         );
     }
 
-    useEffect(()=>{
-        setNotes(notesData)
-    }, []);
+    function addColumn() {
+        //
+    }
+
+    function renameColumn(){
+        //
+    }
+
+    function deleteColumn(){
+        //
+    }
 
     return (
         <div className="m-2">

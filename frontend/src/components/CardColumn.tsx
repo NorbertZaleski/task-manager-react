@@ -6,7 +6,7 @@ import CreateCardButton from "./CreateCardButton";
 type CardColumnProps = {
     column: Column;
     notes: Note[];
-    onMoveNote: (noteId: number, columnId: string) => void;
+    onMoveNote: (noteId: string, columnId: string) => void;
 };
 
 function CardColumn({column, notes, onMoveNote}: CardColumnProps) {
@@ -17,7 +17,7 @@ function CardColumn({column, notes, onMoveNote}: CardColumnProps) {
                 onDragOver={(e)=> e.preventDefault()}
                 onDrop={(e)=>{
                     e.preventDefault();
-                    const noteId = Number(e.dataTransfer.getData("text/plain"));
+                    const noteId = e.dataTransfer.getData("text/plain");
                     onMoveNote(noteId, column.id);
                 }}
                 >

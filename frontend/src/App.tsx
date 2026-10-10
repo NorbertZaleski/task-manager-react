@@ -3,8 +3,6 @@ import {Navigate, Route, Routes} from "react-router";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import BoardPage from "./pages/BoardPage";
-import useBoards from "./hooks/useBoards";
-
 
 function App(){
 
@@ -21,8 +19,8 @@ function App(){
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        <Route path="/" element={<Navigate to="/app/boards" />}/>
-        <Route path="/boards" element={< BoardsPage boards={boards}/>} />
+        <Route path="/" element={<Navigate to="/boards" />}/>
+        <Route path="/boards" element={< BoardsPage />} />
         <Route path="/boards/:boardId" element={< BoardPage/>} />
 
         <Route path="*" element={<div>Strona nie znaleziona</div>} />

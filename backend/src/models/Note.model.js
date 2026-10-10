@@ -6,6 +6,12 @@ const noteSchema = new mongoose.Schema({
         required: true,
         ref: 'Board',
         index: true,
+    column: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "Column", 
+        required: true, 
+        index: true 
+    },
     title: {
         type: String,
         required: true,

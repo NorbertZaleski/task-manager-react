@@ -5,6 +5,7 @@ react-router
 
 back: npm i
 express
+cors
 nodemon
 mongoose
 dotenv

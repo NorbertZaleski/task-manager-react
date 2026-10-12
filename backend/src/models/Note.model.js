@@ -13,13 +13,8 @@ const noteSchema = new mongoose.Schema({
         required: true,
         index: true,
     },
-    title: {
-        type: String,
-        required: true,
-    },
     content: {
         type: String,
-        required: true,
     },
     labels: [{
         type: mongoose.Schema.Types.ObjectId,

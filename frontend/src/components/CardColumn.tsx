@@ -1,15 +1,16 @@
 import type { Column, Note } from "../types/types";
 import Card from "./Card";
 import {EllipsisVertical} from 'lucide-react'
-import CreateCardButton from "./CreateCardButton";
+import CreateNoteButton from "./CreateNoteButton";
 
 type CardColumnProps = {
     column: Column;
     notes: Note[];
     onMoveNote: (noteId: string, columnId: string) => void;
+    onCreateNote: (columnId: string, content: string) => Promise<void>;
 };
 
-function CardColumn({column, notes, onMoveNote}: CardColumnProps) {
+function CardColumn({column, notes, onMoveNote, onCreateNote}: CardColumnProps) {
     return(
         <>
             <div 
@@ -36,7 +37,7 @@ function CardColumn({column, notes, onMoveNote}: CardColumnProps) {
                     ))}
                 </div>
 
-                <CreateCardButton></CreateCardButton>
+                <CreateNoteButton onCreate={(content) => onCreateNote(column.id, content)}></CreateNoteButton>
             </div>
         </>
 )

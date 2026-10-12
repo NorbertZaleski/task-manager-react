@@ -56,34 +56,26 @@ export async function getNote(req,res) {
 
 export async function createNote(req,res) {
     try {
-        const { boardId } = req.params;
-        const { title, content, labels = [], columnId} = req.body;
+        const { columnId } = req.params;
+        const { content, labels = [] } = req.body;
 
-        if (!mongoose.isValidObjectId(boardId)) {
-            return res.status(400).json({ message: "Invalid board ID" });
-        }
-
-        if (!title?.trim()) {
-            return res.status(400).json({ message: "Title is required" });
-        }
         if (!mongoose.isValidObjectId(columnId)) {
             return res.status(400).json({ message: "Invalid column ID" });
         }
 
-        const board = await Board.findOne({_id: boardId, user: req.user.id});
-        if (!board) return res.status(404).json({message:"Board not found"});
-
-        const column = await Column.findOne({ _id: columnId, board: board._id });
+        const column = await Column.findById(columnId);
         if (!column) return res.status(404).json({ message: "Column not found" });
+
+        const board = await Board.findOne({_id: column.board, user: req.user.id});
+        if (!board) return res.status(404).json({message:"Column not found"});
 
         const labelIds = await resolveLabels(labels, board._id);
         if (!labelIds) return res.status(400).json({ message: "Invalid labels" });
 
         const note = await Note.create({
-            board: board._id, 
-            column: column._id, 
-            title, 
-            content, 
+            board: board._id,
+            column: column._id,
+            content,
             labels: labelIds,
         });
 

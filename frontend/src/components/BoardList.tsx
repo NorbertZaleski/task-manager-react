@@ -1,13 +1,14 @@
 import { useState } from "react";
 import type { Board, Column, Note } from "../types/types";
 import CardColumn from "./CardColumn";
-import { boardsService } from "../services/boards.service";
+import { columnsService } from "../services/columns.service";
+import notesService from "../services/notes.service";
 
-type BoardListprops = {
+type BoardListProps = {
     board: Board;
 };
 
-function BoardList({board}: BoardListprops) {
+function BoardList({board}: BoardListProps) {
 
     const [notes, setNotes] = useState<Note[]>(board.notes ?? []);
     const [columns, setColumns] = useState<Column[]>(board.columns ?? []);
@@ -18,14 +19,19 @@ function BoardList({board}: BoardListprops) {
         );
     }
 
-    async function addColumn() {
+    async function handleAddColumn() {
         try {
-            const newColumn = await boardsService.createColumn(board.id, {title: "Nowa lista"});
+            const newColumn = await columnsService.createColumn(board.id, {title: "Nowa lista"});
             setColumns((prev)=>[...prev, newColumn]);
         } catch (error) {
             console.log("Error in addColumn function: ", error);
         }
     }
+
+    async function handleCreateNote(columnId: string, content: string) {
+    const note = await notesService.createNote(columnId, { content });
+    setNotes((prev) => [...prev, note]);
+}
 
     function renameColumn(){
         //
@@ -48,8 +54,8 @@ function BoardList({board}: BoardListprops) {
             <h1>{board.title}</h1>
             <div>Liczba notatek: {notes.length}</div>
             </div>
-            <div className="flex border border-dotted w-fit p-2 text-md">
-                <button onClick={()=>addColumn()}>Dodaj listę</button>
+            <div className="flex border-2 border-dashed w-fit p-2 text-md">
+                <button onClick={()=>handleAddColumn()}>Dodaj listę</button>
             </div>
             <div className="flex text-center justify-start gap-5">
                 {columns.map((column) => (
@@ -58,6 +64,7 @@ function BoardList({board}: BoardListprops) {
                     column={column} 
                     notes={notes.filter((note) => note.columnId === column.id)}
                     onMoveNote={handleMoveNote}
+                    onCreateNote={handleCreateNote}
                     />
                 ))}
             </div>

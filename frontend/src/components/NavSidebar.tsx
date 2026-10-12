@@ -9,7 +9,7 @@ function NavSidebar(){
         <>
             <aside>
                 {boards.map((board)=>(
-                    <Link key={board._id} to={`/boards/${board._id}`}>{board.title}</Link>
+                    <Link key={board.id} to={`/boards/${board.id}`}>{board.title}</Link>
                 ))}
             </aside>
         </>

@@ -1,6 +1,6 @@
 export type Note = {
   id: string;
-  content: string;
+  content?: string;
   category: string;
   columnId: string;
   labelIds: string[];

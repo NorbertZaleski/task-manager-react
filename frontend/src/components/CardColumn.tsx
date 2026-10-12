@@ -8,11 +8,12 @@ type CardColumnProps = {
     notes: Note[];
     onMoveNote: (noteId: string, columnId: string) => void;
     onCreateNote: (columnId: string, content: string) => Promise<void>;
+    onDeleteColumn: (columnId: string) => void;
 };
 
-function CardColumn({column, notes, onMoveNote, onCreateNote}: CardColumnProps) {
+function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn}: CardColumnProps) {
     return(
-        <>
+        <div className="flex ">
             <div 
                 className="border-t-(--red) border-t-8 bg-(--panel) p-2 flex flex-col gap-2 w-55"
                 onDragOver={(e)=> e.preventDefault()}
@@ -27,7 +28,7 @@ function CardColumn({column, notes, onMoveNote, onCreateNote}: CardColumnProps) 
                     <p className="text-lg">{column.title}</p>
                     <div className="flex items-center justify-between text-center gap-2">
                         <div className="text-md">{notes.length}</div>
-                        <button type="button"><EllipsisVertical size={20}/></button>
+                        <button type="button" onClick={() => onDeleteColumn(column.id)}><EllipsisVertical size={20}/></button>
                     </div>
                 </div>
 
@@ -37,9 +38,12 @@ function CardColumn({column, notes, onMoveNote, onCreateNote}: CardColumnProps) 
                     ))}
                 </div>
 
+            <div>
                 <CreateNoteButton onCreate={(content) => onCreateNote(column.id, content)}></CreateNoteButton>
             </div>
-        </>
+            </div>
+
+        </div>
 )
 }
 

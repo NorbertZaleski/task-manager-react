@@ -1,5 +1,5 @@
 import express from "express";
-import { createColumn } from "../controllers/column.controller.js";
+import { createColumn, deleteColumn } from "../controllers/column.controller.js";
 
 
 const router = express.Router();

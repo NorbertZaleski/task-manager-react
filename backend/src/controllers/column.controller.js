@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Board from "../models/Board.model.js";
 import Column from "../models/Column.model.js";
 import { toClientColumn } from "./board.controller.js";
+import Note from "../models/Note.model.js";
 
 export async function createColumn(req,res) {
     try {
@@ -36,8 +37,22 @@ export async function createColumn(req,res) {
 
 export async function deleteColumn(req,res){
     try {
-        //
+        const { columnId } = req.params;
+
+        const column = await Column.findById(columnId);
+        if (!column) return res.status(404).json({ message: "Column not found" });
+
+        const board = await Board.findOne({_id: column.board, user: req.user.id});
+        if (!board) return res.status(404).json({ message: "Column not found" });
+        
+        await Promise.all([
+            Note.deleteMany({column: column._id}),
+            Column.deleteOne({_id: column._id}),
+        ]);
+
+        res.status(200).json({message:"Column deleted"});
     } catch (error) {
-        //
+        console.error("Error in deleteColumn controller", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 };

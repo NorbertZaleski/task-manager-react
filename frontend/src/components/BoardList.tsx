@@ -29,16 +29,20 @@ function BoardList({board}: BoardListProps) {
     }
 
     async function handleCreateNote(columnId: string, content: string) {
-    const note = await notesService.createNote(columnId, { content });
-    setNotes((prev) => [...prev, note]);
-}
+        try {
+            const note = await notesService.createNote(columnId, { content });
+            setNotes((prev) => [...prev, note]);
+        } catch (error) {
+            console.log("Error in createNote function: ", error);
+        }
+    }
 
     function renameColumn(){
         //
     }
 
     //TO DO ZROBIC COLUMNSSERVICE I ZASTAPIĆ GO W ADDCOLUMN!
-/*  function deleteColumn(){
+    async function handleDeleteColumn(columnId: string){
         try {
             await columnsService.deleteColumn(columnId);
             setColumns((prev)=> prev.filter((column)=> column.id !==columnId));
@@ -47,17 +51,15 @@ function BoardList({board}: BoardListProps) {
             console.log("Error in deleteColumn function: ", error)
         }
     }
-*/
+
     return (
         <div className="m-2">
             <div className="flex text-center justify-between items-center border-2">
             <h1>{board.title}</h1>
             <div>Liczba notatek: {notes.length}</div>
             </div>
-            <div className="flex border-2 border-dashed w-fit p-2 text-md">
-                <button onClick={()=>handleAddColumn()}>Dodaj listę</button>
-            </div>
-            <div className="flex text-center justify-start gap-5">
+
+            <div className="flex text-center justify-start gap-4 mt-4">
                 {columns.map((column) => (
                     <CardColumn 
                     key={column.id} 
@@ -65,9 +67,15 @@ function BoardList({board}: BoardListProps) {
                     notes={notes.filter((note) => note.columnId === column.id)}
                     onMoveNote={handleMoveNote}
                     onCreateNote={handleCreateNote}
+                    onDeleteColumn={handleDeleteColumn}
                     />
                 ))}
+
+                <div className="flex border-2 border-dashed w-full max-w-55 h-fit p-2 text-md text-center justify-center">
+                    <button onClick={()=>handleAddColumn()}>Dodaj listę</button>
+                </div>
             </div>
+
         </div>
     );
 }

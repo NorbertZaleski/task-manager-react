@@ -34,4 +34,14 @@ export const columnsService = {
                 throw error;
             }
         },
+        deleteColumn: async (columnId: string): Promise<void> => {
+            try {
+                await api.delete<Column>(`/boards/columns/${columnId}`);
+            } catch (error) {
+                if (error instanceof AxiosError) {
+                    throw error.response?.data ?? error;
+                }
+                throw error;
+            }
+        }
 }

@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import { useState } from "react";
 
 type CreateNoteButtonprops = {
@@ -23,9 +24,9 @@ function CreateNoteButton({onCreate}: CreateNoteButtonprops){
 
     if (!isAdding) {
         return (
-            <div className="border-2 border-dashed py-4">
-                <button type="button" onClick={() => setIsAdding(true)} className="text-2xl">
-                    +
+            <div className="border-2 border-dashed py-1">
+                <button type="button" onClick={() => setIsAdding(true)} className="text-sm font-semibold flex gap-1 text-center justify-center">
+                  <Plus size={18}/> Dodaj kartę
                 </button>
             </div>
         );
@@ -40,7 +41,7 @@ function CreateNoteButton({onCreate}: CreateNoteButtonprops){
                 placeholder="Tytuł notatki"
             />
             <div className="flex gap-2 justify-center">
-                <button type="submit">Dodaj</button>
+                <button type="submit"><Plus /></button>
                 <button type="button" onClick={() => setIsAdding(false)}>Anuluj</button>
             </div>
         </form>

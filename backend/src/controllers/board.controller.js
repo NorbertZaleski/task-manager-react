@@ -6,11 +6,14 @@ import mongoose from "mongoose";
 
 const toClientBoard = ({ _id, __v, ...rest }) => ({ id: _id.toString(), ...rest });
 
-const toClientColumn = ({ _id, __v, board, ...rest }) => ({ id: _id.toString(), ...rest });
+export const toClientColumn = ({ _id, __v, board, ...rest }) => ({ id: _id.toString(), ...rest });
 
-const toClientNote = ({ _id, __v, board, column, ...rest }) => ({
+const toClientLabel = ({ _id, __v, board, ...rest }) => ({ id: _id.toString(), ...rest });
+
+export const toClientNote = ({ _id, __v, board, column, labels = [], ...rest }) => ({
     id: _id.toString(),
     columnId: column.toString(),
+    labelIds: labels.map((l) => l.toString()),
     ...rest,
 });
 

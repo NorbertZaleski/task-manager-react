@@ -4,13 +4,14 @@ const noteSchema = new mongoose.Schema({
     board: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: 'Board',
+        ref: "Board",
         index: true,
-    column: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: "Column", 
-        required: true, 
-        index: true 
+    },
+    column: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Column",
+        required: true,
+        index: true,
     },
     title: {
         type: String,
@@ -20,12 +21,11 @@ const noteSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    labels: {
+    labels: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Label",
-    },
-    }
-}, {timestamps: true}
+    }],
+}, { timestamps: true }
 );
 
 

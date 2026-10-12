@@ -13,8 +13,8 @@ function BoardsPage(){
         <>
             <div className="flex gap-2 border border-black">
                 {boards.map((board)=>(
-                <Link key={board._id} to={`/boards/${board._id}`} className="flex w-fit">
-                    <BoardCard key={board._id} board={board}></BoardCard>
+                <Link key={board.id} to={`/boards/${board.id}`} className="flex w-fit">
+                    <BoardCard board={board}></BoardCard>
                 </Link>
             ))}
             </div>

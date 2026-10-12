@@ -1,4 +1,4 @@
-function CreateCardButton(){
+function AddCardButton(){
 
     const handleAddCard = () => {
         console.log("add")
@@ -13,4 +13,4 @@ function CreateCardButton(){
     );
 };
 
-export default CreateCardButton;
+export default AddCardButton;

@@ -2,8 +2,8 @@ export type Note = {
   id: string;
   content: string;
   category: string;
-  isUrgent: boolean;
   columnId: string;
+  labelIds: string[];
 };
 
 export type Column = {
@@ -13,8 +13,15 @@ export type Column = {
 };
 
 export type Board = {
-  _id: string;
+  id: string;
   title: string;
   columns: Column[];
   notes: Note[];
+  labels: Label[];
+};
+
+export type Label = {
+  id: string;
+  title: string;
+  color: string;
 };

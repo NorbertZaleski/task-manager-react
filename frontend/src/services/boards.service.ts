@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import type { Board } from '../types/types';
+import type { Board, Column } from '../types/types';
 
 const getToken = () => localStorage.getItem('token');
 
@@ -46,4 +46,16 @@ export const boardsService = {
             throw error;
         }
     },
+
+    createColumn: async (boardId: string, data: {title: string}): Promise<Column> => {
+        try {
+            const response = await api.post<Column>(`/${boardId}/columns`, data);
+            return response.data;
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
+        }
+    }
 }

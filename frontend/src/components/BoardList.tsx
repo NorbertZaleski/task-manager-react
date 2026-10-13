@@ -12,6 +12,7 @@ function BoardList({board}: BoardListProps) {
 
     const [notes, setNotes] = useState<Note[]>(board.notes ?? []);
     const [columns, setColumns] = useState<Column[]>(board.columns ?? []);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     function handleMoveNote(noteId: string, columnId: string) {
         setNotes((prev)=>
@@ -52,24 +53,25 @@ function BoardList({board}: BoardListProps) {
     }
 
     return (
-        <div className="flex flex-col h-dvh overflow-hidden">
-            <div className="flex text-center items-center border-2">
+        <div className="flex flex-col h-dvh w-full overflow-hidden">
+            <div className="flex text-center items-center border-2 shrink-0">
                 <h1>{board.title}</h1>
             </div>
 
-            <div className="flex flex-1 text-center justify-start gap-4 mt-4 px-4 w-screen h-screen overflow-x-auto overflow-y-hidden">
+            <div className="flex flex-1 items-start justify-start gap-4 mt-4 px-4 pb-4 overflow-x-auto overflow-y-hidden">
                 {columns.map((column) => (
-                    <CardColumn 
-                    key={column.id} 
-                    column={column} 
-                    notes={notes.filter((note) => note.columnId === column.id)}
-                    onMoveNote={handleMoveNote}
-                    onCreateNote={handleCreateNote}
-                    onDeleteColumn={handleDeleteColumn}
-                    />
+                    <div key={column.id} className="shrink-0">
+                        <CardColumn
+                            column={column}
+                            notes={notes.filter((note) => note.columnId === column.id)}
+                            onMoveNote={handleMoveNote}
+                            onCreateNote={handleCreateNote}
+                            onDeleteColumn={handleDeleteColumn}
+                        />
+                    </div>
                 ))}
 
-                <div className="flex border-2 border-dashed min-w-55 h-fit p-2 text-md text-center justify-center">
+                <div className="flex shrink-0 border-2 border-dashed min-w-55 h-fit p-2 text-md text-center justify-center">
                     <button onClick={()=>handleAddColumn()}>Dodaj listę</button>
                 </div>
             </div>

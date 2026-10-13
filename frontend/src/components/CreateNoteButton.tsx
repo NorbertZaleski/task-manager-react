@@ -24,11 +24,12 @@ function CreateNoteButton({onCreate}: CreateNoteButtonprops){
 
     if (!isAdding) {
         return (
-            <div className="border-2 border-dashed py-1">
-                <button type="button" onClick={() => setIsAdding(true)} className="text-sm font-semibold flex gap-1 text-center justify-center">
-                  <Plus size={18}/> Dodaj kartę
-                </button>
-            </div>
+            <button 
+            type="button" 
+            onClick={() => setIsAdding(true)} 
+            className="flex w-full items-center gap-1 border-2 border-dashed p-1 text-sm font-semibold">
+                <Plus size={18}/> Dodaj kartę
+            </button>
         );
     }
 

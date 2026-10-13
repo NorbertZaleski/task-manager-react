@@ -13,9 +13,9 @@ type CardColumnProps = {
 
 function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn}: CardColumnProps) {
     return(
-        <div className="flex ">
+        <div className="flex flex-col max-h-full shrink-0">
             <div 
-                className="border-t-(--red) border-t-8 bg-(--panel) p-2 flex flex-col gap-2 w-55"
+                className="border-t-(--red) border-t-8 bg-(--panel) p-2 flex flex-col gap-2 w-55 max-h-full min-h-0"
                 onDragOver={(e)=> e.preventDefault()}
                 onDrop={(e)=>{
                     e.preventDefault();
@@ -32,7 +32,7 @@ function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn}: C
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 overflow-y-auto flex-1 min-h-0">
                     {notes.map((note) => (
                         <Card key={note.id} note={note} />
                     ))}
@@ -44,7 +44,7 @@ function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn}: C
             </div>
 
         </div>
-)
+    )
 }
 
 export default CardColumn;

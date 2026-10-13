@@ -41,7 +41,6 @@ function BoardList({board}: BoardListProps) {
         //
     }
 
-    //TO DO ZROBIC COLUMNSSERVICE I ZASTAPIĆ GO W ADDCOLUMN!
     async function handleDeleteColumn(columnId: string){
         try {
             await columnsService.deleteColumn(columnId);
@@ -53,13 +52,12 @@ function BoardList({board}: BoardListProps) {
     }
 
     return (
-        <div className="m-2">
-            <div className="flex text-center justify-between items-center border-2">
-            <h1>{board.title}</h1>
-            <div>Liczba notatek: {notes.length}</div>
+        <div className="flex flex-col h-dvh overflow-hidden">
+            <div className="flex text-center items-center border-2">
+                <h1>{board.title}</h1>
             </div>
 
-            <div className="flex text-center justify-start gap-4 mt-4">
+            <div className="flex flex-1 text-center justify-start gap-4 mt-4 px-4 w-screen h-screen overflow-x-auto overflow-y-hidden">
                 {columns.map((column) => (
                     <CardColumn 
                     key={column.id} 
@@ -71,7 +69,7 @@ function BoardList({board}: BoardListProps) {
                     />
                 ))}
 
-                <div className="flex border-2 border-dashed w-full max-w-55 h-fit p-2 text-md text-center justify-center">
+                <div className="flex border-2 border-dashed min-w-55 h-fit p-2 text-md text-center justify-center">
                     <button onClick={()=>handleAddColumn()}>Dodaj listę</button>
                 </div>
             </div>

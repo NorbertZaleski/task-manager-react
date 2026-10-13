@@ -8,7 +8,7 @@ function App(){
 
   function RootRedirect() {
     const token = localStorage.getItem("token");
-    return token ?  <Navigate to="/" replace /> : <Navigate to="/login" replace />;
+    return token ?  <Navigate to="/boards" replace /> : <Navigate to="/login" replace />;
   }
 
   return (

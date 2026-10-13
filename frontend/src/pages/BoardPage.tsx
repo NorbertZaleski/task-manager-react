@@ -12,7 +12,11 @@ function BoardPage(){
 
     if (!board) return <p>Ładowanie tablicy...</p>;
 
-    return <BoardList board={board} />
+    return (
+        <div className="">
+            <BoardList board={board} />
+        </div>
+    )
 }
 
 export default BoardPage;

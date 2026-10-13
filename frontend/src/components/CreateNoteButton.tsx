@@ -40,7 +40,7 @@ function CreateNoteButton({onCreate}: CreateNoteButtonprops){
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Tytuł notatki"
             />
-            <div className="flex gap-2 justify-center">
+            <div className="flex gap-2 justify-center w-full">
                 <button type="submit"><Plus /></button>
                 <button type="button" onClick={() => setIsAdding(false)}>Anuluj</button>
             </div>

@@ -3,6 +3,7 @@ import type { Board, Column, Note } from "../types/types";
 import CardColumn from "./CardColumn";
 import { columnsService } from "../services/columns.service";
 import notesService from "../services/notes.service";
+import NoteModal from "./NoteModal.js";
 
 type BoardListProps = {
     board: Board;
@@ -12,7 +13,10 @@ function BoardList({board}: BoardListProps) {
 
     const [notes, setNotes] = useState<Note[]>(board.notes ?? []);
     const [columns, setColumns] = useState<Column[]>(board.columns ?? []);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
+
+    const selectedNote = notes.find((note)=> note.id === selectedNoteId) ?? null;
+    const selectedColumn = columns.find((column)=> column.id === selectedNote?.columnId);
 
     function handleMoveNote(noteId: string, columnId: string) {
         setNotes((prev)=>
@@ -38,7 +42,7 @@ function BoardList({board}: BoardListProps) {
         }
     }
 
-    function renameColumn(){
+    async function renameColumn(){
         //
     }
 
@@ -67,6 +71,7 @@ function BoardList({board}: BoardListProps) {
                             onMoveNote={handleMoveNote}
                             onCreateNote={handleCreateNote}
                             onDeleteColumn={handleDeleteColumn}
+                            onOpenNote={setSelectedNoteId}
                         />
                     </div>
                 ))}
@@ -75,6 +80,14 @@ function BoardList({board}: BoardListProps) {
                     <button onClick={()=>handleAddColumn()}>Dodaj listę</button>
                 </div>
             </div>
+            
+            {selectedNote && (
+                <NoteModal
+                note={selectedNote}
+                columnTitle={selectedColumn?.title}
+                onClose={()=> setSelectedNoteId(null)}
+                />
+            )}
 
         </div>
     );

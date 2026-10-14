@@ -12,12 +12,18 @@ export type Column = {
   color: string;
 };
 
+export type BoardBackground = {
+  type: "color" | "image";
+  value: string;
+};
+
 export type Board = {
   id: string;
   title: string;
   columns: Column[];
   notes: Note[];
   labels: Label[];
+  background: BoardBackground;
 };
 
 export type Label = {

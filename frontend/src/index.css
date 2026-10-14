@@ -10,6 +10,8 @@
   --blue:#2a4bd7;
   --yellow:#f4b400;
   --card:#fff;
+  --button:#6895ff;
+  --button-hover: #88acff;
 
   --archivo: system-ui, 'Archivo', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;

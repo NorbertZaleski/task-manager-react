@@ -11,6 +11,10 @@ const boardSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    background: {
+        type: {type: String, enum: ["color", "image"], default: "color"},
+        value: {type: String, default: "9ca3af"},
+    }
 }, {timestamps: true});
 
 const Board = mongoose.model("Board", boardSchema);

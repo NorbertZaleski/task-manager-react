@@ -35,12 +35,25 @@ export const boardsService = {
             throw error;
         }
     },
+
     getBoard: async (boardId: string): Promise<Board> => {
         try {
             const response = await api.get<Board>(`/${boardId}`);
             return response.data;
         } catch (error) {
             if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
+        }
+    },
+
+    createBoard: async(data: {title: string}): Promise<Board> => {
+        try {
+            const response = await api.post<Board>(`/boards`, data);
+            return response.data;
+        } catch (error) {
+        if (error instanceof AxiosError) {
                 throw error.response?.data ?? error;
             }
             throw error;

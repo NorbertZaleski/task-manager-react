@@ -8,8 +8,13 @@ type CardProps = {
 function Card({note, onOpen}: CardProps) {
     return (
         <div
-        className="border-2 p-2 bg-(--card) flex flex-col text-start w-full wrap-break-word whitespace-pre-wrap"
-        draggable onDragStart={(e)=> e.dataTransfer.setData("text/plain", String(note.id))}
+        className="border-2 p-2 bg-(--card) flex flex-col text-start w-full wrap-break-word whitespace-pre-wrap
+        cursor-grab active:cursor-grabbing"
+        draggable 
+        onDragStart={(e) => {
+        e.dataTransfer.setData("text/plain", note.id);
+        e.dataTransfer.effectAllowed = "move";
+      }}
         onClick={onOpen}
         >
             <p className="text-md pb-2">{note.content}</p>

@@ -36,7 +36,18 @@ export const notesService = {
             }
             throw error;
         }
-    }
+    },
+
+    updateNote: async (
+        noteId: string,
+        data: { columnId?: string; position?: number; content?: string }
+    ) => {
+        const response = await api.patch(`/${noteId}`, data);
+        return response.data;
+    },
+
 };
+
+
 
 export default notesService;

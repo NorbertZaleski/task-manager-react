@@ -8,7 +8,7 @@ router.get("/:id", getNote);
 
 router.post("/columns/:columnId/notes", createNote);
 
-router.put("/:id", updateNote);
+router.patch("/:id", updateNote);
 
 router.delete("/:id", deleteNote);
 

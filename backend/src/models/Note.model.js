@@ -20,6 +20,10 @@ const noteSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Label",
     }],
+    position: {
+        type: Number,
+        default: 0,
+    }
 }, { timestamps: true }
 );
 

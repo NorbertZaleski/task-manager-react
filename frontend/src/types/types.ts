@@ -4,6 +4,7 @@ export type Note = {
   category: string;
   columnId: string;
   labelIds: string[];
+  position: number;
 };
 
 export type Column = {

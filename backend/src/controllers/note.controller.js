@@ -72,11 +72,15 @@ export async function createNote(req,res) {
         const labelIds = await resolveLabels(labels, board._id);
         if (!labelIds) return res.status(400).json({ message: "Invalid labels" });
 
+        const last = await Note.findOne({ column: column._id }).sort({ position: -1 });
+        const position = last ? last.position + 1 : 0;
+
         const note = await Note.create({
             board: board._id,
             column: column._id,
             content,
             labels: labelIds,
+            position,
         });
 
         res.status(201).json(toClientNote(note.toObject()));
@@ -89,7 +93,7 @@ export async function createNote(req,res) {
 export async function updateNote(req, res) {
     try {
         const {id} = req.params;
-        const {title, content, columnId, labels} = req.body;
+        const {title, content, columnId, labels, position} = req.body;
 
         if (!mongoose.isValidObjectId(id)) {
             return res.status(400).json({ message: "Invalid note ID" });
@@ -103,6 +107,13 @@ export async function updateNote(req, res) {
 
         if (title !== undefined) note.title = title;
         if (content !==undefined) note.content = content;
+
+        if (position !== undefined) {
+            if (typeof position !== "number" || !Number.isFinite(position)) {
+                return res.status(400).json({ message: "Invalid position" });
+            }
+            note.position = position;
+        }
 
         if (columnId !== undefined) {
             if (!mongoose.isValidObjectId(columnId)) {

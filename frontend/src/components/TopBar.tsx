@@ -16,12 +16,12 @@ function TopBar() {
             console.log("Error in createBoard function: ", error);
         }
     };
-//fix width
+
     return (
-        <div className="sticky top-0 left-0 w-full bg-blue flex flex-1 justify-between text-(--text)"> 
+        <div className="sticky top-0 left-0 w-full flex flex-1 justify-between text-(--text)"> 
             <div>Logo</div>
             <div className="flex gap-2">
-                <div>Search</div> 
+                <input className="border" placeholder="Search"></input>
                 <ButtonCreateBoard 
                 onCreate={handleCreateBoard} />
             </div>

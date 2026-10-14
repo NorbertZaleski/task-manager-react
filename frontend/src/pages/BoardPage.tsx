@@ -13,7 +13,7 @@ function BoardPage(){
     if (!board) return <p>Ładowanie tablicy...</p>;
 
     return (
-        <div className="">
+        <div className="h-full w-full">
             <BoardList board={board} />
         </div>
     )

@@ -50,7 +50,7 @@ export const boardsService = {
 
     createBoard: async(data: {title: string}): Promise<Board> => {
         try {
-            const response = await api.post<Board>(`/boards`, data);
+            const response = await api.post<Board>(`/`, data);
             return response.data;
         } catch (error) {
         if (error instanceof AxiosError) {

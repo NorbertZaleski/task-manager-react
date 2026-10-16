@@ -1,12 +1,12 @@
-import { Link } from "react-router";
+import { Link, useOutletContext } from "react-router";
 import BoardCard from "../components/BoardCard";
 import useBoards from "../hooks/useBoards";
 
-function BoardsPage(){
-    const {boards, loading, error} = useBoards();
+type BoardsContext = ReturnType<typeof useBoards>;
 
-    if (loading) return <div>Ładowanie...</div>;
-    if (error) return <div>Błąd: {error}</div>;
+function BoardsPage(){
+    const {boards}= useOutletContext<BoardsContext>();
+
     if (boards.length === 0) return <div>Nie masz jeszcze żadnych tablic</div>;
 
     return (

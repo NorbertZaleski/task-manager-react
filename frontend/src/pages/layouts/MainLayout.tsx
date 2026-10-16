@@ -1,12 +1,20 @@
 import { Outlet } from "react-router";
 import TopBar from "../../components/TopBar";
+import useBoards from "../../hooks/useBoards";
 
 function MainLayout(){
+
+    const boardsState = useBoards();
+    const {boards, loading, error, reload} = boardsState;
+
+    if (loading && boards.length === 0) return <div className="flex items-center justify-center">Ładowanie...</div>;
+    if (error) return <div className="flex items-center justify-center">Błąd: {error}</div>;
+
     return(
-        <div className="flex h-dvh flex-col overflow-hidden">
-            <main className="min-h-0 flex-1">
-                <TopBar />
-                <Outlet />
+        <div className="flex flex-col overflow-hidden">
+            <TopBar onBoardCreated = {reload}/>
+            <main className="min-h-0 flex-1 overflow-hidden">
+                <Outlet context={boardsState}/>
             </main>
         </div>
     )

@@ -1,3 +1,4 @@
+import { ChevronLeft, Ellipsis, X } from "lucide-react";
 import { useState } from "react";
 
 type ButtonCreateBoardProps = {
@@ -34,18 +35,69 @@ function ButtonCreateBoard({onCreate}: ButtonCreateBoardProps) {
     }
 
     return (
-       <form onSubmit={handleCreateBoard} className="border-2 border-dashed p-2 flex flex-col gap-2">
-            <input
-                autoFocus
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Board title"
-            />
-            <div className="flex gap-2 justify-center w-full">
-                <button type="submit">Create</button>
-                <button type="button" onClick={() => setIsAdding(false)}>Anuluj</button>
-            </div>
-        </form>
+        <div className="relative">
+
+            <button type="button" onClick={() => setIsAdding(true)}>Create</button>
+            {isAdding && (
+                <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsAdding(false)} />
+                    <form 
+                    onSubmit={handleCreateBoard} 
+                    className="absolute border shadow-lg p-2 flex flex-col gap-2">
+            
+                    <div>
+                        <div className="flex justify-between text-center">
+                            <ChevronLeft />
+                            <h3>Create board</h3>
+                            <X type="button" onClick={() => setIsAdding(false)}/>
+                        </div>
+                        <div className="border h-max-fit">
+                            preview board
+                        </div>
+
+                        <div>
+                            <h4>Background</h4>
+
+                            <div>
+                                mapa backgroundów - 4 zdj unsplash i 5 kolorów, ostatni button poniżej
+                                <div>
+                                    4 zdj unsplash
+                                </div>
+                                <div>
+                                    kolory + button
+                                    <button type="button" 
+                                    className="
+                                    ">
+                                        <Ellipsis />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <input
+                                autoFocus
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="Board title"
+                            />
+                            {(!title) && (
+                                <p>Board title is required</p>
+                            )}
+
+                            <div>
+                                Visibility options
+                            </div>
+
+                            <div className="flex gap-2 justify-center w-full">
+                                <button type="submit">Create</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+                </>
+            )}
+            
+        </div>
     )
 }
 

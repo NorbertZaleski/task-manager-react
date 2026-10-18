@@ -34,9 +34,25 @@ export const columnsService = {
                 throw error;
             }
         },
+       
+        updateColumn: async (columnId: string, data: {title: string}): Promise<Column> => {
+            try {
+                const response = await api.patch<{ message: string; column: Column }>(
+                    `/columns/${columnId}`,
+                    data
+                );
+                return response.data.column;
+            } catch (error) {
+                if (error instanceof AxiosError) {
+                    throw error.response?.data ?? error;
+                }
+                throw error;
+            }
+        },
+
         deleteColumn: async (columnId: string): Promise<void> => {
             try {
-                await api.delete<Column>(`/boards/columns/${columnId}`);
+                await api.delete<Column>(`/columns/${columnId}`);
             } catch (error) {
                 if (error instanceof AxiosError) {
                     throw error.response?.data ?? error;

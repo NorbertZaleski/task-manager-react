@@ -115,12 +115,16 @@ export async function updateBoard(req, res) {
         const update = {};
 
         if (title !== undefined) {
-            if (!title.trim()) {
+            if (typeof title !== "string" || !title.trim()) {
                 return res.status(400).json({ message: "Title is required" });
             }
             update.title = title.trim();
         }
 
+        if (title.trim().length > 50) {
+            return res.status(400).json({ message: "Title is too long (max 50 characters)" });
+        }
+        
         if (background !== undefined) {
             const parsed = parseBackground(background);
             if (!parsed.ok) {

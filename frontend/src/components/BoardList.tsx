@@ -65,8 +65,17 @@ function BoardList({board}: BoardListProps) {
         }
     }
 
-    async function renameColumn(){
-        //
+    async function renameColumn(columnId: string, title: string){
+        try {
+            const columnUpdated = await columnsService.updateColumn(columnId, {title});
+            setColumns((prev) =>
+                prev.map((column) =>
+                    column.id === columnId ? { ...column, title: columnUpdated.title } : column
+                )
+            );
+        } catch (error) {
+            console.log("Error in renameColumn function: ", error)
+        }
     }
 
     async function handleDeleteColumn(columnId: string){
@@ -102,6 +111,7 @@ function BoardList({board}: BoardListProps) {
                             onCreateNote={handleCreateNote}
                             onDeleteColumn={handleDeleteColumn}
                             onOpenNote={setSelectedNoteId}
+                            onRenameColumn={renameColumn}
                         />
                     </div>
                 ))}

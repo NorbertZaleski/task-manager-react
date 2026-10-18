@@ -2,6 +2,7 @@ import type { Column, Note } from "../types/types";
 import Card from "./Card";
 import {EllipsisVertical} from 'lucide-react'
 import CreateNoteButton from "./CreateNoteButton";
+import { useState } from "react";
 
 type CardColumnProps = {
     column: Column;
@@ -10,9 +11,24 @@ type CardColumnProps = {
     onCreateNote: (columnId: string, content: string) => Promise<void>;
     onDeleteColumn: (columnId: string) => void;
     onOpenNote: (noteId: string) => void;
+    onRenameColumn: (columnId: string, title: string) => void;
 };
 
-function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn, onOpenNote}: CardColumnProps) {
+function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn, onOpenNote, onRenameColumn}: CardColumnProps) {
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [draftTitle, setDraftTitle] = useState(column.title);
+
+    const commitRename = () => {
+        const trimmed = draftTitle.trim();
+        if (trimmed && trimmed !== column.title) {
+            onRenameColumn(column.id, trimmed);
+        } else {
+            setDraftTitle(column.title);
+        }
+        setIsEditing(false);
+    };
+
     return(
             <div 
                 className="border-t-(--red) border-t-8 bg-(--panel) 
@@ -26,7 +42,29 @@ function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn, on
                 >
                 <div className="flex shrink-0 text-center justify-between p-1">
                     <div className="bg-(--red) w-6 h-6 border-2"></div>
-                    <p className="text-lg shrink-0">{column.title}</p>
+                    
+                    {isEditing ? (
+                        <input
+                            autoFocus
+                            maxLength={40}
+                            value={draftTitle}
+                            onChange={(e) => setDraftTitle(e.target.value)}
+                            onBlur={commitRename}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") commitRename();
+                                if (e.key === "Escape") {
+                                    setDraftTitle(column.title);
+                                    setIsEditing(false);
+                                }
+                            }}
+                            className="text-lg text-center border-b"
+                        />
+                    ) : (
+                        <button type="button" onClick={() => setIsEditing(true)}>
+                            <p className="text-lg shrink-0">{column.title}</p>
+                        </button>
+                    )}
+
                     <div className="flex items-center justify-between text-center gap-2">
                         <div className="text-md">{notes.length}</div>
                         <button type="button" onClick={() => onDeleteColumn(column.id)}>

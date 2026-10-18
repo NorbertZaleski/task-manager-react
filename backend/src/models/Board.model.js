@@ -13,7 +13,7 @@ const boardSchema = new mongoose.Schema({
     },
     background: {
         type: {type: String, enum: ["color", "image"], default: "color"},
-        value: {type: String, default: "9ca3af"},
+        value: {type: String, default: "#9ca3af"},
     }
 }, {timestamps: true});
 

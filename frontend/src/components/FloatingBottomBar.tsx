@@ -10,13 +10,20 @@ function FloatingBottomBar(){
 
     return (
         <>
-            <aside className={`
-            fixed bottom-3 left-1/2 border border-dashed h-fit w-fit
+            <div className={`
+            fixed bottom-3 left-1/2 -translate-x-1/2 border border-dashed h-fit w-fit flex
             `}>
                 {showSidebar ? (
                     <div>
-                        <div className="flex flex-col p-4">
-                            <X onClick={()=> setShowSidebar(false)}/>
+                        <div className="flex flex-col p-4 justify-between text-center">
+                            <button 
+                            type="button" 
+                            onClick={() => setShowSidebar(false)} 
+                            aria-label="Zamknij"
+                            className="self-end"
+                            >
+                                <X />
+                            </button>
                             <div className="flex gap-2">
                                 {boards.map((board)=>(
                                     <Link key={board.id} to={`/boards/${board.id}`}>{board.title}</Link>
@@ -33,7 +40,7 @@ function FloatingBottomBar(){
                     </button>
                 )}
 
-            </aside>
+            </div>
         </>
     )
 }

@@ -5,5 +5,4 @@ export const colors: Colors[] = [
     {name: 'yellow', value: '#f4b400'},
     {name: '', value: ''},
     {name: '', value: ''},
-]
-    
+];

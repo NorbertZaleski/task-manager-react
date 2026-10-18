@@ -3,6 +3,7 @@ import Label from "../models/Label.model.js";
 import Note from "../models/Note.model.js";
 import Column from "../models/Column.model.js";
 import mongoose from "mongoose";
+import { parseBackground } from "../utils/parseBackground.js";
 
 const toClientBoard = ({ _id, __v, ...rest }) => ({ id: _id.toString(), ...rest });
 
@@ -56,7 +57,7 @@ export async function getBoard(req,res) {
 export async function createBoard(req, res) {
     try {
         const user = req.user?._id;
-        const { title } = req.body;
+        const { title, background } = req.body;
 
         if (!user) {
             return res.status(401).json({ message: "Unauthorized" });
@@ -66,7 +67,16 @@ export async function createBoard(req, res) {
             return res.status(400).json({ message: "Title is required" });
         }
 
-        const savedBoard = await Board.create({ user, title });
+        const parsed = parseBackground(background);
+        if (!parsed.ok) {
+            return res.status(400).json({ message: "Invalid background" });
+        }
+
+        const savedBoard = await Board.create({ 
+            user, 
+            title : title.trim(),
+            ...(parsed.value && {background: parsed.value}),
+        });
 
         const columns = await Column.insertMany([
             { board: savedBoard._id, title: "Do zrobienia", position: 0 },
@@ -77,6 +87,10 @@ export async function createBoard(req, res) {
         res.status(201).json({
             id: savedBoard._id.toString(),
             title: savedBoard.title,
+            background: {
+                type: savedBoard.background.type,
+                value: savedBoard.background.value,
+            },
             columns: columns.map((c) => ({
                 id: c._id.toString(),
                 title: c.title,
@@ -97,11 +111,28 @@ export async function updateBoard(req, res) {
             return res.status(404).json({ message: "Board not found" });
         }
 
-        const { title } = req.body;
+        const { title, background } = req.body;
+        const update = {};
+
+        if (title !== undefined) {
+            if (!title.trim()) {
+                return res.status(400).json({ message: "Title is required" });
+            }
+            update.title = title.trim();
+        }
+
+        if (background !== undefined) {
+            const parsed = parseBackground(background);
+            if (!parsed.ok) {
+                return res.status(400).json({ message: "Invalid background" });
+            }
+            update.background = parsed.value;
+        }
+
         const updatedBoard = await Board.findOneAndUpdate(
-            {_id: req.params.boardId, user: req.user.id}, 
-            { title }, 
-            {new: true, runValidators: true}
+            { _id: req.params.boardId, user: req.user.id },
+            update,
+            { new: true, runValidators: true }
         );
 
         if (!updatedBoard) return res.status(404).json({message: "Board not found"});

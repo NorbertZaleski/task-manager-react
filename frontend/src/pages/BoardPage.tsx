@@ -1,6 +1,7 @@
 import { useParams } from "react-router";
 import BoardList from "../components/BoardList";
 import useBoard from "../hooks/useBoard";
+import { getBoardStyle } from "../utils/getBackgroundStyle";
 
 function BoardPage(){
     const {boardId} = useParams<{boardId: string}>();
@@ -13,7 +14,7 @@ function BoardPage(){
     if (!board) return <p>Ładowanie tablicy...</p>;
 
     return (
-        <div className="h-full w-full">
+        <div className="h-full w-full" style={getBoardStyle(board.background)}>
             <BoardList board={board} />
         </div>
     )

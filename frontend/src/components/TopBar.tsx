@@ -2,6 +2,7 @@ import { Bell, Circle } from "lucide-react";
 import ButtonCreateBoard from "./ButtonCreateBoard";
 import { boardsService } from "../services/boards.service";
 import { Link, useNavigate } from "react-router";
+import type { BoardBackground } from "../types/types";
 
 type TopBarPops = { 
     onBoardCreated: () => void 
@@ -10,9 +11,9 @@ type TopBarPops = {
 function TopBar({onBoardCreated}: TopBarPops) {
     const navigate = useNavigate();
 
-    async function handleCreateBoard(title: string){
+    async function handleCreateBoard(title: string, background: BoardBackground){
         try {
-            const newBoard = await boardsService.createBoard({title});
+            const newBoard = await boardsService.createBoard({title, background});
             navigate(`/boards/${newBoard.id}`);
             onBoardCreated();
         } catch (error) {
@@ -21,7 +22,7 @@ function TopBar({onBoardCreated}: TopBarPops) {
     };
 
     return (
-        <div className="sticky top-0 left-0 w-full flex flex-1 justify-between text-(--text)"> 
+        <div className="sticky top-0 left-0 w-full flex shrink-0 justify-between text-(--text)"> 
             <Link to={`/boards`}>Logo</Link>
             <div className="flex gap-2">
                 <input className="border" placeholder="Search"></input>

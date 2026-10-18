@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import type { Board, Column } from '../types/types';
+import type { Board, BoardBackground, Column } from '../types/types';
 
 const getToken = () => localStorage.getItem('token');
 
@@ -21,6 +21,12 @@ api.interceptors.request.use(
     },
     (error) => Promise.reject(error)
 );
+
+type CreateBoardInput = {
+    title: string;
+    background?: BoardBackground;
+};
+
 
 export const boardsService = {
 
@@ -48,7 +54,7 @@ export const boardsService = {
         }
     },
 
-    createBoard: async(data: {title: string}): Promise<Board> => {
+    createBoard: async(data: CreateBoardInput): Promise<Board> => {
         try {
             const response = await api.post<Board>(`/`, data);
             return response.data;

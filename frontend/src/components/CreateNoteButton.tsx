@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useState } from "react";
 
 type CreateNoteButtonprops = {
@@ -27,23 +27,29 @@ function CreateNoteButton({onCreate}: CreateNoteButtonprops){
             <button 
             type="button" 
             onClick={() => setIsAdding(true)} 
-            className="flex w-full items-center gap-1 border-2 border-dashed p-1 text-sm font-semibold">
-                <Plus size={18}/> Dodaj kartę
+            className="flex w-full items-center text-center gap-1 p-1 text-sm font-semibold">
+                <Plus size={16} /> Dodaj kartę
             </button>
         );
     }
 
     return (
-       <form onSubmit={handleCreateNote} className="border-2 border-dashed p-2 flex flex-col gap-2">
-            <input
+       <form onSubmit={handleCreateNote} className="flex flex-col gap-3">
+            <textarea
                 autoFocus
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Tytuł notatki"
+                className="bg-(--card) px-4 py-2 outline-0 rounded-lg w-full h-20 resize-none text-md"
             />
-            <div className="flex gap-2 justify-center w-full">
-                <button type="submit"><Plus /></button>
-                <button type="button" onClick={() => setIsAdding(false)}>Anuluj</button>
+            <div className="flex gap-2 justify-start w-full">
+                <button 
+                type="submit"
+                className="px-2 py-1 rounded-lg text-sm text-semibold text-(--card) bg-(--button)"
+                >
+                    Dodaj kartę
+                </button>
+                <button type="button" onClick={() => setIsAdding(false)}><X size={18}/></button>
             </div>
         </form>
     );

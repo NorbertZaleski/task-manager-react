@@ -49,7 +49,7 @@ export async function createLabel(req,res){
 export async function updateLabel(req,res){
     try {
         const label = await Label.findById(req.params.id).populate("board", "user");
-        if (!label || label.board) return res.status(404).json({message: "Label not found"});
+        if (!label || !label.board) return res.status(404).json({message: "Label not found"});
 
         if (label.board.user.toString() !== req.user._id.toString()) {
             return res.status(403).json({message: "Not authorized"});

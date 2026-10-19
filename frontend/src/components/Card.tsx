@@ -8,7 +8,7 @@ type CardProps = {
 function Card({note, onOpen}: CardProps) {
     return (
         <div
-        className="border-2 p-2 bg-(--card) flex flex-col text-start w-full wrap-break-word whitespace-pre-wrap
+        className="px-4 py-2 bg-(--card) flex flex-col text-start w-full wrap-break-word whitespace-pre-wrap rounded-xl gap-1
         cursor-grab active:cursor-grabbing"
         draggable 
         onDragStart={(e) => {
@@ -17,8 +17,8 @@ function Card({note, onOpen}: CardProps) {
       }}
         onClick={onOpen}
         >
+            <p className="text-sm rounded w-10 h-4 bg-(--red)">{/*fix note.label i custom color*/}</p>
             <p className="text-md pb-2">{note.content}</p>
-            <p className="text-sm border-2 w-fit px-2 py-1 bg-(--red)">{note.category}</p>
         </div>
     )
 }

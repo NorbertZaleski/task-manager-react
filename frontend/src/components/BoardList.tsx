@@ -113,7 +113,8 @@ function BoardList({board, setBoard}: BoardListProps) {
 
     return (
         <div className="flex flex-col h-full w-full overflow-hidden">
-            <div className="flex text-center items-center justify-between shrink-0 px-3 py-1 bg-black/30">
+            <div className="flex text-center items-center justify-between shrink-0 
+            h-14 px-3 py-1 bg-black/30">
                 
                 {isEditingBoardTitle ? (
                     <input
@@ -129,12 +130,12 @@ function BoardList({board, setBoard}: BoardListProps) {
                                 setIsEditingBoardTitle(false);
                             }
                         }}
-                        className="text-lg text-center"
+                        className="field-sizing-content text-lg font-semibold text-left outline-1 ouline-white rounded-sm px-2 py-1"
                     />
                 ) : (
                     <button
                 type="button"
-                className="py-1 px-2 w-fit h-fit hover:bg-(--hover-white)"
+                className="py-1 px-2 w-fit h-fit rounded-sm hover:bg-(--hover-white)"
                 onClick={()=> setIsEditingBoardTitle(true)}
                 >
                     <h1 className="text-lg font-semibold shrink-0">

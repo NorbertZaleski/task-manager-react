@@ -11,7 +11,7 @@ function FloatingBottomBar(){
     return (
         <>
             <div className={`
-            fixed bottom-3 left-1/2 -translate-x-1/2 border border-dashed h-fit w-fit flex
+            fixed bottom-3 left-1/2 -translate-x-1/2 h-fit w-fit flex bg-(--panel) border-(--card) border-2 rounded-md px-4 py-2 font-semibold
             `}>
                 {showSidebar ? (
                     <div>

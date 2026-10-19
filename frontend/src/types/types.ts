@@ -1,7 +1,12 @@
+export type Label = {
+  id: string;
+  title: string;
+  color: string;
+};
+
 export type Note = {
   id: string;
   content?: string;
-  category: string;
   columnId: string;
   labelIds: string[];
   position: number;
@@ -25,10 +30,4 @@ export type Board = {
   notes: Note[];
   labels: Label[];
   background: BoardBackground;
-};
-
-export type Label = {
-  id: string;
-  title: string;
-  color: string;
 };

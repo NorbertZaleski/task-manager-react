@@ -10,7 +10,7 @@ type NoteModalProps = {
 function NoteModal({note, columnTitle, onClose}: NoteModalProps){
     return (
         <div className="
-        fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-99 bg-panel w-fit min-w-270 min-h-140.25 max-h-[calc(100dvh-128px)]
+        fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-99 bg-(--panel) w-fit max-w-40 min-w-270 min-h-140.25 max-h-[calc(100dvh-128px)]
         ">
             <div className="flex justify-between">
                 <div>{columnTitle}</div>

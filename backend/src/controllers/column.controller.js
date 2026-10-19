@@ -53,8 +53,8 @@ export async function updateColumn(req,res) {
             update.title = title.trim();
         }
         
-        if (title.trim().length > 50) {
-            return res.status(400).json({ message: "Title is too long (max 50 characters)" });
+        if (title.trim().length > 30) {
+            return res.status(400).json({ message: "Title is too long (max 30 characters)" });
         }
 
         const column = await Column.findById(columnId);

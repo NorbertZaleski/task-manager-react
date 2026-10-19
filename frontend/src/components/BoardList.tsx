@@ -4,14 +4,16 @@ import CardColumn from "./CardColumn";
 import { columnsService } from "../services/columns.service";
 import notesService from "../services/notes.service";
 import NoteModal from "./NoteModal.js";
-import { Ellipsis } from "lucide-react";
+import { Ellipsis, Plus } from "lucide-react";
 import FloatingBottomBar from "./FloatingBottomBar.js";
+import { boardsService } from "../services/boards.service.js";
 
 type BoardListProps = {
     board: Board;
+    setBoard: React.Dispatch<React.SetStateAction<Board | null>>;
 };
 
-function BoardList({board}: BoardListProps) {
+function BoardList({board, setBoard}: BoardListProps) {
 
     const [notes, setNotes] = useState<Note[]>(board.notes ?? []);
     const [columns, setColumns] = useState<Column[]>(board.columns ?? []);
@@ -20,10 +22,12 @@ function BoardList({board}: BoardListProps) {
     const selectedNote = notes.find((note)=> note.id === selectedNoteId) ?? null;
     const selectedColumn = columns.find((column)=> column.id === selectedNote?.columnId);
 
+    const [isEditingBoardTitle, setIsEditingBoardTitle] = useState(false);
+    const [draftBoardTitle, setDraftBoardTitle] = useState(board.title);
+    
     async function handleMoveNote(noteId: string, columnId: string) {
         const prevNotes = notes;
         
-
         const columnNotes = notes.filter(
             (note) => note.columnId === columnId && note.id !== noteId
         );
@@ -88,12 +92,57 @@ function BoardList({board}: BoardListProps) {
         }
     }
 
+    async function handleRenameBoard(boardId: string, title: string) {
+        try {
+            await boardsService.updateBoard(boardId, { title });
+            setBoard(prev => prev ? {...prev, title: title} : prev);
+        } catch (error) {
+            console.log("Error in renameBoard function: ", error)
+        }
+    }
+
+    const commitRenameBoard = () => {
+        const trimmed = draftBoardTitle.trim();
+        if (trimmed && trimmed !== board.title) {
+            handleRenameBoard(board.id, trimmed);
+        } else {
+            setDraftBoardTitle(board.title);
+        }
+        setIsEditingBoardTitle(false);
+    };
+
     return (
         <div className="flex flex-col h-full w-full overflow-hidden">
-            <div className="flex text-center items-center justify-between border-2 shrink-0 px-3 py-1">
-                <h1 className="text-lg font-semibold">
-                    {board.title}
-                </h1>
+            <div className="flex text-center items-center justify-between shrink-0 px-3 py-1 bg-black/30">
+                
+                {isEditingBoardTitle ? (
+                    <input
+                        autoFocus
+                        maxLength={40}
+                        value={draftBoardTitle}
+                        onChange={(e) => setDraftBoardTitle(e.target.value)}
+                        onBlur={commitRenameBoard}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") commitRenameBoard();
+                            if (e.key === "Escape") {
+                                setDraftBoardTitle(board.title);
+                                setIsEditingBoardTitle(false);
+                            }
+                        }}
+                        className="text-lg text-center"
+                    />
+                ) : (
+                    <button
+                type="button"
+                className="py-1 px-2 w-fit h-fit hover:bg-(--hover-white)"
+                onClick={()=> setIsEditingBoardTitle(true)}
+                >
+                    <h1 className="text-lg font-semibold shrink-0">
+                        {board.title}
+                    </h1>
+                </button>
+                )}
+                
                 <div>
                     <Ellipsis />
                 </div>
@@ -116,8 +165,14 @@ function BoardList({board}: BoardListProps) {
                     </div>
                 ))}
 
-                <div className="flex shrink-0 border-2 border-dashed min-w-55 h-fit p-2 text-md text-center justify-center">
-                    <button onClick={()=>handleAddColumn()}>Dodaj listę</button>
+                <div className="flex shrink-0 rounded-lg min-w-55 h-fit p-2 text-md font-medium text-left items-start
+                bg-(--hover-white) hover:bg-(--hover-white-darker)">
+                    <button 
+                    className="flex items-center gap-1"
+                    onClick={()=>handleAddColumn()}
+                    >
+                        <Plus /> Add new list
+                    </button>
                 </div>
             </div>
             

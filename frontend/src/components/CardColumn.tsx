@@ -16,17 +16,17 @@ type CardColumnProps = {
 
 function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn, onOpenNote, onRenameColumn}: CardColumnProps) {
 
-    const [isEditing, setIsEditing] = useState(false);
-    const [draftTitle, setDraftTitle] = useState(column.title);
+    const [isEditingColumnTitle, setIsEditingColumnTitle] = useState(false);
+    const [draftColumnTitle, setDraftColumnTitle] = useState(column.title);
 
     const commitRename = () => {
-        const trimmed = draftTitle.trim();
+        const trimmed = draftColumnTitle.trim();
         if (trimmed && trimmed !== column.title) {
             onRenameColumn(column.id, trimmed);
         } else {
-            setDraftTitle(column.title);
+            setDraftColumnTitle(column.title);
         }
-        setIsEditing(false);
+        setIsEditingColumnTitle(false);
     };
 
     return(
@@ -43,24 +43,24 @@ function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn, on
                 <div className="flex shrink-0 text-center justify-between p-1">
                     <div className="bg-(--red) w-6 h-6 border-2"></div>
                     
-                    {isEditing ? (
+                    {isEditingColumnTitle ? (
                         <input
                             autoFocus
                             maxLength={40}
-                            value={draftTitle}
-                            onChange={(e) => setDraftTitle(e.target.value)}
+                            value={draftColumnTitle}
+                            onChange={(e) => setDraftColumnTitle(e.target.value)}
                             onBlur={commitRename}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") commitRename();
                                 if (e.key === "Escape") {
-                                    setDraftTitle(column.title);
-                                    setIsEditing(false);
+                                    setDraftColumnTitle(column.title);
+                                    setIsEditingColumnTitle(false);
                                 }
                             }}
                             className="text-lg text-center border-b"
                         />
                     ) : (
-                        <button type="button" onClick={() => setIsEditing(true)}>
+                        <button type="button" onClick={() => setIsEditingColumnTitle(true)}>
                             <p className="text-lg shrink-0">{column.title}</p>
                         </button>
                     )}

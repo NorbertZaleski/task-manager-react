@@ -31,7 +31,7 @@ function useBoard(boardId: string | undefined) {
         load();
     }, [load]);
 
-    return {board, loading, error, reload: load};
+    return {board, setBoard, loading, error, reload: load};
 }
 
 export default useBoard;

@@ -66,6 +66,18 @@ export const boardsService = {
         }
     },
 
+    updateBoard: async(boardId: string, data: {title: string}): Promise<Board> => {
+        try {
+            const reponse = await api.patch<Board>(`/${boardId}`, data);
+            return reponse.data;
+        } catch (error) {
+        if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
+        }
+    },
+
     createColumn: async (boardId: string, data: {title: string}): Promise<Column> => {
         try {
             const response = await api.post<Column>(`/${boardId}/columns`, data);

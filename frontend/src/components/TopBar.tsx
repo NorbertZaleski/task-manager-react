@@ -22,7 +22,7 @@ function TopBar({onBoardCreated}: TopBarPops) {
     };
 
     return (
-        <div className="sticky top-0 left-0 w-full flex shrink-0 justify-between text-(--text)"> 
+        <div className="sticky top-0 left-0 w-full flex shrink-0 justify-between px-3 py-2"> 
             <Link to={`/boards`}>Logo</Link>
             <div className="flex gap-2">
                 <input className="border" placeholder="Search"></input>
@@ -30,8 +30,18 @@ function TopBar({onBoardCreated}: TopBarPops) {
                 onCreate={handleCreateBoard} />
             </div>
             <div className="flex gap-2">
-                <div><Bell/></div>
-                <div><Circle/></div>
+                <button
+                type="button"
+                className="p-1 rounded-md hover:bg-(--hover-white)"
+                >
+                    <Bell/>
+                </button>
+                <button
+                type="button"
+                className="p-1 rounded-md hover:bg-(--hover-white)"
+                >
+                    <Circle/>
+                </button>
             </div>
         </div>
     )

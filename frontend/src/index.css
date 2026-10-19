@@ -1,25 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --bg:#e8e9ec;
-  --panel:#f7f7f8;
-  --text:#111318;
-  --mute:#5b606b;
-  --line:#111318;
+  --bg:#15171c;
+  --panel:#1e2128;
+  --text:#f1f1f3;
+  --mute:#9aa0ab;
+  --line:#f1f1f3;
+  --card:#272b34;
   --red:#e5372b;
   --blue:#2a4bd7;
   --yellow:#f4b400;
-  --card:#fff;
   --button:#6895ff;
   --button-hover: #88acff;
+  --hover-white: rgba(255, 255, 255, 0.24);
+  --hover-white-darker: rgba(255, 255, 255, 0.18);
 
   --archivo: system-ui, 'Archivo', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
-
-  font: 18px/145% var(--archivo);
-  letter-spacing: 0.18px;
   color-scheme: light dark;
   color: var(--text);
   background: var(--bg);
@@ -31,23 +30,6 @@
   @media (max-width: 1024px) {
     font-size: 16px;
   }
-}
-
-.dark {
-    --bg:#15171c;
-    --panel:#1e2128;
-    --text:#f1f1f3;
-    --mute:#9aa0ab;
-    --line:#f1f1f3;
-    --card:#272b34;
-}
-
-@theme {
-  --color-bg: var(--bg);
-  --color-panel: var(--panel);
-  --color-text: var(--text);
-  --color-red: var(--red);
-  --color-blue: var(--blue);
 }
 
 #root {

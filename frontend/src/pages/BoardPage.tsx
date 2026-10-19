@@ -5,17 +5,15 @@ import { getBoardStyle } from "../utils/getBackgroundStyle";
 
 function BoardPage(){
     const {boardId} = useParams<{boardId: string}>();
-    const {board, loading, error} = useBoard(boardId);
+    const {board, setBoard, loading, error} = useBoard(boardId);
 
     if (loading) return <div>Ładowanie...</div>;
     if (error) return <div>Błąd: {error}</div>;
     if (!board) return <div>Nie masz jeszcze żadnych tablic</div>;
 
-    if (!board) return <p>Ładowanie tablicy...</p>;
-
     return (
         <div className="h-full w-full" style={getBoardStyle(board.background)}>
-            <BoardList board={board} />
+            <BoardList board={board} setBoard={setBoard} />
         </div>
     )
 }

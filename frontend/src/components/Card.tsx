@@ -18,7 +18,7 @@ function Card({note, onOpen}: CardProps) {
         onClick={onOpen}
         >
             <p className="text-sm rounded w-10 h-4 bg-(--red)">{/*fix note.label i custom color*/}</p>
-            <p className="text-md pb-2">{note.content}</p>
+            <p className="text-md pb-2">{note.title}</p>
         </div>
     )
 }

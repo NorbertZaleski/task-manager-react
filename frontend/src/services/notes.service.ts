@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import type { Column, Note } from '../types/types';
+import type { Note } from '../types/types';
 
 const getToken = () => localStorage.getItem('token');
 
@@ -25,7 +25,7 @@ api.interceptors.request.use(
 export const notesService = {
     createNote: async (
         columnId: string, 
-        data: {content?: string, labels?: string[]}): 
+        data: {title?: string, labels?: string[]}): 
         Promise<Note> => {
         try {
             const reponse = await api.post<Note>(`/columns/${columnId}/notes`, data);
@@ -40,7 +40,7 @@ export const notesService = {
 
     updateNote: async (
         noteId: string,
-        data: { columnId?: string; position?: number; content?: string }
+        data: { columnId?: string; position?: number; title?: string, content?: string }
     ) => {
         const response = await api.patch(`/${noteId}`, data);
         return response.data;

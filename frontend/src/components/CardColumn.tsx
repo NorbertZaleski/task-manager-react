@@ -19,7 +19,7 @@ function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn, on
     const [isEditingColumnTitle, setIsEditingColumnTitle] = useState(false);
     const [draftColumnTitle, setDraftColumnTitle] = useState(column.title);
 
-    const commitRename = () => {
+    const commitRenameTitle = () => {
         const trimmed = draftColumnTitle.trim();
         if (trimmed && trimmed !== column.title) {
             onRenameColumn(column.id, trimmed);
@@ -48,9 +48,9 @@ function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn, on
                             maxLength={30}
                             value={draftColumnTitle}
                             onChange={(e) => setDraftColumnTitle(e.target.value)}
-                            onBlur={commitRename}
+                            onBlur={commitRenameTitle}
                             onKeyDown={(e) => {
-                                if (e.key === "Enter") commitRename();
+                                if (e.key === "Enter") commitRenameTitle();
                                 if (e.key === "Escape") {
                                     setDraftColumnTitle(column.title);
                                     setIsEditingColumnTitle(false);

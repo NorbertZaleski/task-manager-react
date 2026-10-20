@@ -6,6 +6,7 @@ export type Label = {
 
 export type Note = {
   id: string;
+  title?: string;
   content?: string;
   columnId: string;
   labelIds: string[];

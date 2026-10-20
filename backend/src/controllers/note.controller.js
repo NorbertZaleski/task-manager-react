@@ -57,7 +57,7 @@ export async function getNote(req,res) {
 export async function createNote(req,res) {
     try {
         const { columnId } = req.params;
-        const { content, labels = [] } = req.body;
+        const { title, content="", labels = [] } = req.body;
 
         if (!mongoose.isValidObjectId(columnId)) {
             return res.status(400).json({ message: "Invalid column ID" });
@@ -78,6 +78,7 @@ export async function createNote(req,res) {
         const note = await Note.create({
             board: board._id,
             column: column._id,
+            title,
             content,
             labels: labelIds,
             position,

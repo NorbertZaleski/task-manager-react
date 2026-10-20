@@ -60,9 +60,9 @@ function BoardList({board, setBoard}: BoardListProps) {
         }
     }
 
-    async function handleCreateNote(columnId: string, content: string) {
+    async function handleCreateNote(columnId: string, title: string) {
         try {
-            const note = await notesService.createNote(columnId, { content });
+            const note = await notesService.createNote(columnId, { title });
             setNotes((prev) => [...prev, note]);
         } catch (error) {
             console.log("Error in createNote function: ", error);

@@ -25,9 +25,9 @@ function BoardCard({board}: BoardCardProps){
 
     return (
         <>
-            <div className="w-fit h-fit min-w-50 border rounded flex flex-col">
-                <div className="w-full h-20" style={getBackgroundStyle(board.background)}></div>
-                <div className="py-3 px-2">{board.title}</div>
+            <div className="w-fit h-fit min-w-50 rounded-lg flex flex-col gap-0" style={getBackgroundStyle(board.background)}>
+                <div className="w-full h-20 rounded-lg"></div>
+                <div className="pt-3 pb-4 px-5 text-left bg-black/50 rounded-b-lg">{board.title}</div>
                 {isActive ? (
                     <div className="size-fit border rounded-4xl"><Dot size={48}/></div> //tutaj zrobić wybrany board kind absolute po lewej na górze karty
                 ) : (

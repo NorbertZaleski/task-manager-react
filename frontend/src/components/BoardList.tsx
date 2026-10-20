@@ -78,7 +78,7 @@ function BoardList({board, setBoard}: BoardListProps) {
                 )
             );
         } catch (error) {
-            console.log("Error in renameColumn function: ", error)
+            console.log("Error in renameColumn function: ", error);
         }
     }
 
@@ -88,7 +88,7 @@ function BoardList({board, setBoard}: BoardListProps) {
             setColumns((prev)=> prev.filter((column)=> column.id !==columnId));
             setNotes((prev) => prev.filter((note) => note.columnId !== columnId));
         } catch (error) {
-            console.log("Error in deleteColumn function: ", error)
+            console.log("Error in deleteColumn function: ", error);
         }
     }
 
@@ -97,7 +97,7 @@ function BoardList({board, setBoard}: BoardListProps) {
             await boardsService.updateBoard(boardId, { title });
             setBoard(prev => prev ? {...prev, title: title} : prev);
         } catch (error) {
-            console.log("Error in renameBoard function: ", error)
+            console.log("Error in renameBoard function: ", error);
         }
     }
 
@@ -110,6 +110,17 @@ function BoardList({board, setBoard}: BoardListProps) {
         }
         setIsEditingBoardTitle(false);
     };
+
+    async function handleSaveContent(noteId: string, content: string) {
+        try {
+            await notesService.updateNote(noteId, { content });
+            setNotes((prev) =>
+                prev.map((n) => (n.id === noteId ? { ...n, content } : n))
+            );
+        } catch (error) {
+            console.log("Error in saveContent function: ", error);
+        }
+    }
 
     return (
         <div className="flex flex-col h-full w-full overflow-hidden">
@@ -182,6 +193,7 @@ function BoardList({board, setBoard}: BoardListProps) {
                 note={selectedNote}
                 columnTitle={selectedColumn?.title}
                 onClose={()=> setSelectedNoteId(null)}
+                onSaveContent={handleSaveContent}
                 />
             )}
             

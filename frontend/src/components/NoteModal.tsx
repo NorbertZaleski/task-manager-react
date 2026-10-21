@@ -137,7 +137,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent}: NoteModalProps){
                                 </div>
                             </div>
                         </div>
-                        <div className="flex justify-items-start h-175 text-left w-full py-4 pl-8 ">
+                        <div className="flex justify-items-start h-175 text-left w-full py-4 pl-8 bg-(--bg-notemodal-right)">
                             <div className="flex">
                                 aktywność
                                 {/*Komentarze i aktywność (pole do wpisania komentarza, lista komentarzy + aktywność jako ta sama lista)*/}

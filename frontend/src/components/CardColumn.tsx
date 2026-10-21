@@ -2,7 +2,7 @@ import type { Column, Note } from "../types/types";
 import Card from "./Card";
 import {Ellipsis} from 'lucide-react'
 import CreateNoteButton from "./CreateNoteButton";
-import { useState } from "react";
+import EditableText from "./EditableText";
 
 type CardColumnProps = {
     column: Column;
@@ -15,19 +15,6 @@ type CardColumnProps = {
 };
 
 function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn, onOpenNote, onRenameColumn}: CardColumnProps) {
-
-    const [isEditingColumnTitle, setIsEditingColumnTitle] = useState(false);
-    const [draftColumnTitle, setDraftColumnTitle] = useState(column.title);
-
-    const commitRenameTitle = () => {
-        const trimmed = draftColumnTitle.trim();
-        if (trimmed && trimmed !== column.title) {
-            onRenameColumn(column.id, trimmed);
-        } else {
-            setDraftColumnTitle(column.title);
-        }
-        setIsEditingColumnTitle(false);
-    };
 
     return(
             <div 
@@ -42,33 +29,14 @@ function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn, on
                 >
                 <div className="flex shrink-0 text-left items-start justify-between max-w-full gap-2">
                     
-                    {isEditingColumnTitle ? (
-                        <input
-                            autoFocus
-                            maxLength={30}
-                            value={draftColumnTitle}
-                            onChange={(e) => setDraftColumnTitle(e.target.value)}
-                            onBlur={commitRenameTitle}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter") commitRenameTitle();
-                                if (e.key === "Escape") {
-                                    setDraftColumnTitle(column.title);
-                                    setIsEditingColumnTitle(false);
-                                }
-                            }}
-                            className="field-sizing-content outline-0 px-2 py-1 min-w-0 text-sm text-left font-medium"
-                        />
-                    ) : (
-                        <button 
-                        type="button" 
-                        onClick={() => setIsEditingColumnTitle(true)}
-                        className="min-w-0 text-left"
-                        >
-                            <p className="field-sizing-content px-2 py-1 rounded-sm text-sm font-medium text-left wrap-break-word hover:bg-(--hover-white)">
-                                {column.title}
-                            </p>
-                        </button>
-                    )}
+                <EditableText
+                    value={column.title}
+                    maxLength={30}
+                    onCommit={(title) => onRenameColumn(column.id, title)}
+                    className="px-2 py-1 rounded-sm text-sm font-medium"
+                    viewClassName="hover:bg-(--hover-white)"
+                    editClassName="outline-0 field-sizing-content"
+                />
 
                     <div className="flex shrink-0 items-center gap-2 py-1 rounded-sm text-center">
                         <div className="text-sm select-none">{notes.length}</div>
@@ -77,7 +45,7 @@ function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn, on
                         onClick={() => onDeleteColumn(column.id)}
                         className=""
                         >
-                            <Ellipsis size={18}/>
+                            <Ellipsis size={18}/> {/* tymczasowo działa jako deleteboard */}
                         </button>
                     </div>
                 </div>

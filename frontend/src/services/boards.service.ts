@@ -78,6 +78,17 @@ export const boardsService = {
         }
     },
 
+    deleteBoard: async(boardId: string): Promise<void> => {
+        try {
+            await api.delete<Board>(`/${boardId}`);
+        } catch (error) {
+        if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
+        }
+    },
+
     createColumn: async (boardId: string, data: {title: string}): Promise<Column> => {
         try {
             const response = await api.post<Column>(`/${boardId}/columns`, data);

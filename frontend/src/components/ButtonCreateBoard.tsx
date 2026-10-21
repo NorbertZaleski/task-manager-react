@@ -47,7 +47,7 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
                 ref={buttonRef}
                 type="button"
                 onClick={open}
-                className="flex w-fit items-center text-sm bg-(--button) hover:bg-(--button-hover) text-(--text-dark) font-semibold py-1 px-2 rounded-md"
+                className="flex w-fit items-center justify-center text-sm bg-(--button) hover:bg-(--button-hover) text-(--text-dark) font-semibold py-1 px-2 rounded-md "
             >
                 Create board
             </button>
@@ -74,7 +74,7 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
                             </div>
 
                             <div
-                                className="h-30 w-50 rounded bg-cover bg-center"
+                                className="h-30 w-50 rounded bg-cover bg-center flex items-center justify-center mx-auto shadow-lg"
                                 style={getBackgroundStyle(background)}
                             >
                             </div>
@@ -105,9 +105,9 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
                                         ))}
                                         <button 
                                         type="button"
-                                        className="border rounded border-(--mute) w-10 h-8 flex justify-center"
+                                        className="rounded outline-1 outline-(--border-mute) w-10 h-8 flex items-center justify-center"
                                         >
-                                            <Ellipsis />
+                                            <Ellipsis size={24} className="text-(--mute)"/>
                                         </button>
                                     </div>
                                 </div>
@@ -120,17 +120,17 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="Board title"
-                                    className="w-full rounded border p-1"
+                                    className="w-full rounded outline-1 outline-(--border-mute) px-2 py-1"
                                 />
-                                {!title && <p className="text-sm text-red-500">Board title is required</p>}
-                                {title.length>=30 && <p className="text-sm text-red-500">Board title can't be longer than 30 characters</p>}
+                                {!title && <p className="text-sm text-(--mute) font-medium">Board title is required</p>}
+                                {title.length>=30 && <p className="text-sm text-(--mute) font-medium">Board title can't be longer than 30 characters</p>}
                             </div>
 
                             <div>Visibility options</div>
 
                             <button 
                             type="submit"
-                            className={`w-full rounded-sm text-(--text-dark) py-1 px-2 font-medium ${
+                            className={`w-full h-8 rounded-sm text-(--text-dark) pt-0.5 pb-1 px-2 font-semibold flex items-center justify-center ${
                                 title ? "bg-(--button)" : "bg-(--mute)"
                             }`}
                             >

@@ -22,11 +22,19 @@ function useBoards(){
         }
     }, []);
 
+    const updateBoardTitle = useCallback((boardId: string, title: string) => {
+        setBoards(prev => prev.map(b => (b.id === boardId ? { ...b, title } : b)));
+    }, []);
+
+    const removeBoard = useCallback((boardId: string) => {
+        setBoards(prev => prev.filter(b => b.id !== boardId));
+    }, []);
+
     useEffect(()=> {
         load();
     }, [load]);
 
-    return {boards, loading, error, reload: load};
+    return {boards, loading, error, reload: load, updateBoardTitle, removeBoard};
 }
 
 export default useBoards;

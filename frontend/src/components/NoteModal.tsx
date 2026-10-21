@@ -1,16 +1,18 @@
-import { Clock, Ellipsis, LucideTag, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
+import { Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
 import type { Note } from "../types/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ButtonSimple from "./ButtonSimple";
+import EditableText from "./EditableText";
 
 type NoteModalProps = {
     note: Note;
     columnTitle?: string;
     onClose: () => void;
     onSaveContent: (noteId: string, content: string) => void;
+    onRenameNote: (noteId: string, title: string) => void;
 } 
 
-function NoteModal({note, columnTitle, onClose, onSaveContent}: NoteModalProps){
+function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote}: NoteModalProps){
 
     const [isEditingNoteContent, setIsEditingNoteContent] = useState(false);
     const [draftContent, setDraftContent] = useState(note.content ?? "");
@@ -33,12 +35,24 @@ function NoteModal({note, columnTitle, onClose, onSaveContent}: NoteModalProps){
         setIsEditingNoteContent(false);
     }
 
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape" && !isEditingNoteContent) onClose();
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [onClose, isEditingNoteContent]);
+
     return (
-        <div className="fixed inset-0 z-98 bg-black/80">
+        <div className="fixed inset-0 z-98 bg-black/80" 
+            onMouseDown={(e) => {
+                if (e.target === e.currentTarget) onClose();
+            }}
+        >
             <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-99 w-fit min-w-265 min-h-140.25 max-h-[calc(100dvh-128px)] 
-            bg-(--panel) px-6 py-2 rounded-2xl
-            ">
-                <div className="flex justify-between w-full h-full min-w-md border-b border-(--border-mute) py-2">
+            bg-(--panel) rounded-2xl overflow-hidden"
+            >
+                <div className="flex items-center justify-between w-full h-full min-w-md border-b border-(--border-mute) px-6 py-2">
                     <h3 className="text-sm font-semibold">{columnTitle}</h3>
                     <div className="flex gap-2">
 
@@ -62,9 +76,17 @@ function NoteModal({note, columnTitle, onClose, onSaveContent}: NoteModalProps){
                 </div>
                 <div className="flex flex-col justify-evenly">
                     
-                    <div className="flex w-full h-175 justify-between px-6 py-2">
-                        <div className="flex flex-col w-full text-left min-w-150 border-r border-(--border-mute) pr-8 ">
-                            <p className="text-3xl font-bold py-4">{note.title}</p>
+                    <div className="flex w-full h-175 justify-between">
+                        <div className="flex flex-col w-full text-left min-w-150 max-w-150 border-r border-(--border-mute) px-6 py-2">
+                        
+                        <EditableText
+                            value={note.title ?? ""}
+                            maxLength={30}
+                            onCommit={(title) => onRenameNote(note.id, title)}
+                            className="w-full px-2 h-16 text-3xl font-bold rounded-xs leading-none"
+                            viewClassName="hover:bg-(--hover-white)/10 outline-1 outline-transparent"
+                            editClassName="outline-1 outline-(--mute)"
+                        />
                         
                             <div className="flex flex-col gap-8">
 
@@ -74,6 +96,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent}: NoteModalProps){
                                     <ButtonSimple icon={<Clock size={16} className="-mr-0.5" />} text={"Date"} />
                                     <ButtonSimple icon={<SquareCheck size={16} className="-mr-0.5" />} text={"To do list"} />
                                     <ButtonSimple icon={<UserRoundPlus size={16} className="-mr-0.5" />} text={"Members"} />
+                                    <ButtonSimple icon={<Paperclip size={16} className="-mr-0.5" />} text={"Files"} />
                                 </div>
 
                                 <div className="flex flex-col">
@@ -105,17 +128,23 @@ function NoteModal({note, columnTitle, onClose, onSaveContent}: NoteModalProps){
                                                         cancelEditingContent();
                                                     }
                                                 }}
-                                                className="resize-none outline-1 outline-(--mute) rounded-xs px-2 py-1 min-w-0 w-full text-sm text-left font-medium h-60
+                                                className="resize-none outline-1 outline-(--mute) rounded-xs px-3 py-2 min-w-0 w-full text-sm text-left font-medium h-60
                                                 wrap-break-word"
                                             />
 
-                                            <div className="flex gap-2">
-                                                <button className="bg-(--button) hover:bg-(--button-hover) px-2 py-1 text-md text-(--text-dark) font-medium
+                                            <div className="flex gap-2 py-2">
+                                                <button
+                                                onMouseDown={(e) => e.preventDefault()}
+                                                onClick={commitContent}
+                                                className="bg-(--button) hover:bg-(--button-hover) px-2 py-1 text-md text-(--text-dark) font-medium
                                                 rounded w-fit h-fit
                                                 ">
                                                     Save
                                                 </button>
-                                                <button className="hover:bg-(--mute)/20 px-2 py-1 text-md text-(--text) font-medium
+                                                <button
+                                                onMouseDown={(e) => e.preventDefault()}
+                                                onClick={cancelEditingContent}
+                                                className="hover:bg-(--mute)/20 px-2 py-1 text-md text-(--text) font-medium
                                                 rounded w-fit h-fit
                                                 ">
                                                     Cancel
@@ -137,7 +166,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent}: NoteModalProps){
                                 </div>
                             </div>
                         </div>
-                        <div className="flex justify-items-start h-175 text-left w-full py-4 pl-8 bg-(--bg-notemodal-right)">
+                        <div className="flex justify-items-start h-175 text-left w-full py-4 px-8 bg-(--bg-notemodal-right)">
                             <div className="flex">
                                 aktywność
                                 {/*Komentarze i aktywność (pole do wpisania komentarza, lista komentarzy + aktywność jako ta sama lista)*/}

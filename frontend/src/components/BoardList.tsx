@@ -7,13 +7,17 @@ import NoteModal from "./NoteModal.js";
 import { Ellipsis, Plus } from "lucide-react";
 import FloatingBottomBar from "./FloatingBottomBar.js";
 import { boardsService } from "../services/boards.service.js";
+import { useNavigate } from "react-router";
+import EditableText from "./EditableText.js";
 
 type BoardListProps = {
     board: Board;
     setBoard: React.Dispatch<React.SetStateAction<Board | null>>;
+onBoardRenamed: (boardId: string, title: string) => void;
+onBoardDeleted: (boardId: string) => void;
 };
 
-function BoardList({board, setBoard}: BoardListProps) {
+function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListProps) {
 
     const [notes, setNotes] = useState<Note[]>(board.notes ?? []);
     const [columns, setColumns] = useState<Column[]>(board.columns ?? []);
@@ -21,10 +25,9 @@ function BoardList({board, setBoard}: BoardListProps) {
 
     const selectedNote = notes.find((note)=> note.id === selectedNoteId) ?? null;
     const selectedColumn = columns.find((column)=> column.id === selectedNote?.columnId);
-
-    const [isEditingBoardTitle, setIsEditingBoardTitle] = useState(false);
-    const [draftBoardTitle, setDraftBoardTitle] = useState(board.title);
     
+    const navigate = useNavigate();
+
     async function handleMoveNote(noteId: string, columnId: string) {
         const prevNotes = notes;
         
@@ -82,6 +85,19 @@ function BoardList({board, setBoard}: BoardListProps) {
         }
     }
 
+    async function renameNote(noteId: string, title: string){
+        try {
+            const noteUpdated = await notesService.updateNote(noteId, {title});
+            setNotes((prev) =>
+                prev.map((note) =>
+                    note.id === noteId ? { ...note, title: noteUpdated.title } : note
+                )
+            );
+        } catch (error) {
+            console.log("Error in renameNote function: ", error);
+        }
+    }
+
     async function handleDeleteColumn(columnId: string){
         try {
             await columnsService.deleteColumn(columnId);
@@ -96,19 +112,20 @@ function BoardList({board, setBoard}: BoardListProps) {
         try {
             await boardsService.updateBoard(boardId, { title });
             setBoard(prev => prev ? {...prev, title: title} : prev);
+            onBoardRenamed(boardId, title);
         } catch (error) {
             console.log("Error in renameBoard function: ", error);
         }
     }
 
-    const commitRenameBoard = () => {
-        const trimmed = draftBoardTitle.trim();
-        if (trimmed && trimmed !== board.title) {
-            handleRenameBoard(board.id, trimmed);
-        } else {
-            setDraftBoardTitle(board.title);
+    async function handleDeleteBoard(boardId: string) {
+        try {
+            await boardsService.deleteBoard(boardId);
+            onBoardDeleted(boardId);
+            navigate("/boards", { replace: true });
+        } catch (error) {
+            console.log("Error in deleteBoard: ", error);
         }
-        setIsEditingBoardTitle(false);
     };
 
     async function handleSaveContent(noteId: string, content: string) {
@@ -127,37 +144,22 @@ function BoardList({board, setBoard}: BoardListProps) {
             <div className="flex text-center items-center justify-between shrink-0 
             h-14 px-3 py-1 bg-black/30">
                 
-                {isEditingBoardTitle ? (
-                    <input
-                        autoFocus
-                        maxLength={40}
-                        value={draftBoardTitle}
-                        onChange={(e) => setDraftBoardTitle(e.target.value)}
-                        onBlur={commitRenameBoard}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") commitRenameBoard();
-                            if (e.key === "Escape") {
-                                setDraftBoardTitle(board.title);
-                                setIsEditingBoardTitle(false);
-                            }
-                        }}
-                        className="field-sizing-content text-lg font-semibold text-left outline-1 ouline-white rounded-sm px-2 py-1"
-                    />
-                ) : (
-                    <button
-                type="button"
-                className="py-1 px-2 w-fit h-fit rounded-sm hover:bg-(--hover-white)"
-                onClick={()=> setIsEditingBoardTitle(true)}
-                >
-                    <h1 className="text-lg font-semibold shrink-0">
-                        {board.title}
-                    </h1>
-                </button>
-                )}
+                <EditableText
+                    value={board.title}
+                    maxLength={40}
+                    onCommit={(title) => handleRenameBoard(board.id, title)}
+                    className="px-2 py-1 text-lg font-semibold rounded-sm"
+                    viewClassName="hover:bg-(--hover-white)"
+                    editClassName="outline-1 outline-white field-sizing-content"
+                />
                 
-                <div>
-                    <Ellipsis />
-                </div>
+                <button
+                type="button"
+                className="rounded-md hover:bg-(--hover-white)"
+                onClick={()=> handleDeleteBoard(board.id)}
+                >
+                    <Ellipsis /> {/* tymczasowo działa jako deleteboard */}
+                </button>
             </div>
 
             <div className="flex flex-1 min-h-0 max-h-[calc(100dvh-128px)] items-stretch justify-start gap-4 mt-4 px-4 pb-4 overflow-x-auto overflow-y-hidden">
@@ -194,6 +196,7 @@ function BoardList({board, setBoard}: BoardListProps) {
                 columnTitle={selectedColumn?.title}
                 onClose={()=> setSelectedNoteId(null)}
                 onSaveContent={handleSaveContent}
+                onRenameNote={renameNote}
                 />
             )}
             

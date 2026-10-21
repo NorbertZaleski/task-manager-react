@@ -9,7 +9,7 @@
   --mute:#9aa0ab;
   --line:#f1f1f3;
   --card:#272b34;
-  --bg-main: #1F1F21;
+  --bg-main:#1F1F21;
   --bg-notemodal-right: #303134;
   --border-mute: hsla(0,0%,100%,0.16);
   --border-btn-simple: hsla(0, 0%, 100%, 0.226);
@@ -52,4 +52,3 @@ body {
   margin: 0;
   background: var(--bg);
 }
-

@@ -1,15 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --bg:#15171c;
+  --bg:#1F1F21;
   --panel:#1e2128;
   --text:#f1f1f3;
+  --text-dark: #1F1f21;
+  --text-mute: #A9ABAF;
   --mute:#9aa0ab;
   --line:#f1f1f3;
   --card:#272b34;
+  --bg-main: #1F1F21;
+  --bg-notemodal-right: #303134;
+  --border-mute: hsla(0,0%,100%,0.16);
+  --border-btn-simple: hsla(0, 0%, 100%, 0.226);
+
   --red:#e5372b;
   --blue:#2a4bd7;
   --yellow:#f4b400;
+
   --button:#6895ff;
   --button-hover: #88acff;
   --hover-white: rgba(255, 255, 255, 0.24);

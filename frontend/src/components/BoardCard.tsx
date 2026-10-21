@@ -25,7 +25,9 @@ function BoardCard({board}: BoardCardProps){
 
     return (
         <>
-            <div className="w-fit h-fit min-w-50 rounded-lg flex flex-col gap-0" style={getBackgroundStyle(board.background)}>
+            <div className="w-fit h-fit min-w-50 rounded-lg flex flex-col gap-0 shadow-xl" 
+            style={getBackgroundStyle(board.background)}
+            >
                 <div className="w-full h-20 rounded-lg"></div>
                 <div className="pt-3 pb-4 px-5 text-left bg-black/50 rounded-b-lg">{board.title}</div>
                 {isActive ? (

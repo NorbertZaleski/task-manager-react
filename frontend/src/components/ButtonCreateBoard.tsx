@@ -47,7 +47,7 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
                 ref={buttonRef}
                 type="button"
                 onClick={open}
-                className="flex w-full items-center text-sm"
+                className="flex w-fit items-center text-sm bg-(--button) hover:bg-(--button-hover) text-(--text-dark) font-semibold py-1 px-2 rounded-md"
             >
                 Create board
             </button>
@@ -63,7 +63,7 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
                         <form
                             onSubmit={handleCreateBoard}
                             style={{ top: pos.top, left: pos.left }}
-                            className="fixed z-100 w-80 max-h-[80vh] overflow-y-auto rounded-lg border bg-(--panel) p-3 shadow-lg flex flex-col gap-3"
+                            className="fixed z-100 w-76 max-h-[80vh] overflow-y-auto rounded-lg bg-(--panel) p-3 shadow-lg flex flex-col gap-3"
                         >
                             <div className="flex items-center justify-between">
                                 <ChevronLeft />
@@ -74,13 +74,13 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
                             </div>
 
                             <div
-                                className="h-24 rounded border bg-cover bg-center"
+                                className="h-30 w-50 rounded bg-cover bg-center"
                                 style={getBackgroundStyle(background)}
                             >
                             </div>
 
-                            <div>
-                                <h4>Background</h4>
+                            <div className="flex flex-col gap-2">
+                                <h4 className="font-semibold text-xs">Background</h4>
                                 <div className="grid grid-cols-4 gap-2">
                                     {IMAGES.map((src)=> (
                                         <BackgroundTile
@@ -103,7 +103,10 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
                                                 onSelect={() => setBackground({ type: "color", value: color })}
                                             />
                                         ))}
-                                        <button type="button">
+                                        <button 
+                                        type="button"
+                                        className="border rounded border-(--mute) w-10 h-8 flex justify-center"
+                                        >
                                             <Ellipsis />
                                         </button>
                                     </div>
@@ -113,17 +116,26 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
                             <div className="flex flex-col gap-1">
                                 <input
                                     autoFocus
+                                    maxLength={30}
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="Board title"
                                     className="w-full rounded border p-1"
                                 />
                                 {!title && <p className="text-sm text-red-500">Board title is required</p>}
+                                {title.length>=30 && <p className="text-sm text-red-500">Board title can't be longer than 30 characters</p>}
                             </div>
 
                             <div>Visibility options</div>
 
-                            <button type="submit">Create</button>
+                            <button 
+                            type="submit"
+                            className={`w-full rounded-sm text-(--text-dark) py-1 px-2 font-medium ${
+                                title ? "bg-(--button)" : "bg-(--mute)"
+                            }`}
+                            >
+                                Create
+                            </button>
                         </form>
                     </>,
                     document.body

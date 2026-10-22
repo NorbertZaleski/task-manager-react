@@ -5,6 +5,7 @@ import BackgroundTile from "./BackgroundTile";
 import type { BoardBackground } from "../types/types";
 import { COLORS, IMAGES } from "../constants/backgroundConstants";
 import { getBackgroundStyle } from "../utils/getBackgroundStyle";
+import Button from "./Button";
 
 type ButtonCreateBoardProps = {
     onCreate: (title: string, background: BoardBackground) => Promise<void>;
@@ -43,14 +44,15 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
 
     return (
         <>
-            <button
+        
+            <Button
                 ref={buttonRef}
                 type="button"
                 onClick={open}
-                className="flex w-fit items-center justify-center text-sm bg-(--button) hover:bg-(--button-hover) text-(--text-dark) font-semibold py-1 px-2 rounded-md "
+                variant="primary"
             >
                 Create board
-            </button>
+            </Button>
 
             {isAdding &&
                 createPortal(

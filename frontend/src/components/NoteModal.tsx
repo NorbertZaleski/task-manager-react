@@ -1,8 +1,8 @@
 import { Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
 import type { Note } from "../types/types";
 import { useEffect, useState } from "react";
-import ButtonSimple from "./ButtonSimple";
 import EditableText from "./EditableText";
+import Button from "./Button";
 
 type NoteModalProps = {
     note: Note;
@@ -91,12 +91,12 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote}: No
                             <div className="flex flex-col gap-8">
 
                                 <div className="flex gap-2 py-2">
-                                    <ButtonSimple icon={<Plus size={16} className="-mx-0.5" />} text={"Add"} />
-                                    <ButtonSimple icon={<LucideTag size={16} className="-mr-0.5"/>} text={"Labels"} />
-                                    <ButtonSimple icon={<Clock size={16} className="-mr-0.5" />} text={"Date"} />
-                                    <ButtonSimple icon={<SquareCheck size={16} className="-mr-0.5" />} text={"To do list"} />
-                                    <ButtonSimple icon={<UserRoundPlus size={16} className="-mr-0.5" />} text={"Members"} />
-                                    <ButtonSimple icon={<Paperclip size={16} className="-mr-0.5" />} text={"Files"} />
+                                    <Button icon={<Plus size={16} className="-mx-0.5" />}> Add </Button>
+                                    <Button icon={<LucideTag size={16} className="-mr-0.5"/>}> Labels </Button>
+                                    <Button icon={<Clock size={16} className="-mr-0.5" />}> Date </Button>
+                                    <Button icon={<SquareCheck size={16} className="-mr-0.5" />}> To do list </Button>
+                                    <Button icon={<UserRoundPlus size={16} className="-mr-0.5" />}> Members </Button>
+                                    <Button icon={<Paperclip size={16} className="-mr-0.5" />}> Files </Button>
                                 </div>
 
                                 <div className="flex flex-col">
@@ -132,24 +132,24 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote}: No
                                                 wrap-break-word"
                                             />
 
-                                            <div className="flex gap-2 py-2">
-                                                <button
-                                                onMouseDown={(e) => e.preventDefault()}
-                                                onClick={commitContent}
-                                                className="bg-(--button) hover:bg-(--button-hover) px-2 py-1 text-md text-(--text-dark) font-medium
-                                                rounded w-fit h-fit
-                                                ">
+                                            <div className="flex gap-1">
+                                                <Button
+                                                    variant="primary"
+                                                    onMouseDown={(e) => e.preventDefault()}
+                                                    onClick={commitContent}
+                                                >
                                                     Save
-                                                </button>
-                                                <button
-                                                onMouseDown={(e) => e.preventDefault()}
-                                                onClick={cancelEditingContent}
-                                                className="hover:bg-(--mute)/20 px-2 py-1 text-md text-(--text) font-medium
-                                                rounded w-fit h-fit
-                                                ">
+                                                </Button>
+
+                                                <Button
+                                                    variant="ghost"
+                                                    onMouseDown={(e) => e.preventDefault()}
+                                                    onClick={cancelEditingContent}
+                                                >
                                                     Cancel
-                                                </button>
+                                                </Button>
                                             </div>
+
                                         </div>
                                     ) : (
                                         <button 

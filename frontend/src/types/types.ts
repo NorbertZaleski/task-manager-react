@@ -1,7 +1,11 @@
-export type Label = {
+export type BoardRole = "owner" | "admin" | "member";
+
+export type BoardMember = {
   id: string;
-  title: string;
-  color: string;
+  name: string;
+  email?: string;
+  avatar?: string;
+  role: BoardRole;
 };
 
 export type Note = {
@@ -10,10 +14,17 @@ export type Note = {
   content?: string;
   columnId: string;
   labelIds: string[];
+  assigneeIds: string[];
   position: number;
 };
 
 export type Column = {
+  id: string;
+  title: string;
+  color: string;
+};
+
+export type Label = {
   id: string;
   title: string;
   color: string;
@@ -30,5 +41,7 @@ export type Board = {
   columns: Column[];
   notes: Note[];
   labels: Label[];
+  members: BoardMember[];
+  role: BoardRole;
   background: BoardBackground;
 };

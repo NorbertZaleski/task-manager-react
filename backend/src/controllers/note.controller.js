@@ -4,6 +4,7 @@ import Note from "../models/Note.model.js";
 import Label from "../models/Label.model.js";
 import Column from "../models/Column.model.js";
 import { toClientNote } from "./board.controller.js";
+import { getMembership } from "../utils/boardAccess.js";
 
 async function resolveLabels(labels, boardId) {
     if (!Array.isArray(labels) || !labels.every((l) => mongoose.isValidObjectId(l))) return null;
@@ -20,8 +21,8 @@ export async function getAllNotes(req, res) {
             return res.status(400).json({ message: "Invalid board id" });
         }
 
-        const board = await Board.findOne({_id: boardId, user: req.user.id}).lean();
-        if (!board) return res.status(404).json({message:"Board not found"});
+        const membership = await getMembership(boardId, req.user._id);
+        if (!membership) return res.status(404).json({ message: "Board not found" });
 
         const notes = await Note.find({board: boardId}).sort({createdAt: -1}).lean();
 
@@ -44,8 +45,8 @@ export async function getNote(req,res) {
         const note = await Note.findById(id).lean();
         if (!note) return res.status(404).json({ message: "Note not found" });
 
-        const board = await Board.findOne({ _id: note.board, user: req.user.id }).lean();
-        if (!board) return res.status(404).json({ message: "Note not found" });
+        const membership = await getMembership(note.board, req.user._id);
+        if (!membership) return res.status(404).json({ message: "Board not found" });
 
         res.status(200).json(toClientNote(note));
     } catch (error) {
@@ -66,10 +67,13 @@ export async function createNote(req,res) {
         const column = await Column.findById(columnId);
         if (!column) return res.status(404).json({ message: "Column not found" });
 
+        const membership = await getMembership(column.board, req.user._id);
+        if (!membership) return res.status(404).json({ message: "Board not found" });
+
         const board = await Board.findOne({_id: column.board, user: req.user.id});
         if (!board) return res.status(404).json({message:"Column not found"});
 
-        const labelIds = await resolveLabels(labels, board._id);
+        const labelIds = await resolveLabels(labels, column.board);
         if (!labelIds) return res.status(400).json({ message: "Invalid labels" });
 
         const last = await Note.findOne({ column: column._id }).sort({ position: -1 });
@@ -103,8 +107,8 @@ export async function updateNote(req, res) {
         const note = await Note.findById(id);
         if (!note) return res.status(404).json({ message: "Note not found" });
 
-        const board = await Board.findOne({ _id: note.board, user: req.user.id });
-        if (!board) return res.status(404).json({ message: "Note not found" });
+        const membership = await getMembership(note.board, req.user._id);
+        if (!membership) return res.status(404).json({ message: "Board not found" });
 
         if (title !== undefined) note.title = title;
         if (content !==undefined) note.content = content;
@@ -120,13 +124,13 @@ export async function updateNote(req, res) {
             if (!mongoose.isValidObjectId(columnId)) {
                 return res.status(400).json({ message: "Invalid column ID" });
             }
-            const column = await Column.findOne({ _id: columnId, board: board._id });
+            const column = await Column.findOne({ _id: columnId, board: note.board });
             if (!column) return res.status(404).json({ message: "Column not found" });
             note.column = column._id;
         }
 
         if (labels !== undefined) {
-            const labelIds = await resolveLabels(labels, board._id);
+            const labelIds = await resolveLabels(labels, note.board);
             if (!labelIds) return res.status(400).json({ message: "Invalid labels" });
             note.labels = labelIds;
         }
@@ -141,13 +145,17 @@ export async function updateNote(req, res) {
 
 export async function deleteNote(req, res){
     try {
-        const note = await Note.findById(req.params.id).populate("board", "user");
+        const { id } = req.params;
 
-        if (!note || !note.board) return res.status(404).json({message: "Note not found"});
-
-        if (note.board.user.toString() !== req.user.id) {
-            return res.status(403).json({message: "Not authorized"});
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: "Invalid note ID" });
         }
+
+        const note = await Note.findById(id);
+        if (!note) return res.status(404).json({ message: "Note not found" });
+
+        const membership = await getMembership(note.board, req.user._id);
+        if (!membership) return res.status(404).json({ message: "note deleted", note: toClientNote(note.toObject()) });
 
         await note.deleteOne();
 

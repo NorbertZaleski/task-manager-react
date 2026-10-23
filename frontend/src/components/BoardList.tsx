@@ -9,6 +9,7 @@ import FloatingBottomBar from "./FloatingBottomBar.js";
 import { boardsService } from "../services/boards.service.js";
 import { useNavigate } from "react-router";
 import EditableText from "./EditableText.js";
+import BoardMembers from "./BoardMembers.js";
 
 type BoardListProps = {
     board: Board;
@@ -72,9 +73,9 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
         }
     }
 
-    async function renameColumn(columnId: string, title: string){
+    async function renameColumn(boardId: string, columnId: string, title: string){
         try {
-            const columnUpdated = await columnsService.updateColumn(columnId, {title});
+            const columnUpdated = await columnsService.updateColumn(boardId, columnId, {title});
             setColumns((prev) =>
                 prev.map((column) =>
                     column.id === columnId ? { ...column, title: columnUpdated.title } : column
@@ -98,9 +99,9 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
         }
     }
 
-    async function handleDeleteColumn(columnId: string){
+    async function handleDeleteColumn(boardId: string, columnId: string){
         try {
-            await columnsService.deleteColumn(columnId);
+            await columnsService.deleteColumn(boardId, columnId);
             setColumns((prev)=> prev.filter((column)=> column.id !==columnId));
             setNotes((prev) => prev.filter((note) => note.columnId !== columnId));
         } catch (error) {
@@ -153,6 +154,8 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                     editClassName="outline-1 outline-white field-sizing-content"
                 />
                 
+                <BoardMembers members={board.members}/>
+
                 <button
                 type="button"
                 className="rounded-md hover:bg-(--hover-white)"
@@ -166,6 +169,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                 {columns.map((column) => (
                     <div key={column.id} className="shrink-0">
                         <CardColumn
+                            board={board}
                             column={column}
                             notes={notes
                                 .filter((note) => note.columnId === column.id)

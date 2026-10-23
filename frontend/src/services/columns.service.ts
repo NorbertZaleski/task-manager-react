@@ -35,10 +35,10 @@ export const columnsService = {
             }
         },
        
-        updateColumn: async (columnId: string, data: {title: string}): Promise<Column> => {
+        updateColumn: async (boardId: string, columnId: string, data: {title: string}): Promise<Column> => {
             try {
                 const response = await api.patch<{ message: string; column: Column }>(
-                    `/columns/${columnId}`,
+                    `/${boardId}/columns/${columnId}`,
                     data
                 );
                 return response.data.column;
@@ -50,9 +50,9 @@ export const columnsService = {
             }
         },
 
-        deleteColumn: async (columnId: string): Promise<void> => {
+        deleteColumn: async (boardId: string, columnId: string): Promise<void> => {
             try {
-                await api.delete<Column>(`/columns/${columnId}`);
+                await api.delete<Column>(`/${boardId}/columns/${columnId}`);
             } catch (error) {
                 if (error instanceof AxiosError) {
                     throw error.response?.data ?? error;

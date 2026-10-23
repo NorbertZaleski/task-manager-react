@@ -1,4 +1,4 @@
-import type { Column, Note } from "../types/types";
+import type { Board, Column, Note } from "../types/types";
 import Card from "./Card";
 import {Ellipsis} from 'lucide-react'
 import CreateNoteButton from "./CreateNoteButton";
@@ -6,15 +6,16 @@ import EditableText from "./EditableText";
 
 type CardColumnProps = {
     column: Column;
+    board: Board;
     notes: Note[];
     onMoveNote: (noteId: string, columnId: string) => void;
     onCreateNote: (columnId: string, content: string) => Promise<void>;
-    onDeleteColumn: (columnId: string) => void;
+    onDeleteColumn: (boardId: string, columnId: string) => void;
     onOpenNote: (noteId: string) => void;
-    onRenameColumn: (columnId: string, title: string) => void;
+    onRenameColumn: (boardId: string, columnId: string, title: string) => void;
 };
 
-function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn, onOpenNote, onRenameColumn}: CardColumnProps) {
+function CardColumn({column, board, notes, onMoveNote, onCreateNote, onDeleteColumn, onOpenNote, onRenameColumn}: CardColumnProps) {
 
     return(
             <div 
@@ -32,7 +33,7 @@ function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn, on
                 <EditableText
                     value={column.title}
                     maxLength={30}
-                    onCommit={(title) => onRenameColumn(column.id, title)}
+                    onCommit={(title) => onRenameColumn(board.id, column.id, title)}
                     className="px-2 py-1 rounded-sm text-sm font-medium"
                     viewClassName="hover:bg-(--hover-white)"
                     editClassName="outline-0 field-sizing-content"
@@ -42,7 +43,7 @@ function CardColumn({column, notes, onMoveNote, onCreateNote, onDeleteColumn, on
                         <div className="text-sm select-none">{notes.length}</div>
                         <button 
                         type="button" 
-                        onClick={() => onDeleteColumn(column.id)}
+                        onClick={() => onDeleteColumn(board.id, column.id)}
                         className=""
                         >
                             <Ellipsis size={18}/> {/* tymczasowo działa jako deleteboard */}

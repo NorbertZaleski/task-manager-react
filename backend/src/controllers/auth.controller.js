@@ -78,6 +78,14 @@ export async function register(req, res){
     }
 };
 
+export function getMe(req, res) {
+    res.json({
+        id: req.user.id,
+        name: req.user.name,
+        avatar: req.user.avatar ?? null,
+    });
+};
+
 const generateToken = (id) => {
     return jwt.sign({id}, process.env.JWT_SECRET, {
         expiresIn: '30d'

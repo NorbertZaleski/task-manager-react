@@ -1,9 +1,13 @@
-import { Bell, Circle } from "lucide-react";
+import { Bell } from "lucide-react";
 import ButtonCreateBoard from "./ButtonCreateBoard";
 import { boardsService } from "../services/boards.service";
 import { Link, useNavigate } from "react-router";
 import type { BoardBackground } from "../types/types";
 import SearchBox from "./SearchBox";
+import Avatar from "./Avatar";
+import { useAuth } from "../context/AuthContext";
+import OptionsModal from "./OptionsModal";
+import { useState } from "react";
 
 type TopBarPops = { 
     onBoardCreated: () => void 
@@ -11,6 +15,8 @@ type TopBarPops = {
 
 function TopBar({onBoardCreated}: TopBarPops) {
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const [isOptionsOpen, setIsOptionsOpen] = useState(false);
 
     async function handleCreateBoard(title: string, background: BoardBackground){
         try {
@@ -42,10 +48,15 @@ function TopBar({onBoardCreated}: TopBarPops) {
                 </button>
                 <button
                 type="button"
+                onClick={()=>setIsOptionsOpen(true)}
                 className="p-1 rounded-md hover:bg-(--hover-white) flex items-center justify-center"
                 >
-                    <Circle/>
+                    {user && <Avatar user={user} />}
                 </button>
+
+                {isOptionsOpen && (
+                    <OptionsModal title="Account" onClose={() => setIsOptionsOpen(false)} />
+                )}
             </div>
         </div>
     )

@@ -1,10 +1,13 @@
-export type BoardRole = "owner" | "admin" | "member";
-
-export type BoardMember = {
+export type User = {
   id: string;
   name: string;
   email?: string;
-  avatar?: string;
+  avatar?: string | null;
+};
+
+export type BoardRole = "owner" | "admin" | "member";
+
+export type BoardMember = User & {
   role: BoardRole;
 };
 

@@ -1,17 +1,10 @@
 import type { BoardMember } from "../types/types";
+import Avatar from "./Avatar";
 
 type BoardMembersProps = {
     members: BoardMember[];
     max?: number;
 };
-
-const getInitials = (name: string) =>
-    name
-        .trim()
-        .split(/\s+/)
-        .slice(0, 2)
-        .map((part) => part[0]?.toUpperCase() ?? "")
-        .join("");
 
 function BoardMembers({ members = [], max = 4 }: BoardMembersProps) {
     const visible = members.slice(0, max);
@@ -20,21 +13,7 @@ function BoardMembers({ members = [], max = 4 }: BoardMembersProps) {
     return (
         <div className="flex items-center -space-x-2">
             {visible.map((member) => (
-                <div
-                    key={member.id}
-                    title={member.name}
-                    className="size-7 rounded-full ring-2 ring-(--border-avatar) bg-amber-600 overflow-hidden flex items-center justify-center text-xs font-medium text-(--text)"
-                >
-                    {member.avatar ? (
-                        <img
-                            src={member.avatar}
-                            alt={member.name}
-                            className="size-full object-cover"
-                        />
-                    ) : (
-                        getInitials(member.name)
-                    )}
-                </div>
+                <Avatar key={member.id} user={member}/>
             ))}
 
             {hidden > 0 && (

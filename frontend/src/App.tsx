@@ -4,31 +4,27 @@ import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import BoardPage from "./pages/BoardPage";
 import MainLayout from "./pages/layouts/MainLayout";
+import { GuestRoute, ProtectedRoute } from "./components/RouteGuards";
 
 function App(){
 
-  function RootRedirect() {
-    const token = localStorage.getItem("token");
-    return token ?  <Navigate to="/boards" replace /> : <Navigate to="/login" replace />;
-  }
-
   return (
     <>
-      <Routes>
-        <Route path="/" element={<RootRedirect/>}/>
+        <Routes>
+            <Route element={<GuestRoute />}>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+            </Route>
 
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-
-        <Route element={<MainLayout/>}>
-          <Route path="/" element={<Navigate to="/boards" />}/>
-          <Route path="/boards" element={< BoardsPage />} />
-          <Route path="/boards/:boardId" element={< BoardPage/>} />
-
-          <Route path="*" element={<div>Strona nie znaleziona</div>} />
-        </Route>
-
-      </Routes>
+            <Route element={<ProtectedRoute />}>
+                <Route element={<MainLayout />}>
+                    <Route path="/" element={<Navigate to="/boards" replace />} />
+                    <Route path="/boards" element={<BoardsPage />} />
+                    <Route path="/boards/:boardId" element={<BoardPage />} />
+                    <Route path="*" element={<div>Strona nie znaleziona</div>} />
+                </Route>
+            </Route>
+        </Routes>
     </>
   )
 }

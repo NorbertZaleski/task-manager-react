@@ -14,8 +14,8 @@ import BoardMembers from "./BoardMembers.js";
 type BoardListProps = {
     board: Board;
     setBoard: React.Dispatch<React.SetStateAction<Board | null>>;
-onBoardRenamed: (boardId: string, title: string) => void;
-onBoardDeleted: (boardId: string) => void;
+    onBoardRenamed: (boardId: string, title: string) => void;
+    onBoardDeleted: (boardId: string) => void;
 };
 
 function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListProps) {
@@ -154,15 +154,17 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                     editClassName="outline-1 outline-white field-sizing-content"
                 />
                 
-                <BoardMembers members={board.members}/>
+                <div className="flex gap-4">
+                    <BoardMembers members={board.members}/>
 
-                <button
-                type="button"
-                className="rounded-md hover:bg-(--hover-white)"
-                onClick={()=> handleDeleteBoard(board.id)}
-                >
-                    <Ellipsis /> {/* tymczasowo działa jako deleteboard */}
-                </button>
+                    <button
+                    type="button"
+                    className="rounded-md hover:bg-(--hover-white)"
+                    onClick={()=> handleDeleteBoard(board.id)}
+                    >
+                        <Ellipsis /> {/* tymczasowo działa jako deleteboard */}
+                    </button>
+                </div>
             </div>
 
             <div className="flex flex-1 min-h-0 max-h-[calc(100dvh-128px)] items-stretch justify-start gap-4 mt-4 px-4 pb-4 overflow-x-auto overflow-y-hidden">

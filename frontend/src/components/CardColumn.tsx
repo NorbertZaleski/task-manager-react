@@ -32,7 +32,7 @@ function CardColumn({column, board, notes, onMoveNote, onCreateNote, onDeleteCol
                     onMoveNote(noteId, column.id);
                 }}
                 >
-                <div className="flex shrink-0 text-left items-start justify-between max-w-full gap-2">
+                <div className="flex shrink-0 text-left items-center justify-between max-w-full gap-2">
                     
                 <EditableText
                     value={column.title}
@@ -49,17 +49,17 @@ function CardColumn({column, board, notes, onMoveNote, onCreateNote, onDeleteCol
                         ref={ellipsisRef}
                         type="button" 
                         onClick={() => setIsOptionsOpen(true)}
-                        className=""
+                        className="p-1 hover:bg-(--hover-white) flex items-center justify-center rounded-md text-(--text-mute)"
                         >
                             <Ellipsis size={18}/>
                         </button>
 
                         {isOptionsOpen && (
                             <OptionsModal 
-                            title="Note options"
+                            title="List actions"
                             anchorRef={ellipsisRef}
                             options={[
-                                { id: "delete", label: "Delete column", onClick: () => onDeleteColumn(board.id, column.id)},
+                                { id: "delete", label: "Delete column", category: "test", onClick: () => onDeleteColumn(board.id, column.id)},
                             ]}
                             onClose={() => setIsOptionsOpen(false)} />
                         )}

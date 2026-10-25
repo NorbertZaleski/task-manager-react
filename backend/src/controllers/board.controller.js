@@ -23,7 +23,7 @@ const toClientMember = (m) => ({
     id: m.user._id.toString(),
     name: m.user.name,
     email: m.user.email,
-    avatar: m.user.avatar,
+    avatar: m.user.avatar ?? null,
     role: m.role,
 });
 
@@ -52,7 +52,10 @@ export async function getBoard(req,res) {
     try {
 
         const board = await Board.findById(req.params.boardId).lean();
-        if (!board) return res.status(404).json({message:"Board not found"});
+        if (!board) return res.status(404).json({ message: "Board not found" });
+
+        const isMember = await BoardMember.exists({ board: board._id, user: req.user._id });
+        if (!isMember) return res.status(404).json({ message: "Board not found" });
 
         const [columns, notes, members] = await Promise.all([
             Column.find({ board: board._id }).sort({ position: 1, createdAt: 1 }).lean(),
@@ -75,13 +78,11 @@ export async function getBoard(req,res) {
 };
 
 export async function createBoard(req, res) {
-    try {
-        const user = req.user?._id;
-        const { title, background } = req.body;
+    let savedBoard;
 
-        if (!user) {
-            return res.status(401).json({ message: "Unauthorized" });
-        }
+    try {
+        const user = req.user;
+        const { title, background } = req.body;
 
         if (!title?.trim()) {
             return res.status(400).json({ message: "Title is required" });
@@ -92,21 +93,19 @@ export async function createBoard(req, res) {
             return res.status(400).json({ message: "Invalid background" });
         }
 
-        const savedBoard = await Board.create({ 
-            user, 
-            title : title.trim(),
-            ...(parsed.value && {background: parsed.value}),
+        savedBoard = await Board.create({
+            title: title.trim(),
+            ...(parsed.value && { background: parsed.value }),
         });
 
         const [columns] = await Promise.all([
             Column.insertMany([
-                { board: savedBoard._id, title: "Do zrobienia", position: 0 },
-                { board: savedBoard._id, title: "W trakcie", position: 1 },
-                { board: savedBoard._id, title: "Zrobione", position: 2 },
+                { board: savedBoard._id, title: "To do", position: 0 },
+                { board: savedBoard._id, title: "In progress", position: 1 },
+                { board: savedBoard._id, title: "Done", position: 2 },
             ]),
-            BoardMember.create({board: savedBoard._id, user, role:"owner"}),
+            BoardMember.create({ board: savedBoard._id, user: user._id, role: "owner" }),
         ]);
-
 
         res.status(201).json({
             id: savedBoard._id.toString(),
@@ -115,6 +114,14 @@ export async function createBoard(req, res) {
                 type: savedBoard.background.type,
                 value: savedBoard.background.value,
             },
+            members: [
+                {
+                    id: user.id,
+                    name: user.name,
+                    avatar: user.avatar ?? null,
+                    role: "owner",
+                },
+            ],
             columns: columns.map((c) => ({
                 id: c._id.toString(),
                 title: c.title,
@@ -123,11 +130,13 @@ export async function createBoard(req, res) {
             notes: [],
         });
     } catch (error) {
-        await Promise.allSettled([
-            Board.deleteOne({ _id: savedBoard._id }),
-            Column.deleteMany({ board: savedBoard._id }),
-            BoardMember.deleteMany({ board: savedBoard._id }),
-        ]);
+        if (savedBoard) {
+            await Promise.allSettled([
+                Board.deleteOne({ _id: savedBoard._id }),
+                Column.deleteMany({ board: savedBoard._id }),
+                BoardMember.deleteMany({ board: savedBoard._id }),
+            ]);
+        }
         console.error("Error in createBoard controller", error);
         res.status(500).json({ message: "Internal server error" });
     }
@@ -135,7 +144,6 @@ export async function createBoard(req, res) {
 
 export async function updateBoard(req, res) {
     try {
-
         const { title, background } = req.body;
         const update = {};
 
@@ -143,13 +151,12 @@ export async function updateBoard(req, res) {
             if (typeof title !== "string" || !title.trim()) {
                 return res.status(400).json({ message: "Title is required" });
             }
+            if (title.trim().length > 40) {
+                return res.status(400).json({ message: "Title is too long (max 40 characters)" });
+            }
             update.title = title.trim();
         }
 
-        if (title.trim().length > 50) {
-            return res.status(400).json({ message: "Title is too long (max 50 characters)" });
-        }
-        
         if (background !== undefined) {
             const parsed = parseBackground(background);
             if (!parsed.ok) {
@@ -158,26 +165,43 @@ export async function updateBoard(req, res) {
             update.background = parsed.value;
         }
 
-        const updatedBoard = await Board.findOneAndUpdate(
-            { _id: req.params.boardId, user: req.user.id },
+        const membership = await BoardMember.findOne({
+            board: req.params.boardId,
+            user: req.user._id,
+        }).lean();
+
+        if (!membership || !["owner", "admin"].includes(membership.role)) {
+            return res.status(404).json({ message: "Board not found" });
+        }
+
+        const updatedBoard = await Board.findByIdAndUpdate(
+            req.params.boardId,
             update,
             { new: true, runValidators: true }
         );
 
-        if (!updatedBoard) return res.status(404).json({message: "Board not found"});
+        if (!updatedBoard) return res.status(404).json({ message: "Board not found" });
 
-        res.status(200).json({message: "Board updated", board: updatedBoard});
+        res.status(200).json({ message: "Board updated", board: toClientBoard(updatedBoard.toObject()) });
     } catch (error) {
         console.error("Error in updateBoard controller", error);
-        res.status(500).json({message:"Internal server error"});
+        res.status(500).json({ message: "Internal server error" });
     }
 };
 
 export async function deleteBoard(req, res){
     try {
 
-        const deletedBoard = await Board.findByIdAndDelete(req.params.boardId);
+        const membership = await BoardMember.findOne({
+            board: req.params.boardId,
+            user: req.user._id,
+        }).lean();
 
+        if (!membership || membership.role !== "owner") {
+            return res.status(404).json({ message: "Board not found" });
+        }
+
+        const deletedBoard = await Board.findByIdAndDelete(req.params.boardId);
         if (!deletedBoard) return res.status(404).json({message: "Board not found"});
 
         await Promise.all([
@@ -187,7 +211,7 @@ export async function deleteBoard(req, res){
             BoardMember.deleteMany({ board: deletedBoard._id }),
         ]);
 
-        res.status(200).json({message: "Board deleted", board: deletedBoard});
+        res.status(200).json({ message: "Board deleted", board: toClientBoard(deletedBoard.toObject()) });
     } catch (error) {
         console.error("Error in deleteBoard controller", error);
         res.status(500).json({message:"Internal server error"});

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 export type ModalOption = {
     id: string;
     label: string;
+    category?: string;
     onClick: () => void;
 }
 
@@ -35,9 +36,10 @@ function OptionsModal({title, onClose, options, anchorRef}: OptionsModalProps) {
 
             <div 
             style={{ top: pos.top, left: pos.left }}
-            className="fixed z-100 w-60 rounded-lg bg-(--panel) p-3 shadow-lg flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">{title}</h3>
+            className="fixed z-100 w-60 rounded-lg bg-(--bg-modal) p-3 shadow-2xl flex flex-col gap-1">
+                <div className="flex items-center justify-between text-center">
+                    <div></div>
+                    <h3 className="text-sm font-semibold text-(--text-mute)">{title}</h3>
                     <button
                     type="button"
                     onClick={onClose}
@@ -47,17 +49,23 @@ function OptionsModal({title, onClose, options, anchorRef}: OptionsModalProps) {
                 </div>
 
                 {options.map((option)=> (
-                    <button
-                    type="button"
-                    key={option.id}
-                    onClick={() => {
-                        option.onClick();
-                        onClose();
-                    }}
-                    className="flex items-center px-2 py-1 text-sm text-left rounded-sm hover:bg-(--hover-white)"
-                    >
-                        {option.label}
-                    </button>
+                    
+                    <div className="flex flex-col">
+
+                        <p className="font-semibold px-2 py-1 text-sm text-left">{option.category}</p>
+
+                        <button
+                        type="button"
+                        key={option.id}
+                        onClick={() => {
+                            option.onClick();
+                            onClose();
+                        }}
+                        className="flex items-center px-2 py-1 text-left rounded-sm hover:bg-(--hover-white)"
+                        >
+                            <p className="">{option.label}</p>
+                        </button>
+                    </div>
                 ))}
 
             </div>

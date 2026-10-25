@@ -57,7 +57,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
             console.log("Error in moveNote function: ", error);
             setNotes(prevNotes);
         }
-    }
+    };
 
     async function handleAddColumn() {
         try {
@@ -66,7 +66,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
         } catch (error) {
             console.log("Error in addColumn function: ", error);
         }
-    }
+    };
 
     async function handleCreateNote(columnId: string, title: string) {
         try {
@@ -75,7 +75,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
         } catch (error) {
             console.log("Error in createNote function: ", error);
         }
-    }
+    };
 
     async function renameColumn(boardId: string, columnId: string, title: string){
         try {
@@ -88,7 +88,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
         } catch (error) {
             console.log("Error in renameColumn function: ", error);
         }
-    }
+    };
 
     async function renameNote(noteId: string, title: string){
         try {
@@ -101,7 +101,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
         } catch (error) {
             console.log("Error in renameNote function: ", error);
         }
-    }
+    };
 
     async function handleDeleteColumn(boardId: string, columnId: string){
         try {
@@ -111,7 +111,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
         } catch (error) {
             console.log("Error in deleteColumn function: ", error);
         }
-    }
+    };
 
     async function handleRenameBoard(boardId: string, title: string) {
         try {
@@ -121,7 +121,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
         } catch (error) {
             console.log("Error in renameBoard function: ", error);
         }
-    }
+    };
 
     async function handleDeleteBoard(boardId: string) {
         try {
@@ -142,7 +142,16 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
         } catch (error) {
             console.log("Error in saveContent function: ", error);
         }
-    }
+    };
+
+    async function handleAddMember(email: string) {
+        try {
+            const member = await boardsService.addMember(board.id, email);
+            setBoard((prev) => prev ? { ...prev, members: [...(prev.members ?? []), member] } : prev);
+        } catch (error) {
+            console.log("Error in addMember function: ", error)
+        }
+    };
 
     return (
         <div className="flex flex-col h-full w-full overflow-hidden">
@@ -164,19 +173,20 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                     <button
                     type="button"
                     ref={ellipsisRef}
-                    className="rounded-md hover:bg-(--hover-white)"
+                    className="rounded-md size-8 hover:bg-(--hover-white) flex justify-center items-center"
                     onClick={()=> setIsOptionsOpen(true)}
                     >
-                        <Ellipsis size={18}/>
+                        <Ellipsis size={24} className=""/>
                     </button>
 
                     {isOptionsOpen && (
                         <OptionsModal 
-                        title="Board settings"
+                        title="Menu"
                         anchorRef={ellipsisRef}
                         onClose={()=> setIsOptionsOpen(false)}
                         options={[
-                            {id: "delete", label: "Delete board", onClick: ()=> handleDeleteBoard(board.id)}
+                            { id: "addMember", label: "Add members", onClick: () => handleAddMember(board.id)},
+                            {id: "delete", label: "Delete board", onClick: () => handleDeleteBoard(board.id)}
                         ]}
                         />
                     )}
@@ -207,7 +217,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                     className="flex items-center gap-1"
                     onClick={()=>handleAddColumn()}
                     >
-                        <Plus /> Add new list
+                        <Plus /> <p className="font-semibold">Add new list</p>
                     </button>
                 </div>
             </div>

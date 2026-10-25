@@ -3,7 +3,7 @@
 :root {
   --bg:#1F1F21;
   --panel:#1e2128;
-  --text:#f1f1f3;
+  --text:#dfdfdf;
   --text-dark: #1F1f21;
   --text-mute: #A9ABAF;
   --mute:#9aa0ab;
@@ -14,6 +14,7 @@
   --border-mute: hsla(0,0%,100%,0.16);
   --border-btn-simple: hsla(0, 0%, 100%, 0.226);
   --border-avatar: #868686;
+  --bg-modal: #2B2C30;
 
   --red:#e5372b;
   --blue:#2a4bd7;

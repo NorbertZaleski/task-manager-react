@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import type { Board, BoardBackground, Column } from '../types/types';
+import type { Board, BoardBackground, BoardMember, BoardRole, Column } from '../types/types';
 
 const getToken = () => localStorage.getItem('token');
 
@@ -99,5 +99,41 @@ export const boardsService = {
             }
             throw error;
         }
-    }
+    },
+
+    addMember: async (boardId: string, email: string, role: BoardRole = "member"): Promise<BoardMember> => {
+        try {
+            const response = await api.post<BoardMember>(`/${boardId}/members`, {email, role});
+            return response.data;
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
+        }
+    },
+
+    updateMemberRole: async (boardId: string, userId: string, role: BoardRole): Promise<BoardMember> => {
+        try {
+            const res = await api.patch<BoardMember>(`/${boardId}/members/${userId}`, { role });
+            return res.data;
+        } catch (error) {
+        if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
+        }
+    },
+
+    removeMember: async (boardId: string, userId: string): Promise<void> => {
+        try {
+            await api.delete(`/${boardId}/members/${userId}`);
+        } catch (error) {
+        if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
+        }
+    },
+    
 }

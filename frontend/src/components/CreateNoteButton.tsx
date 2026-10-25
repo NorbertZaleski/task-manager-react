@@ -51,12 +51,20 @@ function CreateNoteButton({onCreate}: CreateNoteButtonprops){
     }
 
     return (
-       <form onSubmit={handleCreateNote} className="flex flex-col gap-3">
+       <form 
+       onSubmit={handleCreateNote}
+       onBlur={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                cancelAdding();
+            }
+       }}
+       className="flex flex-col gap-3
+       ">
             <textarea
                 autoFocus
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Tytuł notatki"
+                placeholder="Note title"
                 onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {
                                 e.preventDefault();
@@ -73,7 +81,7 @@ function CreateNoteButton({onCreate}: CreateNoteButtonprops){
                 type="submit"
                 className="px-2 py-1 rounded-lg text-sm text-semibold text-(--card) bg-(--button)"
                 >
-                    Dodaj kartę
+                    <p className="font-semibold">Add card</p>
                 </button>
                 <button type="button" onClick={() => cancelAdding()}><X size={18}/></button>
             </div>

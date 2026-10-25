@@ -51,7 +51,7 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
                 onClick={open}
                 variant="primary"
             >
-                Create board
+                <p className="font-semibold">Create board</p>
             </Button>
 
             {isAdding &&

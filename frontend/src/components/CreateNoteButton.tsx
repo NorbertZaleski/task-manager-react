@@ -28,7 +28,7 @@ function CreateNoteButton({onCreate}: CreateNoteButtonprops){
             type="button" 
             onClick={() => setIsAdding(true)} 
             className="flex w-full items-center text-center gap-1 p-1 text-sm font-semibold">
-                <Plus size={16} /> Dodaj kartę
+                <Plus size={16} /> Add card
             </button>
         );
     }

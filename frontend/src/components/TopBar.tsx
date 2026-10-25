@@ -7,7 +7,7 @@ import SearchBox from "./SearchBox";
 import Avatar from "./Avatar";
 import { useAuth } from "../context/AuthContext";
 import OptionsModal from "./OptionsModal";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type TopBarPops = { 
     onBoardCreated: () => void 
@@ -15,8 +15,9 @@ type TopBarPops = {
 
 function TopBar({onBoardCreated}: TopBarPops) {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+    const avatarRef = useRef<HTMLButtonElement>(null);
 
     async function handleCreateBoard(title: string, background: BoardBackground){
         try {
@@ -48,6 +49,7 @@ function TopBar({onBoardCreated}: TopBarPops) {
                 </button>
                 <button
                 type="button"
+                ref={avatarRef}
                 onClick={()=>setIsOptionsOpen(true)}
                 className="p-1 rounded-md hover:bg-(--hover-white) flex items-center justify-center"
                 >
@@ -55,7 +57,15 @@ function TopBar({onBoardCreated}: TopBarPops) {
                 </button>
 
                 {isOptionsOpen && (
-                    <OptionsModal title="Account" onClose={() => setIsOptionsOpen(false)} />
+                    <OptionsModal 
+                    title="Account"
+                    anchorRef={avatarRef}
+                    options={[
+                        { id: "settings", label: "Account settings", onClick: () => navigate("/settings")},
+                        { id: "logout", label: "Log out", onClick: () => logout()}
+                    ]}
+                    onClose={() => setIsOptionsOpen(false)} 
+                    />
                 )}
             </div>
         </div>

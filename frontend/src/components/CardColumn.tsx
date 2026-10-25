@@ -3,6 +3,8 @@ import Card from "./Card";
 import {Ellipsis} from 'lucide-react'
 import CreateNoteButton from "./CreateNoteButton";
 import EditableText from "./EditableText";
+import { useRef, useState } from "react";
+import OptionsModal from "./OptionsModal";
 
 type CardColumnProps = {
     column: Column;
@@ -16,6 +18,8 @@ type CardColumnProps = {
 };
 
 function CardColumn({column, board, notes, onMoveNote, onCreateNote, onDeleteColumn, onOpenNote, onRenameColumn}: CardColumnProps) {
+    const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+    const ellipsisRef = useRef<HTMLButtonElement>(null);
 
     return(
             <div 
@@ -42,12 +46,23 @@ function CardColumn({column, board, notes, onMoveNote, onCreateNote, onDeleteCol
                     <div className="flex shrink-0 items-center gap-2 py-1 rounded-sm text-center">
                         <div className="text-sm select-none">{notes.length}</div>
                         <button 
+                        ref={ellipsisRef}
                         type="button" 
-                        onClick={() => onDeleteColumn(board.id, column.id)}
+                        onClick={() => setIsOptionsOpen(true)}
                         className=""
                         >
-                            <Ellipsis size={18}/> {/* tymczasowo działa jako deleteboard */}
+                            <Ellipsis size={18}/>
                         </button>
+
+                        {isOptionsOpen && (
+                            <OptionsModal 
+                            title="Note options"
+                            anchorRef={ellipsisRef}
+                            options={[
+                                { id: "delete", label: "Delete column", onClick: () => onDeleteColumn(board.id, column.id)},
+                            ]}
+                            onClose={() => setIsOptionsOpen(false)} />
+                        )}
                     </div>
                 </div>
 

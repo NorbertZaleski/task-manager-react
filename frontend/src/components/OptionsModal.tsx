@@ -1,19 +1,41 @@
 import { X } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useLayoutEffect, useState, type RefObject } from "react";
+import { createPortal } from "react-dom";
+
+export type ModalOption = {
+    id: string;
+    label: string;
+    onClick: () => void;
+}
 
 type OptionsModalProps = {
     title: string;
     onClose: () => void;
+    options: ModalOption[];
+    anchorRef: RefObject<HTMLElement | null>;
 };
 
-function OptionsModal({title, onClose}: OptionsModalProps) {
-    const { user, logout } = useAuth();
-    
-    return (
+const WIDTH = 240;
+const GAP = 8;
+
+function OptionsModal({title, onClose, options, anchorRef}: OptionsModalProps) {
+    const [pos, setPos] = useState({ top: 0, left: 0 });
+
+    useLayoutEffect(() => {
+        const rect = anchorRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
+        const left = Math.min(rect.left, window.innerWidth - WIDTH - GAP);
+        setPos({ top: rect.bottom + GAP, left: Math.max(GAP, left) });
+    }, [anchorRef]);
+
+    return createPortal(
         <>
             <div className="fixed inset-0 z-99" onClick={onClose} />
 
-            <div className="fixed top-12 right-3 z-100 w-72 rounded-lg bg-(--panel) p-3 shadow-lg flex flex-col gap-3">
+            <div 
+            style={{ top: pos.top, left: pos.left }}
+            className="fixed z-100 w-60 rounded-lg bg-(--panel) p-3 shadow-lg flex flex-col gap-1">
                 <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold">{title}</h3>
                     <button
@@ -24,20 +46,23 @@ function OptionsModal({title, onClose}: OptionsModalProps) {
                     </button>
                 </div>
 
-                {user && <p className="text-sm">{user.name}</p>}
+                {options.map((option)=> (
+                    <button
+                    type="button"
+                    key={option.id}
+                    onClick={() => {
+                        option.onClick();
+                        onClose();
+                    }}
+                    className="flex items-center px-2 py-1 text-sm text-left rounded-sm hover:bg-(--hover-white)"
+                    >
+                        {option.label}
+                    </button>
+                ))}
 
-                <button
-                type="button"
-                onClick={()=> {
-                    logout();
-                    onClose();
-                }}
-                className="rounded-sm hover:bg-(--hover-white) px-2 py-1 text-left text-sm"
-                >
-                    Log out
-                </button>
             </div>
-        </>
+        </>,
+        document.body
     );
 }
 

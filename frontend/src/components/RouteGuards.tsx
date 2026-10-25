@@ -8,7 +8,7 @@ import { useAuth } from "../context/AuthContext";
   }
 
   export function GuestRoute() {
-      const { user, loading } = useAuth();
-      if (loading) return <div>Loading...</div>;
-      return user ? <Navigate to="/boards" replace /> : <Outlet />;
+        const { user, loading } = useAuth();
+        if (loading) return <div>Loading...</div>;
+        return user ? <Navigate to="/boards" replace /> : <Outlet />;
   }

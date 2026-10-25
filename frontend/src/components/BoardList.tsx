@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Board, Column, Note } from "../types/types";
 import CardColumn from "./CardColumn";
 import { columnsService } from "../services/columns.service";
@@ -10,6 +10,7 @@ import { boardsService } from "../services/boards.service.js";
 import { useNavigate } from "react-router";
 import EditableText from "./EditableText.js";
 import BoardMembers from "./BoardMembers.js";
+import OptionsModal from "./OptionsModal.js";
 
 type BoardListProps = {
     board: Board;
@@ -28,6 +29,9 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
     const selectedColumn = columns.find((column)=> column.id === selectedNote?.columnId);
     
     const navigate = useNavigate();
+
+    const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+    const ellipsisRef = useRef<HTMLButtonElement>(null);
 
     async function handleMoveNote(noteId: string, columnId: string) {
         const prevNotes = notes;
@@ -159,11 +163,23 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
 
                     <button
                     type="button"
+                    ref={ellipsisRef}
                     className="rounded-md hover:bg-(--hover-white)"
-                    onClick={()=> handleDeleteBoard(board.id)}
+                    onClick={()=> setIsOptionsOpen(true)}
                     >
-                        <Ellipsis /> {/* tymczasowo działa jako deleteboard */}
+                        <Ellipsis size={18}/>
                     </button>
+
+                    {isOptionsOpen && (
+                        <OptionsModal 
+                        title="Board settings"
+                        anchorRef={ellipsisRef}
+                        onClose={()=> setIsOptionsOpen(false)}
+                        options={[
+                            {id: "delete", label: "Delete board", onClick: ()=> handleDeleteBoard(board.id)}
+                        ]}
+                        />
+                    )}
                 </div>
             </div>
 

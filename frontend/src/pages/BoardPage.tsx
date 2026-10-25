@@ -1,4 +1,4 @@
-import { useOutletContext, useParams } from "react-router";
+import { Navigate, useOutletContext, useParams } from "react-router";
 import BoardList from "../components/BoardList";
 import useBoard from "../hooks/useBoard";
 import { getBoardStyle } from "../utils/getBackgroundStyle";
@@ -12,8 +12,7 @@ function BoardPage(){
     const { updateBoardTitle, removeBoard } = useOutletContext<BoardsContext>();
 
     if (loading) return <div>Ładowanie...</div>;
-    if (error) return <div>Błąd: {error}</div>;
-    if (!board) return <div>Nie masz jeszcze żadnych tablic</div>;
+    if (error || !board) return <Navigate to="/boards" replace />;
 
     return (
         <div className="h-full w-full" style={getBoardStyle(board.background)}>

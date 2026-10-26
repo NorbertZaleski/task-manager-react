@@ -3,7 +3,7 @@ import Board from "../models/Board.model.js";
 import Column from "../models/Column.model.js";
 import { toClientColumn } from "./board.controller.js";
 import Note from "../models/Note.model.js";
-import { getMembership } from "../utils/boardAccess.js";
+import { getMembership } from "../middleware/boardAccess.js";
 
 export async function createColumn(req,res) {
     try {

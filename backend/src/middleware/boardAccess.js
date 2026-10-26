@@ -1,30 +1,26 @@
 import mongoose from "mongoose";
 import BoardMember from "../models/BoardMember.model.js";
+import Column from "../models/Column.model.js";
+import Note from "../models/Note.model.js";
 import ROLE_RANK from "../utils/roles.js";
+
+export async function getMembership(boardId, userId) {
+    if (!mongoose.isValidObjectId(boardId) || !mongoose.isValidObjectId(userId)) return null;
+    return BoardMember.findOne({ board: boardId, user: userId }).lean();
+}
+
+export function hasRole(membership, minRole = "member") {
+    const have = ROLE_RANK[membership?.role];
+    const need = ROLE_RANK[minRole];
+    return have !== undefined && need !== undefined && have >= need;
+}
 
 export const requireBoardMember = (minRole = "member") => async (req, res, next) => {
     try {
-        const { boardId } = req.params;
+        const membership = await getMembership(req.params.boardId, req.user._id);
+        if (!membership) return res.status(404).json({ message: "Board not found" });
 
-        if (!mongoose.isValidObjectId(boardId)) {
-            return res.status(404).json({ message: "Board not found" });
-        }
-
-        // 1. najpierw pobierz membership
-        const membership = await BoardMember.findOne({
-            board: boardId,
-            user: req.user._id,
-        }).lean();
-
-        // 2. dopiero potem go sprawdzaj
-        if (!membership) {
-            return res.status(404).json({ message: "Board not found" });
-        }
-
-        const have = ROLE_RANK[membership.role];
-        const need = ROLE_RANK[minRole];
-
-        if (have === undefined || need === undefined || have < need) {
+        if (!hasRole(membership, minRole)) {
             return res.status(403).json({ message: "Forbidden" });
         }
 
@@ -38,11 +34,12 @@ export const requireBoardMember = (minRole = "member") => async (req, res, next)
 
 export const requireColumnAccess = (minRole = "member") => async (req, res, next) => {
     try {
-        if (!mongoose.isValidObjectId(req.params.columnId)) {
+        const { columnId } = req.params;
+        if (!mongoose.isValidObjectId(columnId)) {
             return res.status(404).json({ message: "Column not found" });
         }
 
-        const column = await Column.findById(req.params.columnId).select("board").lean();
+        const column = await Column.findById(columnId).select("board").lean();
         if (!column) return res.status(404).json({ message: "Column not found" });
 
         req.params.boardId = column.board.toString();
@@ -55,11 +52,12 @@ export const requireColumnAccess = (minRole = "member") => async (req, res, next
 
 export const requireNoteAccess = (minRole = "member") => async (req, res, next) => {
     try {
-        if (!mongoose.isValidObjectId(req.params.noteId)) {
+        const { id } = req.params;
+        if (!mongoose.isValidObjectId(id)) {
             return res.status(404).json({ message: "Note not found" });
         }
 
-        const note = await Note.findById(req.params.noteId).select("board").lean();
+        const note = await Note.findById(id).select("board").lean();
         if (!note) return res.status(404).json({ message: "Note not found" });
 
         req.params.boardId = note.board.toString();

@@ -11,6 +11,7 @@ import { useNavigate } from "react-router";
 import EditableText from "./EditableText.js";
 import BoardMembers from "./BoardMembers.js";
 import OptionsModal from "./OptionsModal.js";
+import ShareBoardModal from "./ShareBoardModal.js";
 
 type BoardListProps = {
     board: Board;
@@ -32,6 +33,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
 
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const ellipsisRef = useRef<HTMLButtonElement>(null);
+    const [isMemberInviteModalOpen, setIsMemberInviteModalOpen] = useState(false);
 
     async function handleMoveNote(noteId: string, columnId: string) {
         const prevNotes = notes;
@@ -146,6 +148,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
 
     async function handleAddMember(email: string) {
         try {
+            setIsMemberInviteModalOpen(true);
             const member = await boardsService.addMember(board.id, email);
             setBoard((prev) => prev ? { ...prev, members: [...(prev.members ?? []), member] } : prev);
         } catch (error) {
@@ -190,6 +193,14 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                         ]}
                         />
                     )}
+
+                    {isMemberInviteModalOpen && (
+                        <ShareBoardModal
+                        board={board}
+                        onClose={() => setIsMemberInviteModalOpen(false)}
+                        />
+                    )}
+
                 </div>
             </div>
 

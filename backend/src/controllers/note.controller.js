@@ -1,10 +1,9 @@
 import mongoose from "mongoose";
-import Board from "../models/Board.model.js";
 import Note from "../models/Note.model.js";
 import Label from "../models/Label.model.js";
 import Column from "../models/Column.model.js";
 import { toClientNote } from "./board.controller.js";
-import { getMembership } from "../utils/boardAccess.js";
+import { getMembership } from "../middleware/boardAccess.js";
 
 async function resolveLabels(labels, boardId) {
     if (!Array.isArray(labels) || !labels.every((l) => mongoose.isValidObjectId(l))) return null;
@@ -70,9 +69,6 @@ export async function createNote(req,res) {
         const membership = await getMembership(column.board, req.user._id);
         if (!membership) return res.status(404).json({ message: "Board not found" });
 
-        const board = await Board.findOne({_id: column.board, user: req.user.id});
-        if (!board) return res.status(404).json({message:"Column not found"});
-
         const labelIds = await resolveLabels(labels, column.board);
         if (!labelIds) return res.status(400).json({ message: "Invalid labels" });
 
@@ -80,7 +76,7 @@ export async function createNote(req,res) {
         const position = last ? last.position + 1 : 0;
 
         const note = await Note.create({
-            board: board._id,
+            board: column.board,
             column: column._id,
             title,
             content,
@@ -155,7 +151,7 @@ export async function deleteNote(req, res){
         if (!note) return res.status(404).json({ message: "Note not found" });
 
         const membership = await getMembership(note.board, req.user._id);
-        if (!membership) return res.status(404).json({ message: "note deleted", note: toClientNote(note.toObject()) });
+        if (!membership) return res.status(404).json({ message: "Board not found" });
 
         await note.deleteOne();
 

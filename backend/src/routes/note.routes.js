@@ -1,16 +1,16 @@
 import express from "express";
 import { createNote, deleteNote, getAllNotes, getNote, updateNote } from "../controllers/note.controller.js";
-import { requireNoteAccess } from "../middleware/boardAccess.js";
+import { requireBoardMember, requireColumnAccess, requireNoteAccess } from "../middleware/boardAccess.js";
 
 const router = express.Router();
 
-router.get("/board/:boardId", getAllNotes);
-router.get("/:id", getNote);
+router.get("/board/:boardId", requireBoardMember("member"), getAllNotes);
+router.get("/:id", requireNoteAccess("member"), getNote);
 
-router.post("/columns/:columnId/notes", createNote);
+router.post("/columns/:columnId/notes", requireColumnAccess("member"), createNote);
 
 router.patch("/:id", requireNoteAccess("member"), updateNote);
 
-router.delete("/:id", deleteNote);
+router.delete("/:id", requireNoteAccess("member"), deleteNote);
 
 export default router;

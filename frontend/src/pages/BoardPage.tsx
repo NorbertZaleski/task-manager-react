@@ -11,7 +11,7 @@ function BoardPage(){
     const { board, setBoard, loading, error } = useBoard(boardId);
     const { updateBoardTitle, removeBoard } = useOutletContext<BoardsContext>();
 
-    if (loading) return <div>Ładowanie...</div>;
+    if (loading) return <div>Loading...</div>;
     if (error || !board) return <Navigate to="/boards" replace />;
 
     return (

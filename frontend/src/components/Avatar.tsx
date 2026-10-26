@@ -17,7 +17,7 @@ function Avatar ({user}: AvatarProps) {
         <div 
         key={user.id}
         title={user.name}
-        className="flex items-center justify-center size-7 rounded-full ring-2 ring-(--border-avatar) bg-amber-600 overflow-hidden text-xs font-medium text-(--text)">
+        className="flex items-center justify-center size-7 rounded-full ring-2 ring-(--border-avatar) bg-amber-600 overflow-hidden text-sm font-medium text-(--text)">
             
             {user.avatar ? (
                 <img 

@@ -14,8 +14,8 @@ function useBoards(){
             setBoards(response);
             setError(null);
         } catch (error) {
-            console.error('Błąd pobierania tablic:', error);
-            const message = error instanceof Error ? error.message : 'Nie udało się pobrać tablic';
+            console.error('Error:', error);
+            const message = error instanceof Error ? error.message : 'Error in fetching boards';
             setError(message);
         } finally {
             setLoading(false);

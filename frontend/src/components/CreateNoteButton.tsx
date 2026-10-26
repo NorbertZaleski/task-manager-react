@@ -1,5 +1,5 @@
 import { Plus, X } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type CreateNoteButtonprops = {
     onCreate: (content: string) => Promise<void>;
@@ -8,24 +8,18 @@ type CreateNoteButtonprops = {
 function CreateNoteButton({onCreate}: CreateNoteButtonprops){
     const [isAdding, setIsAdding] = useState(false);
     const [title, setTitle] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+    const submittingRef = useRef(false);
 
     async function handleCreateNote(e: React.FormEvent) {
         e.preventDefault();
-        if (!title.trim()) return;
-
-        try {
-            await onCreate(title.trim());
-            setTitle("");
-            setIsAdding(false);
-        } catch (error) {
-            console.error("Error in handleCreateNote:", error);
-        }
+        submitNote();
     }
 
     if (!isAdding) {
         return (
             <button 
-            type="button" 
+            type="submit" 
             onClick={() => setIsAdding(true)} 
             className="flex w-full items-center text-center gap-1 p-1 text-sm font-semibold">
                 <Plus size={16} /> Add card
@@ -34,14 +28,20 @@ function CreateNoteButton({onCreate}: CreateNoteButtonprops){
     }
 
     async function submitNote() {
-        if (!title.trim()) return;
+        const trimmed = title.trim();
+        if (!trimmed || submittingRef.current) return;
 
+        submittingRef.current = true;
+        setSubmitting(true);
         try {
-            await onCreate(title.trim());
+            await onCreate(trimmed);
             setTitle("");
             setIsAdding(false);
         } catch (error) {
-            console.error("Error in handleCreateNote:", error);
+            console.error("Error in submitNote:", error);
+        } finally {
+            submittingRef.current = false;
+            setSubmitting(false);
         }
     }
 
@@ -79,7 +79,8 @@ function CreateNoteButton({onCreate}: CreateNoteButtonprops){
             <div className="flex gap-2 justify-start w-full">
                 <button 
                 type="submit"
-                className="px-2 py-1 rounded-lg text-sm text-semibold text-(--card) bg-(--button)"
+                disabled={submitting || !title.trim()}
+                className="px-2 py-1 rounded-lg text-sm text-semibold text-(--card) bg-(--button) disabled:opacity-60"
                 >
                     <p className="font-semibold">Add card</p>
                 </button>

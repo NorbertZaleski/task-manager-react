@@ -7,7 +7,7 @@ type BoardsContext = ReturnType<typeof useBoards>;
 function BoardsPage(){
     const {boards}= useOutletContext<BoardsContext>();
 
-    if (boards.length === 0) return <div>Nie masz jeszcze żadnych tablic</div>;
+    if (boards.length === 0) return <div>You have no boards</div>;
 
     return (
         <>

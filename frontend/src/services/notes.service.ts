@@ -46,6 +46,16 @@ export const notesService = {
         return response.data;
     },
 
+    deleteNote: async ( noteId: string ): Promise<void> => {
+        try {
+            await api.delete<Note>(`/${noteId}`);
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
+        }
+    } 
 };
 
 

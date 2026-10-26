@@ -1,16 +1,13 @@
+import { type InputHTMLAttributes } from "react";
 
-type InputProps = {
-    placeholder: string;
-}
+type InputProps = InputHTMLAttributes<HTMLInputElement>;
 
-function Input({placeholder}: InputProps) {
+function Input({ className = "", ...props }: InputProps) {
+
+    const base = "border border-(--mute) rounded-md px-3 flex-1 text-sm";
+
     return (
-        <input
-        placeholder={placeholder}
-        className="outline-(--border-mute) flex-1"
-        >
-        
-        </input>
+        <input className={`${base} ${className}`} {...props} />
     )
 }
 

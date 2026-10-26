@@ -7,8 +7,8 @@ function MainLayout(){
     const boardsState = useBoards();
     const {boards, loading, error, reload} = boardsState;
 
-    if (loading && boards.length === 0) return <div className="flex items-center justify-center">Ładowanie...</div>;
-    if (error) return <div className="flex items-center justify-center">Błąd: {error}</div>;
+    if (loading && boards.length === 0) return <div className="flex items-center justify-center">Loading...</div>;
+    if (error) return <div className="flex items-center justify-center">Error: {error}</div>;
 
     return(
         <div className="flex flex-col h-dvh overflow-hidden">

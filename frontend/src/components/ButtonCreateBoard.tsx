@@ -13,6 +13,8 @@ type ButtonCreateBoardProps = {
 
 function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
     const [isAdding, setIsAdding] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const submittingRef = useRef(false);
     const [title, setTitle] = useState("");
     const [pos, setPos] = useState({ top: 0, left: 0 });
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -31,15 +33,25 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
 
     async function handleCreateBoard(e: React.FormEvent) {
         e.preventDefault();
-        if (!title.trim()) return;
+        submitBoard();
+    }
 
+    async function submitBoard() {
+        const trimmed = title.trim();
+        if (!trimmed || submittingRef.current) return;
+
+        submittingRef.current = true;
+        setSubmitting(true);
         try {
-            await onCreate(title.trim(), background);
+            await onCreate(trimmed, background);
             setTitle("");
             setIsAdding(false);
         } catch (error) {
             console.error("Error in handleCreateBoard:", error);
-        }
+        } finally {
+            submittingRef.current = false;
+            setSubmitting(false);
+        } 
     }
 
     return (
@@ -132,7 +144,8 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
 
                             <button 
                             type="submit"
-                            className={`w-full h-8 rounded-sm text-(--text-dark) pt-0.5 pb-1 px-2 font-semibold flex items-center justify-center ${
+                            disabled={submitting || !title.trim()}
+                            className={`w-full h-8 rounded-sm text-(--text-dark) pt-0.5 pb-1 px-2 font-semibold flex items-center justify-center disabled:opacity-60 ${
                                 title ? "bg-(--button)" : "bg-(--mute)"
                             }`}
                             >

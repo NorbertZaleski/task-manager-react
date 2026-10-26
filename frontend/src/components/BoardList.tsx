@@ -3,7 +3,6 @@ import type { Board, Column, Note } from "../types/types";
 import CardColumn from "./CardColumn";
 import { columnsService } from "../services/columns.service";
 import notesService from "../services/notes.service";
-import NoteModal from "./NoteModal.js";
 import { Ellipsis, Plus } from "lucide-react";
 import FloatingBottomBar from "./FloatingBottomBar.js";
 import { boardsService } from "../services/boards.service.js";
@@ -12,6 +11,7 @@ import EditableText from "./EditableText.js";
 import BoardMembers from "./BoardMembers.js";
 import OptionsModal from "./OptionsModal.js";
 import ShareBoardModal from "./ShareBoardModal.js";
+import NoteModal from "./NoteModal.js";
 
 type BoardListProps = {
     board: Board;
@@ -78,6 +78,15 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
             console.log("Error in createNote function: ", error);
         }
     };
+
+    async function handleDeleteNote(noteId: string) {
+        try {
+            await notesService.deleteNote(noteId);
+            setNotes((prev) => prev.filter((note)=> note.id !== noteId));
+        } catch (error) {
+            console.log("Error in deleteNote function: ", error);
+        }
+    }
 
     async function renameColumn(boardId: string, columnId: string, title: string){
         try {
@@ -188,7 +197,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                         anchorRef={ellipsisRef}
                         onClose={()=> setIsOptionsOpen(false)}
                         options={[
-                            { id: "addMember", label: "Add members", onClick: () => handleAddMember(board.id)},
+                            {id: "addMember", label: "Add members", onClick: () => handleAddMember(board.id)},
                             {id: "delete", label: "Delete board", onClick: () => handleDeleteBoard(board.id)}
                         ]}
                         />
@@ -240,6 +249,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                 onClose={()=> setSelectedNoteId(null)}
                 onSaveContent={handleSaveContent}
                 onRenameNote={renameNote}
+                onDelete={handleDeleteNote}
                 />
             )}
             

@@ -9,7 +9,7 @@ function useBoard(boardId: string | undefined) {
 
     const load = useCallback(async () => {
         if (!boardId) {
-            setError("Brak identyfikatora tablicy");
+            setError("No board ID");
             setLoading(false);
             return;
         }
@@ -19,8 +19,8 @@ function useBoard(boardId: string | undefined) {
             setBoard(response);
             setError(null);
         } catch (error) {
-            console.error('Błąd pobierania tablicy:', error);
-            const message = error instanceof Error ? error.message : 'Nie udało się pobrać tablicy';
+            console.error('Error:', error);
+            const message = error instanceof Error ? error.message : 'Error in fetching board';
             setError(message);
         } finally {
             setLoading(false);

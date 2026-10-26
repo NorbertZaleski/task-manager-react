@@ -1,8 +1,9 @@
 import { Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
 import type { Note } from "../types/types";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
 import Button from "./Button";
+import OptionsModal from "./OptionsModal";
 
 type NoteModalProps = {
     note: Note;
@@ -10,12 +11,15 @@ type NoteModalProps = {
     onClose: () => void;
     onSaveContent: (noteId: string, content: string) => void;
     onRenameNote: (noteId: string, title: string) => void;
+    onDelete: (noteId: string) => void;
 } 
 
-function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote}: NoteModalProps){
+function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onDelete}: NoteModalProps){
 
     const [isEditingNoteContent, setIsEditingNoteContent] = useState(false);
     const [draftContent, setDraftContent] = useState(note.content ?? "");
+    const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+    const ellipsisRef = useRef<HTMLButtonElement>(null);
 
     function startEditingContent() {
         setDraftContent(note.content ?? "");
@@ -58,7 +62,8 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote}: No
 
                         <button 
                         type="button" 
-                        //onClick={}
+                        onClick={() => setIsOptionsOpen(true)}
+                        ref={ellipsisRef}
                         className="flex size-8 items-center justify-center rounded-full hover:bg-white/5"
                         >
                             <Ellipsis size={16} />
@@ -72,6 +77,16 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote}: No
                             <X size={16}/>
                         </button>
 
+                        {isOptionsOpen && (
+                            <OptionsModal 
+                            title="Note actions"
+                            onClose={() => setIsOptionsOpen(false)}
+                            options={[
+                                {id: "delete", label: "Delete note", onClick: () => onDelete(note.id)}
+                            ]}
+                            anchorRef={ellipsisRef}
+                            />
+                        )}
                     </div>
                 </div>
                 <div className="flex flex-col justify-evenly">
@@ -91,12 +106,12 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote}: No
                             <div className="flex flex-col gap-8">
 
                                 <div className="flex gap-2 py-2">
-                                    <Button icon={<Plus size={16} className="-mx-0.5" />}> Add </Button>
-                                    <Button icon={<LucideTag size={16} className="-mr-0.5"/>}> Labels </Button>
-                                    <Button icon={<Clock size={16} className="-mr-0.5" />}> Date </Button>
-                                    <Button icon={<SquareCheck size={16} className="-mr-0.5" />}> To do list </Button>
-                                    <Button icon={<UserRoundPlus size={16} className="-mr-0.5" />}> Members </Button>
-                                    <Button icon={<Paperclip size={16} className="-mr-0.5" />}> Files </Button>
+                                    <Button iconl={<Plus size={16} className="-mx-0.5" />}> Add </Button>
+                                    <Button iconl={<LucideTag size={16} className="-mr-0.5" />}> Labels </Button>
+                                    <Button iconl={<Clock size={16} className="-mr-0.5" />}> Date </Button>
+                                    <Button iconl={<SquareCheck size={16} className="-mr-0.5" />}> To do list </Button>
+                                    <Button iconl={<UserRoundPlus size={16} className="-mr-0.5" />}> Members </Button>
+                                    <Button iconl={<Paperclip size={16} className="-mr-0.5" />}> Files </Button>
                                 </div>
 
                                 <div className="flex flex-col">
@@ -108,7 +123,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote}: No
                                     </div>
 
                                     {isEditingNoteContent ? (
-                                        <div>
+                                        <div className="flex flex-col gap-2">
                                             <textarea
                                                 autoFocus
                                                 maxLength={200}

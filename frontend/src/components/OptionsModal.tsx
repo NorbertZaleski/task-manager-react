@@ -43,6 +43,7 @@ function OptionsModal({title, onClose, options, anchorRef}: OptionsModalProps) {
                     <button
                     type="button"
                     onClick={onClose}
+                    className="hover:text-(--text-mute)"
                     >
                         <X size={18} />
                     </button>
@@ -50,7 +51,7 @@ function OptionsModal({title, onClose, options, anchorRef}: OptionsModalProps) {
 
                 {options.map((option)=> (
                     
-                    <div className="flex flex-col">
+                    <div key={option.id} className="flex flex-col">
 
                         <p className="font-semibold px-2 py-1 text-sm text-left">{option.category}</p>
 

@@ -155,10 +155,10 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
         }
     };
 
-    async function handleAddMember(email: string) {
+    async function handleAddMember(userId: string) {
         try {
             setIsMemberInviteModalOpen(true);
-            const member = await boardsService.addMember(board.id, email);
+            const member = await boardsService.addMember(board.id, userId);
             setBoard((prev) => prev ? { ...prev, members: [...(prev.members ?? []), member] } : prev);
         } catch (error) {
             console.log("Error in addMember function: ", error)
@@ -197,7 +197,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                         anchorRef={ellipsisRef}
                         onClose={()=> setIsOptionsOpen(false)}
                         options={[
-                            {id: "addMember", label: "Add members", onClick: () => handleAddMember(board.id)},
+                            {id: "addMember", label: "Add members", onClick: () => setIsMemberInviteModalOpen(true)},
                             {id: "delete", label: "Delete board", onClick: () => handleDeleteBoard(board.id)}
                         ]}
                         />
@@ -207,6 +207,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                         <ShareBoardModal
                         board={board}
                         onClose={() => setIsMemberInviteModalOpen(false)}
+                        addMember={handleAddMember}
                         />
                     )}
 

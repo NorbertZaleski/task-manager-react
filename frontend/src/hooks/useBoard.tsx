@@ -5,7 +5,7 @@ import { boardsService } from "../services/boards.service";
 function useBoard(boardId: string | undefined) {
     const [board, setBoard] = useState<Board | null >(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<String | null>(null)
+    const [error, setError] = useState<String | null>(null);
 
     const load = useCallback(async () => {
         if (!boardId) {

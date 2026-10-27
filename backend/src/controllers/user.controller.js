@@ -22,6 +22,29 @@ export async function getUser(req,res){
     }
 };
 
+export async function searchUsers(req, res){
+    try {
+        const q = String(req.query.q ?? "").trim();
+        if (q.length < 2) return res.status(200).json([]);
+
+        const safe = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const rx = new RegExp(safe, "i");
+
+        const users = await User.find({
+            _id: {$ne: req.user._id},
+            $or: [{name: rx}, {email: rx}],
+        })
+            .select("name email")
+            .limit(10)
+            .lean();
+
+        res.status(200).json(users.map((u)=> ({id: u._id.toString(), name: u.name, email: u.email})));
+    } catch (error) {
+        console.log("Error in searchUsers controller", error);
+        res.status(500).json({message:"Internal server error"});
+    }
+}
+
 export async function createUser(req,res){
     try {
         const {name, email, password} = req.body;

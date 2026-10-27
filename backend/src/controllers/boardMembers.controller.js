@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import BoardMember from "../models/BoardMember.model.js";
 import User from "../models/User.model.js";
 import ROLE_RANK from "../utils/roles.js";
@@ -13,10 +14,10 @@ const toClientMember = (user, role) => ({
 export async function addMember(req,res) {
     try {
         const { boardId } = req.params;
-        const { email, role = "member" } = req.body;
-
-        if (typeof email !== "string" || !email.trim()) {
-            return res.status(400).json({ message: "Email is required" });
+        const { userId, role = "member" } = req.body;
+        
+        if (!mongoose.isValidObjectId(userId)) {
+            return res.status(400).json({ message: "Invalid user id" });
         }
 
         if (!["admin", "member"].includes(role)) {
@@ -26,8 +27,7 @@ export async function addMember(req,res) {
             return res.status(403).json({ message: "Forbidden" });
         }
 
-        const user = await User.findOne({email: email.trim().toLowerCase()})
-            .select("name email avatar");
+        const user = await User.findById(userId).select("name email avatar");
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -41,6 +41,9 @@ export async function addMember(req,res) {
 
         res.status(201).json(toClientMember(user, role));
     } catch (error) {
+        if (error?.code === 11000) {
+            return res.status(409).json({ message: "User is already a member" });
+        }
         console.error("Error in addMember controller", error);
         res.status(500).json({ message: "Internal server error" });
     }

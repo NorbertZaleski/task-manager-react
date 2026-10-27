@@ -1,15 +1,35 @@
 import { ChevronDown, Link2, X } from "lucide-react";
 import Button from "./Button";
 import MembersList from "./MembersList";
-import type { Board } from "../types/types";
-import Input from "./Input";
+import type { Board, User } from "../types/types";
+import SearchBoxMembers from "./SearchBoxMembers";
+import { useState } from "react";
 
 type ShareBoardModalProps = {
     board: Board;
     onClose: () => void;
+    addMember: (userId: string) => Promise<void>;
 }
 
-function ShareBoardModal({board, onClose}: ShareBoardModalProps) {
+function ShareBoardModal({board, onClose, addMember}: ShareBoardModalProps) {
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleInvite = async () => {
+        if (!selectedUser) return;
+        try {
+            setSubmitting(true);
+            setError(null);
+            await addMember(selectedUser.id);
+            setSelectedUser(null);
+        } catch (err: any) {
+            setError(err?.response?.data?.message ?? "Could not add member");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-98 bg-black/80"
                 onMouseDown={(e) => {
@@ -32,22 +52,28 @@ function ShareBoardModal({board, onClose}: ShareBoardModalProps) {
                 </div>
 
                 <div className="flex w-full justify-between gap-2">
-                    <Input
-                    placeholder="E-mail or username"
-                    />
+
+                    <SearchBoxMembers onSelect={setSelectedUser}/>
+
                     <div className="flex gap-2">
+
                         <Button
                         variant="list"
                         iconr={<ChevronDown size={16} className="-mr-0.5"/>}
                         >
                             Member
                         </Button>
+                        
                         <Button 
                         variant="primary"
+                        onClick={handleInvite}
+                        disabled={!selectedUser || submitting}
                         >
                             Invite
                         </Button>
+
                     </div>
+                    {error && <p className="text-sm text-red-500">{error}</p>}
                 </div>
 
                 <div className="flex text-left gap-2 items-center">

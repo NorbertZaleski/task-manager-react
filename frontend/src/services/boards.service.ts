@@ -101,9 +101,9 @@ export const boardsService = {
         }
     },
 
-    addMember: async (boardId: string, email: string, role: BoardRole = "member"): Promise<BoardMember> => {
+    addMember: async (boardId: string, userId: string, role: BoardRole = "member"): Promise<BoardMember> => {
         try {
-            const response = await api.post<BoardMember>(`/${boardId}/members`, {email, role});
+            const response = await api.post<BoardMember>(`/${boardId}/members`, {userId, role});
             return response.data;
         } catch (error) {
             if (error instanceof AxiosError) {

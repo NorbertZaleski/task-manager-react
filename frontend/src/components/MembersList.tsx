@@ -16,7 +16,7 @@ function MembersList({members}: MembersListProps) {
                 <div className="pt-4">
                     {members.map((member)=> (
                         <div key={member.id} className="flex items-center gap-4 text-left">
-                            <Avatar user={member}/>
+                            <Avatar user={member} className="ring-(--border-avatar-shareboard)"/>
                             <div className="flex flex-col">
                                 <span className="font-medium h-fit">{member.name}</span>
                                 <div className="flex gap-1">

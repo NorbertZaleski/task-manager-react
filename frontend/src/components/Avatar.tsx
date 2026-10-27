@@ -2,6 +2,7 @@ import type { User } from "../types/types";
 
 type AvatarProps = {
     user: User
+    className?: string;
 };
 
 const getInitial = (name: string) => 
@@ -12,12 +13,14 @@ const getInitial = (name: string) =>
         .map((part)=> part[0]?.toUpperCase() ?? "")
         .join("");
 
-function Avatar ({user}: AvatarProps) {
+function Avatar ({user, className}: AvatarProps) {
+
+    const base = "flex items-center justify-center size-7 rounded-full ring-2 ring-(--border-avatar) bg-amber-600 overflow-hidden text-sm font-medium text-(--text)"
     return (
         <div 
         key={user.id}
         title={user.name}
-        className="flex items-center justify-center size-7 rounded-full ring-2 ring-(--border-avatar) bg-amber-600 overflow-hidden text-sm font-medium text-(--text)">
+        className={`${base} ${className}`}>
             
             {user.avatar ? (
                 <img 

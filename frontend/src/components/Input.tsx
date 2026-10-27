@@ -1,13 +1,15 @@
-import { type InputHTMLAttributes } from "react";
+import { type InputHTMLAttributes, type Ref } from "react";
 
-type InputProps = InputHTMLAttributes<HTMLInputElement>;
+type InputProps = InputHTMLAttributes<HTMLInputElement> & {
+    ref?: Ref<HTMLInputElement>;
+};
 
-function Input({ className = "", ...props }: InputProps) {
+function Input({ className = "", ref, ...props }: InputProps) {
 
     const base = "border border-(--mute) rounded-md px-3 flex-1 text-sm";
 
     return (
-        <input className={`${base} ${className}`} {...props} />
+        <input ref={ref} className={`${base} ${className}`} {...props} />
     )
 }
 

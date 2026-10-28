@@ -1,3 +1,4 @@
+import { COLORS_AVATAR } from "../constants/backgroundConstants";
 import type { User } from "../types/types";
 
 type AvatarProps = {
@@ -13,14 +14,24 @@ const getInitial = (name: string) =>
         .map((part)=> part[0]?.toUpperCase() ?? "")
         .join("");
 
-function Avatar ({user, className}: AvatarProps) {
+const getAvatarColor = (seed: string) => {
+    let hash = 0;
+    for (let i=0; i<seed.length; i++) {
+        hash = (hash * 31 + seed.charCodeAt(i) >>> 0);
+    }
+    return COLORS_AVATAR[hash % COLORS_AVATAR.length];
+};
 
-    const base = "flex items-center justify-center size-7 rounded-full ring-2 ring-(--border-avatar) bg-amber-600 overflow-hidden text-sm font-medium text-(--text)"
+function Avatar ({user, className=""}: AvatarProps) {
+
+    const base = "flex items-center justify-center size-7 rounded-full overflow-hidden text-sm font-medium text-(--text)"
     return (
         <div 
         key={user.id}
         title={user.name}
-        className={`${base} ${className}`}>
+        className={`${base} ${className}`}
+        style={user.avatar ? undefined : {backgroundColor: getAvatarColor(user.id) }}
+        >
             
             {user.avatar ? (
                 <img 

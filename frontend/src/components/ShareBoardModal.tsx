@@ -59,7 +59,7 @@ function ShareBoardModal({board, onClose, addMember}: ShareBoardModalProps) {
 
                         <Button
                         variant="list"
-                        iconr={<ChevronDown size={16} className="-mr-0.5"/>}
+                        iconr={<ChevronDown size={16} className="-mr-1"/>}
                         >
                             Member
                         </Button>

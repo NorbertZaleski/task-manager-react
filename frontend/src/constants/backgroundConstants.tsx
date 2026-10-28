@@ -6,3 +6,5 @@ export const IMAGES = [
     "https://images.unsplash.com/photo-1786964169908-67675f5e7f67?q=80&w=1294&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D",
     "https://images.unsplash.com/photo-1702342349435-255a5eee8572?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D",
 ];
+
+export const COLORS_AVATAR = ["#de350b", "#00a3bf", "#0152ca", "#0152ca", "#172b4d", "#72ab1d"];

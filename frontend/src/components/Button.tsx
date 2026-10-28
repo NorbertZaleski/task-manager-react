@@ -19,7 +19,7 @@ const variants: Record<ButtonVariant, string> = {
     ghost:
         "hover:bg-(--mute)/20 px-3 text-base text-(--text)",
     list:
-        "border-(--border-mute) px-3 text-base",
+        "border-(--border-mute) px-3 text-base text-(--text-mute) hover:bg-(--border-mute)/40",
 };
 
 function Button({

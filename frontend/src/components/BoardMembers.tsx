@@ -13,7 +13,7 @@ function BoardMembers({ members = [], max = 4 }: BoardMembersProps) {
     return (
         <div className="flex items-center -space-x-1">
             {visible.map((member) => (
-                <Avatar key={member.id} user={member}/>
+                <Avatar key={member.id} user={member} className="border border-(--border-avatar)"/>
             ))}
 
             {hidden > 0 && (
@@ -22,7 +22,7 @@ function BoardMembers({ members = [], max = 4 }: BoardMembersProps) {
                         .slice(max)
                         .map((m) => m.name)
                         .join(", ")}
-                    className="size-7 rounded-full flex items-center justify-center text-xs font-medium text-(--text-mute) hover:bg-white/15"
+                    className="size-7 rounded-full flex items-center justify-center text-xs font-medium text-(--text-mute) hover:bg-white/15 ease-in"
                 >
                     +{hidden}
                 </div>

@@ -12,10 +12,11 @@ export const toClientColumn = ({ _id, __v, board, ...rest }) => ({ id: _id.toStr
 
 export const toClientLabel = ({ _id, __v, board, ...rest }) => ({ id: _id.toString(), ...rest });
 
-export const toClientNote = ({ _id, __v, board, column, labels = [], ...rest }) => ({
+export const toClientNote = ({ _id, __v, board, column, labels = [], assignees = [], ...rest }) => ({
     id: _id.toString(),
     columnId: column?.toString() ?? null,
     labelIds: labels.map((l) => (l._id ?? l).toString()),
+    assigneeIds: assignees.map((a) => (a._id ?? a).toString()),
     ...rest,
 });
 

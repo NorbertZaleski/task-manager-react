@@ -55,7 +55,20 @@ export const notesService = {
             }
             throw error;
         }
-    } 
+    } ,
+
+    setLabels: async (noteId: string, labelIds: string[]): Promise<Note> => {
+        try {
+            const response = await api.put(`/${noteId}/labels`, {labels: labelIds}); 
+            return response.data;
+        } catch (error) {
+        if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
+        }
+    },
+
 };
 
 

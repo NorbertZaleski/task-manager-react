@@ -1,4 +1,4 @@
-import type { Board, Column, Label, Note } from "../types/types";
+import type { Board, Column, Note } from "../types/types";
 import Card from "./Card";
 import {Ellipsis} from 'lucide-react'
 import CreateNoteButton from "./CreateNoteButton";
@@ -10,7 +10,6 @@ type CardColumnProps = {
     column: Column;
     board: Board;
     notes: Note[];
-    labels: Label[] | [];
     onMoveNote: (noteId: string, columnId: string) => void;
     onCreateNote: (columnId: string, content: string) => Promise<void>;
     onDeleteColumn: (boardId: string, columnId: string) => void;
@@ -18,7 +17,7 @@ type CardColumnProps = {
     onRenameColumn: (boardId: string, columnId: string, title: string) => void;
 };
 
-function CardColumn({column, board, notes, labels, onMoveNote, onCreateNote, onDeleteColumn, onOpenNote, onRenameColumn}: CardColumnProps) {
+function CardColumn({column, board, notes, onMoveNote, onCreateNote, onDeleteColumn, onOpenNote, onRenameColumn}: CardColumnProps) {
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const ellipsisRef = useRef<HTMLButtonElement>(null);
 
@@ -70,7 +69,7 @@ function CardColumn({column, board, notes, labels, onMoveNote, onCreateNote, onD
                 <div className="flex flex-col gap-1 overflow-y-auto min-h-0 
                 scrollbar-thin scroll-smooth">
                     {notes.map((note) => (
-                        <Card key={note.id} note={note} labels={labels} onOpen={()=> onOpenNote(note.id)}/>
+                        <Card key={note.id} note={note} onOpen={()=> onOpenNote(note.id)}/>
                     ))}
                 </div>
 

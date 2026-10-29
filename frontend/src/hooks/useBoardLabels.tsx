@@ -32,7 +32,7 @@ function useBoardLabels(boardId: string | undefined) {
         load();
     }, [load]);
 
-    return {labels, loading, error, reload: load}
+    return {labels, loading, error, reloadLabels: load}
 }
 
 export default useBoardLabels;

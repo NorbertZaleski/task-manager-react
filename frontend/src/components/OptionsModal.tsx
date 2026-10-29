@@ -12,7 +12,7 @@ export type ModalOption = {
 type OptionsModalProps = {
     title: string;
     onClose: () => void;
-    options: ModalOption[];
+    options?: ModalOption[];
     anchorRef: RefObject<HTMLElement | null>;
     compOptions?: ReactNode;
 };
@@ -20,7 +20,7 @@ type OptionsModalProps = {
 const WIDTH = 240;
 const GAP = 8;
 
-function OptionsModal({title, onClose, options, anchorRef, compOptions}: OptionsModalProps) {
+function OptionsModal({title, onClose, options=[], anchorRef, compOptions}: OptionsModalProps) {
     const [pos, setPos] = useState({ top: 0, left: 0 });
 
     useLayoutEffect(() => {

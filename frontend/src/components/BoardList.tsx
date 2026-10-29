@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { Board, Column, Label, Note } from "../types/types";
+import type { Board, Column, Note } from "../types/types";
 import CardColumn from "./CardColumn";
 import { columnsService } from "../services/columns.service";
 import notesService from "../services/notes.service";
@@ -18,10 +18,9 @@ type BoardListProps = {
     setBoard: React.Dispatch<React.SetStateAction<Board | null>>;
     onBoardRenamed: (boardId: string, title: string) => void;
     onBoardDeleted: (boardId: string) => void;
-    labels: Label[] | [];
 };
 
-function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed, labels}: BoardListProps) {
+function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListProps) {
 
     const [notes, setNotes] = useState<Note[]>(board.notes ?? []);
     const [columns, setColumns] = useState<Column[]>(board.columns ?? []);
@@ -166,6 +165,10 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed, labels}: Bo
         }
     };
 
+    function handleNoteUpdated(updated: Note) {
+        setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
+    }
+
     return (
         <div className="flex flex-col h-full w-full overflow-hidden">
             <div className="flex text-center items-center justify-between shrink-0 
@@ -221,7 +224,6 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed, labels}: Bo
                         <CardColumn
                             board={board}
                             column={column}
-                            labels={labels}
                             notes={notes
                                 .filter((note) => note.columnId === column.id)
                                 .sort((a, b) => a.position - b.position)}
@@ -253,7 +255,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed, labels}: Bo
                 onSaveContent={handleSaveContent}
                 onRenameNote={renameNote}
                 onDelete={handleDeleteNote}
-                labels={labels}
+                onNoteUpdated={handleNoteUpdated}
                 />
             )}
             

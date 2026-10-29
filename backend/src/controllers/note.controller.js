@@ -161,3 +161,36 @@ export async function deleteNote(req, res){
         res.status(500).json({message:"Internal server error"});
     }
 };
+
+export async function setNoteLabels(req, res) {
+    try {
+        const { id, boardId } = req.params;
+        const { labels } = req.body;
+
+        if (!Array.isArray(labels) || !labels.every((l) => mongoose.isValidObjectId(l))) {
+            return res.status(400).json({ message: "Invalid labels" });
+        }
+
+        const uniqueIds = [...new Set(labels.map(String))];
+
+        const count = await Label.countDocuments({
+            _id: { $in: uniqueIds },
+            board: boardId,
+        });
+        if (count !== uniqueIds.length) {
+            return res.status(400).json({ message: "Invalid labels" });
+        }
+
+        const note = await Note.findByIdAndUpdate(
+            id,
+            { labels: uniqueIds },
+            { returnDocument: "after" }
+        );
+        if (!note) return res.status(404).json({ message: "Note not found" });
+
+    return res.status(200).json(toClientNote(note.toObject()));
+    } catch (error) {
+        console.error("Error in setNoteLabels controller", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}

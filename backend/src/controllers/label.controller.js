@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Board from "../models/Board.model.js";
 import Label from "../models/Label.model.js";
 import Note from "../models/Note.model.js";
+import { toClientLabel } from "./board.controller.js";
 
 
 export async function getBoardLabels(req,res){
@@ -12,12 +13,9 @@ export async function getBoardLabels(req,res){
             return res.status(400).json({message:"Invalid board ID"});
         }
 
-        const board = await Board.findOne({_id: boardId, user: req.user.id});
-        if (!board){return res.status(404).json({message:"Board not found"})};
+        const labels = await Label.find({ board: boardId }).lean();
 
-        const labels = await Label.find({board: boardId});
-
-        res.status(200).json(labels);
+        return res.status(200).json(labels.map(toClientLabel));
     } catch (error) {
         console.error("Error in getBoardLabels controller", error);
         res.status(500).json({message:"Internal server error"});
@@ -27,19 +25,19 @@ export async function getBoardLabels(req,res){
 export async function createLabel(req,res){
     try {
         const {boardId} = req.params;
-        const {title, color} = req.body;
+        const {title="", color} = req.body;
 
         if (!mongoose.isValidObjectId(boardId)) {
             return res.status(400).json({message:"Invalid board ID"});
         }
 
-        const board = await Board.findOne({_id: boardId, user: req.user.id});
-        if (!board) {return res.status(404).json({message: "Board not found"})};
+        const label = await Label.create({
+            board: boardId,
+            title: String(title).trim(),
+            color,
+        });
 
-        const label = new Label({board: boardId, title, color});
-
-        const newLabel = await label.save();
-        return res.status(201).json({label: newLabel});
+        return res.status(201).json(toClientLabel(label.toObject()));
     } catch (error) {
         console.error("Error in createLabel controller", error);
         res.status(500).json({message:"Internal server error"});

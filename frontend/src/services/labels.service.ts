@@ -36,9 +36,9 @@ export const LabelsService = {
         }
     },
 
-    createLabel: async (boardId: string): Promise<Label> => {
+    createLabel: async (boardId: string, data: {title: string; color: string}): Promise<Label> => {
         try {
-            const response = await api.post(`/boards/${boardId}/labels`);
+            const response = await api.post(`/boards/${boardId}/labels`, data);
             return response.data;
         } catch (error) {
             if (error instanceof AxiosError) {

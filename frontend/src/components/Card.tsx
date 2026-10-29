@@ -1,13 +1,14 @@
-import type { Label, Note } from "../types/types";
+import { useLabels } from "../context/LabelsContext";
+import type { Note } from "../types/types";
 
 type CardProps = {
     note: Note;
     onOpen: () => void;
-    labels: Label[] | [];
 }
 
-function Card({note, labels, onOpen}: CardProps) {
-    const noteLabels = labels.filter((l)=> note.labelIds.includes(l.id));
+function Card({note, onOpen}: CardProps) {
+    const { labels } = useLabels();
+    const noteLabels = labels.filter((l)=> note.labelIds?.includes(l.id));
 
     return (
         <div

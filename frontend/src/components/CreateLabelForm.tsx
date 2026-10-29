@@ -28,7 +28,6 @@ function CreateLabelForm({ onSubmit, onCancel }: CreateLabelFormProps) {
 
     return (
         <div className="flex flex-col gap-3">
-            {/* podgląd na żywo */}
             <div className="flex items-center justify-center py-2">
                 <span
                     className="text-xs font-medium px-2 h-4 min-w-10 rounded flex items-center max-w-full truncate"

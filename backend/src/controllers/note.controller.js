@@ -41,7 +41,7 @@ export async function getNote(req,res) {
             return res.status(400).json({message: "Invalid note ID"});
         }
 
-        const note = await Note.findById(id).lean();
+        const note = await Note.findById(id).populate("labels").lean();
         if (!note) return res.status(404).json({ message: "Note not found" });
 
         const membership = await getMembership(note.board, req.user._id);

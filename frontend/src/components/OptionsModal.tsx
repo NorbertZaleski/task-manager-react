@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { useLayoutEffect, useState, type RefObject } from "react";
+import { useLayoutEffect, useState, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 
 export type ModalOption = {
@@ -14,12 +14,13 @@ type OptionsModalProps = {
     onClose: () => void;
     options: ModalOption[];
     anchorRef: RefObject<HTMLElement | null>;
+    compOptions?: ReactNode;
 };
 
 const WIDTH = 240;
 const GAP = 8;
 
-function OptionsModal({title, onClose, options, anchorRef}: OptionsModalProps) {
+function OptionsModal({title, onClose, options, anchorRef, compOptions}: OptionsModalProps) {
     const [pos, setPos] = useState({ top: 0, left: 0 });
 
     useLayoutEffect(() => {
@@ -64,10 +65,16 @@ function OptionsModal({title, onClose, options, anchorRef}: OptionsModalProps) {
                         }}
                         className="flex items-center px-2 py-1 text-left rounded-sm hover:bg-(--hover-white)"
                         >
-                            <p className="">{option.label}</p>
+                            <span>{option.label}</span>
                         </button>
                     </div>
                 ))}
+
+                {compOptions && (
+                    <div className={options.length > 0 ? "pt-2 mt-1 border-t border-white/10" : ""}>
+                        {compOptions}
+                    </div>
+                )}
 
             </div>
         </>,

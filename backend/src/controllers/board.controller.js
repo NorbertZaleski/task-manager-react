@@ -10,12 +10,12 @@ const toClientBoard = ({ _id, __v, ...rest }) => ({ id: _id.toString(), ...rest 
 
 export const toClientColumn = ({ _id, __v, board, ...rest }) => ({ id: _id.toString(), ...rest });
 
-const toClientLabel = ({ _id, __v, board, ...rest }) => ({ id: _id.toString(), ...rest });
+export const toClientLabel = ({ _id, __v, board, ...rest }) => ({ id: _id.toString(), ...rest });
 
 export const toClientNote = ({ _id, __v, board, column, labels = [], ...rest }) => ({
     id: _id.toString(),
-    columnId: column.toString(),
-    labelIds: labels.map((l) => l.toString()),
+    columnId: column?.toString() ?? null,
+    labelIds: labels.map((l) => (l._id ?? l).toString()),
     ...rest,
 });
 
@@ -59,7 +59,9 @@ export async function getBoard(req,res) {
 
         const [columns, notes, members] = await Promise.all([
             Column.find({ board: board._id }).sort({ position: 1, createdAt: 1 }).lean(),
-            Note.find({ board: board._id }).lean(),
+            Note.find({ board: board._id })
+                .populate("labels")
+                .lean(),
             BoardMember.find({ board: board._id })
                 .populate("user", "name email avatar")
                 .lean(),

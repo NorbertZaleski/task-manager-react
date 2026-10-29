@@ -40,7 +40,7 @@ export const notesService = {
 
     updateNote: async (
         noteId: string,
-        data: { columnId?: string; position?: number; title?: string, content?: string }
+        data: { columnId?: string; position?: number; title?: string, content?: string, labels?: string[] }
     ) => {
         const response = await api.patch(`/${noteId}`, data);
         return response.data;

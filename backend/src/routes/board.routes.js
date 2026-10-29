@@ -3,13 +3,14 @@ import { createBoard, deleteBoard, getAllBoards, getBoard, updateBoard } from ".
 import { createColumn, deleteColumn, updateColumn } from "../controllers/column.controller.js";
 import { requireBoardMember, requireColumnAccess } from "../middleware/boardAccess.js";
 import { addMember, deleteMember, updateMember } from "../controllers/boardMembers.controller.js";
-
+import { getBoardLabels } from "../controllers/label.controller.js";
 
 const router = express.Router();
 
 
 router.get("/", getAllBoards);
 router.get("/:boardId", requireBoardMember(), getBoard);
+router.get("/:boardId/labels", requireBoardMember(), getBoardLabels);
 
 router.post("/", createBoard);
 router.post("/:boardId/columns", requireBoardMember(), createColumn);

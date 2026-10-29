@@ -1,9 +1,12 @@
 import { Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
-import type { Note } from "../types/types";
+import type { Label, Note } from "../types/types";
 import { useEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
 import Button from "./Button";
 import OptionsModal from "./OptionsModal";
+import notesService from "../services/notes.service";
+import CreateLabelForm from "./CreateLabelForm";
+import LabelsPicker from "./LabelsPicker";
 
 type NoteModalProps = {
     note: Note;
@@ -12,14 +15,19 @@ type NoteModalProps = {
     onSaveContent: (noteId: string, content: string) => void;
     onRenameNote: (noteId: string, title: string) => void;
     onDelete: (noteId: string) => void;
+    labels: Label[];
 } 
 
-function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onDelete}: NoteModalProps){
+function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onDelete, labels}: NoteModalProps){
 
     const [isEditingNoteContent, setIsEditingNoteContent] = useState(false);
     const [draftContent, setDraftContent] = useState(note.content ?? "");
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const ellipsisRef = useRef<HTMLButtonElement>(null);
+    const [labelsModal, setLabelsModal] = useState<"closed" | "list" | "create">("closed");
+
+    const labelsRef = useRef<HTMLButtonElement>(null);
+    const noteLabels = labels.filter((l) => note.labelIds?.includes(l.id));
 
     function startEditingContent() {
         setDraftContent(note.content ?? "");
@@ -38,6 +46,20 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
         }
         setIsEditingNoteContent(false);
     }
+
+    const handleToggleLabel = async (labelId: string) => {
+        const nextLabelIds = note.labelIds.includes(labelId)
+            ? note.labelIds.filter((id) => id !== labelId)
+            : [...note.labelIds, labelId];
+
+        await notesService.updateNote(note.id, { labels: nextLabelIds });
+    };
+
+    const handleCreateLabel = async (data: { title: string; color: string }) => {
+        //create label in service
+        //reaload labels
+        setLabelsModal("list");
+    };
 
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
@@ -107,12 +129,77 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
 
                                 <div className="flex gap-2 py-2">
                                     <Button iconl={<Plus size={16} className="-mx-0.5" />}> Add </Button>
-                                    <Button iconl={<LucideTag size={16} className="-mr-0.5" />}> Labels </Button>
+                                    <Button iconl={
+                                        <LucideTag size={16} className="-mr-0.5" />} 
+                                        onClick={()=>setLabelsModal("list")}
+                                        ref={labelsRef}
+                                    > 
+                                        Labels 
+                                    </Button>
                                     <Button iconl={<Clock size={16} className="-mr-0.5" />}> Date </Button>
                                     <Button iconl={<SquareCheck size={16} className="-mr-0.5" />}> To do list </Button>
                                     <Button iconl={<UserRoundPlus size={16} className="-mr-0.5" />}> Members </Button>
                                     <Button iconl={<Paperclip size={16} className="-mr-0.5" />}> Files </Button>
                                 </div>
+
+                                {labelsModal === "list" && (
+                                    <OptionsModal
+                                        title="Labels"
+                                        onClose={() => setLabelsModal("closed")}
+                                        anchorRef={labelsRef}
+                                        options={labels.map((label) => ({
+                                            id: label.id,
+                                            label: label.title || "(bez nazwy)",
+                                            leading: (
+                                                <>
+                                                    <span
+                                                        className="w-8 h-4 rounded shrink-0"
+                                                        style={{ backgroundColor: label.color }}
+                                                    />
+                                                    {note.labelIds.includes(label.id) && <span aria-hidden>yes</span>}
+                                                </>
+                                            ),
+                                            onClick: () => handleToggleLabel(label.id),
+                                        }))}
+                                        compOptions={[
+                                            <LabelsPicker/>,
+                                            
+                                            <Button onClick={() => setLabelsModal("create")}>
+                                                Create new label
+                                            </Button>
+                                            ]
+                                        }
+                                    />
+                                )}
+
+                                {labelsModal === "create" && (
+                                    <OptionsModal
+                                        title="New label"
+                                        onClose={() => setLabelsModal("closed")}
+                                        anchorRef={labelsRef}
+                                        options={[]}
+                                        compOptions={
+                                            <CreateLabelForm
+                                                onSubmit={handleCreateLabel}
+                                                onCancel={() => setLabelsModal("list")}
+                                            />
+                                        }
+                                    />
+                                )}
+
+                                {noteLabels.length > 0 && (
+                                    <div className="flex flex-wrap gap-1">
+                                        {noteLabels.map((label) => (
+                                            <span
+                                                key={label.id}
+                                                className="text-xs font-medium px-2 h-4 min-w-10 rounded flex items-center max-w-full truncate"
+                                                style={{ backgroundColor: label.color }}
+                                            >
+                                                {label.title}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
 
                                 <div className="flex flex-col">
                                     <div className="flex flex-row gap-2">                                

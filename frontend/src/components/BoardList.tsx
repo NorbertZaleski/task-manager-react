@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { Board, Column, Note } from "../types/types";
+import type { Board, Column, Label, Note } from "../types/types";
 import CardColumn from "./CardColumn";
 import { columnsService } from "../services/columns.service";
 import notesService from "../services/notes.service";
@@ -18,9 +18,10 @@ type BoardListProps = {
     setBoard: React.Dispatch<React.SetStateAction<Board | null>>;
     onBoardRenamed: (boardId: string, title: string) => void;
     onBoardDeleted: (boardId: string) => void;
+    labels: Label[] | [];
 };
 
-function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListProps) {
+function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed, labels}: BoardListProps) {
 
     const [notes, setNotes] = useState<Note[]>(board.notes ?? []);
     const [columns, setColumns] = useState<Column[]>(board.columns ?? []);
@@ -220,6 +221,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                         <CardColumn
                             board={board}
                             column={column}
+                            labels={labels}
                             notes={notes
                                 .filter((note) => note.columnId === column.id)
                                 .sort((a, b) => a.position - b.position)}
@@ -251,6 +253,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                 onSaveContent={handleSaveContent}
                 onRenameNote={renameNote}
                 onDelete={handleDeleteNote}
+                labels={labels}
                 />
             )}
             

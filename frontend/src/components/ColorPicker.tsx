@@ -1,7 +1,4 @@
-const PRESET_COLORS = [
-    "#EF4444", "#F97316", "#EAB308", "#22C55E",
-    "#06B6D4", "#3B82F6", "#8B5CF6", "#EC4899",
-];
+import { PRESET_COLORS_LABEL } from "../constants/backgroundConstants";
 
 type ColorPickerProps = {
     value: string;
@@ -11,7 +8,7 @@ type ColorPickerProps = {
 function ColorPicker({ value, onChange }: ColorPickerProps) {
     return (
         <div className="flex flex-wrap gap-2 items-center">
-            {PRESET_COLORS.map((color) => (
+            {PRESET_COLORS_LABEL.map((color) => (
                 <button
                     key={color}
                     type="button"

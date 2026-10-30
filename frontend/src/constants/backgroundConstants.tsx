@@ -8,3 +8,11 @@ export const IMAGES = [
 ];
 
 export const COLORS_AVATAR = ["#de350b", "#00a3bf", "#0152ca", "#0152ca", "#172b4d", "#72ab1d"];
+
+export const PRESET_COLORS_LABEL = [
+    "#EF4444", "#145369", "#EAB308", "#22C55E",
+    "#06B6D4", "#3B82F6", "#8B5CF6", "#EC4899",
+    "#4BCE97", "#7F5F01", "#DDB30E", "#AE2E24",
+    "#F87168", "#C97CF4", "#1558BC", "#206A83"
+];
+

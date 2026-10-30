@@ -10,6 +10,8 @@ import LabelsPicker from "./LabelsPicker";
 import { LabelsService } from "../services/labels.service";
 import { useLabels } from "../context/LabelsContext";
 import { useParams } from "react-router";
+import { getTextColor } from "../utils/getTextColor";
+import LabelEditModal from "./LabelEditModal";
 
 type NoteModalProps = {
     note: Note;
@@ -27,7 +29,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     const [draftContent, setDraftContent] = useState(note.content ?? "");
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const ellipsisRef = useRef<HTMLButtonElement>(null);
-    const [labelsModal, setLabelsModal] = useState<"closed" | "list" | "create">("closed");
+    const [labelsModal, setLabelsModal] = useState<"closed" | "list" | "create" | "edit">("closed");
 
     const labelsRef = useRef<HTMLButtonElement>(null);
 
@@ -183,6 +185,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                             </Button>
                                             ]
                                         }
+                                        className="w-76"
                                     />
                                 )}
 
@@ -201,13 +204,27 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                     />
                                 )}
 
+                                {labelsModal === "edit" && (
+                                    <OptionsModal 
+                                        title="Edit label"
+                                        onClose={() => setLabelsModal("closed")}
+                                        anchorRef={labelsRef}
+                                        options={[]}
+                                        compOptions={
+                                            <LabelEditModal />
+                                        }
+                                    />
+                                )}
+
                                 {noteLabels.length > 0 && (
                                     <div className="flex flex-wrap gap-1">
                                         {noteLabels.map((label) => (
                                             <span
                                                 key={label.id}
-                                                className="text-xs font-medium px-2 h-4 min-w-10 rounded flex items-center max-w-full truncate"
-                                                style={{ backgroundColor: label.color }}
+                                                className={`text-xs font-medium p-3 h-4 min-w-fit rounded flex items-center max-w-full truncate ${
+                                                !label.title ? 'min-w-10' : 'min-w-fit'
+                                                }`} //fix !label.title min-w & inside card the same
+                                                style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
                                             >
                                                 {label.title}
                                             </span>

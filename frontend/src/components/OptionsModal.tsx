@@ -15,12 +15,13 @@ type OptionsModalProps = {
     options?: ModalOption[];
     anchorRef: RefObject<HTMLElement | null>;
     compOptions?: ReactNode;
+    className?: string;
 };
 
 const WIDTH = 240;
 const GAP = 8;
 
-function OptionsModal({title, onClose, options=[], anchorRef, compOptions}: OptionsModalProps) {
+function OptionsModal({title, onClose, options=[], anchorRef, compOptions, className}: OptionsModalProps) {
     const [pos, setPos] = useState({ top: 0, left: 0 });
 
     useLayoutEffect(() => {
@@ -37,7 +38,7 @@ function OptionsModal({title, onClose, options=[], anchorRef, compOptions}: Opti
 
             <div 
             style={{ top: pos.top, left: pos.left }}
-            className="fixed z-100 w-60 rounded-lg bg-(--bg-modal) p-3 shadow-2xl flex flex-col gap-1">
+            className={`fixed z-100 w-60 rounded-lg bg-(--bg-modal) p-3 shadow-2xl flex flex-col gap-1 ${className}`}>
                 <div className="flex items-center justify-between text-center">
                     <div></div>
                     <h3 className="text-sm font-semibold text-(--text-mute)">{title}</h3>

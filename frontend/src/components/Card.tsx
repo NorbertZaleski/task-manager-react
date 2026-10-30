@@ -1,5 +1,6 @@
 import { useLabels } from "../context/LabelsContext";
 import type { Note } from "../types/types";
+import { getTextColor } from "../utils/getTextColor";
 
 type CardProps = {
     note: Note;
@@ -26,8 +27,8 @@ function Card({note, onOpen}: CardProps) {
                 {noteLabels.map((label) => (
                     <span
                     key={label.id}
-                    className="text-xs font-medium px-2 h-4 min-w-10 rounded flex items-center max-w-full truncate"
-                    style={{ backgroundColor: label.color,  }}
+                    className="text-xs font-medium p-2 h-4 min-w-fit rounded flex items-center max-w-full truncate"
+                    style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
                     >
                         {label.title}
                     </span>

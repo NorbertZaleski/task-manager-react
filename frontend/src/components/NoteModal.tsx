@@ -1,5 +1,5 @@
 import { Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
-import type { Note } from "../types/types";
+import type { Label, Note } from "../types/types";
 import { useEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
 import Button from "./Button";
@@ -29,6 +29,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     const [draftContent, setDraftContent] = useState(note.content ?? "");
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const ellipsisRef = useRef<HTMLButtonElement>(null);
+    const [editingLabel, setEditingLabel] = useState<Label | null>(null);
     const [labelsModal, setLabelsModal] = useState<"closed" | "list" | "create" | "edit">("closed");
 
     const labelsRef = useRef<HTMLButtonElement>(null);
@@ -83,6 +84,14 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
         if (!boardId) return;
         await LabelsService.createLabel(boardId, data);
         await reloadLabels();
+        setLabelsModal("list");
+    };
+
+    async function handleEditLabel (data: {title: string; color: string}) {
+        if (!boardId || !editingLabel) return;
+        await LabelsService.updateLabel(boardId, editingLabel.id, data);
+        await reloadLabels();
+        setEditingLabel(null);
         setLabelsModal("list");
     };
 
@@ -178,9 +187,16 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                             labels={labels}
                                             selectedIds={selectedLabelIds}
                                             onToggle={handleToggleLabel}
+                                            onEdit={(label)=> {
+                                                setEditingLabel(label);
+                                                setLabelsModal("edit");
+                                            }}
                                             />,
                                             
-                                            <Button key="add_label_button" onClick={() => setLabelsModal("create")}>
+                                            <Button 
+                                            key="add_label_button" 
+                                            onClick={() => setLabelsModal("create")}
+                                            >
                                                 Create new label
                                             </Button>
                                             ]
@@ -211,7 +227,13 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                         anchorRef={labelsRef}
                                         options={[]}
                                         compOptions={
-                                            <LabelEditModal />
+                                            editingLabel && (
+                                                <LabelEditModal
+                                                label={editingLabel}
+                                                onSubmit={handleEditLabel} 
+                                                onCancel={()=> setLabelsModal("list")}
+                                                />
+                                            )
                                         }
                                     />
                                 )}
@@ -221,9 +243,9 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                         {noteLabels.map((label) => (
                                             <span
                                                 key={label.id}
-                                                className={`text-xs font-medium p-3 h-4 min-w-fit rounded flex items-center max-w-full truncate ${
+                                                className={`text-xs font-medium justify-center p-2 h-4 rounded flex items-center max-w-full truncate ${
                                                 !label.title ? 'min-w-10' : 'min-w-fit'
-                                                }`} //fix !label.title min-w & inside card the same
+                                                }`}
                                                 style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
                                             >
                                                 {label.title}

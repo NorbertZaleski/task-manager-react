@@ -9,7 +9,7 @@ type ButtonProps = ComponentProps<"button"> & {
 };
 
 const base =
-    "flex items-center justify-center gap-2 w-fit h-8 rounded-md font-medium leading-none border";
+    "flex items-center justify-center text-center gap-2 w-fit h-8 rounded-md font-medium leading-none border";
 
 const variants: Record<ButtonVariant, string> = {
     outline:

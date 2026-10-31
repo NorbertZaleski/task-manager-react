@@ -27,7 +27,9 @@ function Card({note, onOpen}: CardProps) {
                 {noteLabels.map((label) => (
                     <span
                     key={label.id}
-                    className="text-xs font-medium p-2 h-4 min-w-fit rounded flex items-center max-w-full truncate"
+                    className={`text-xs font-medium justify-center p-2 h-4 rounded flex items-center max-w-full truncate ${
+                    !label.title ? 'min-w-10' : 'min-w-fit'
+                    }`}
                     style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
                     >
                         {label.title}

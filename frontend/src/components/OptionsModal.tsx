@@ -72,7 +72,7 @@ function OptionsModal({title, onClose, options=[], anchorRef, compOptions, class
                 ))}
 
                 {compOptions && (
-                    <div className={options.length > 0 ? "pt-2 mt-1 border-t border-white/10" : ""}>
+                    <div className="flex flex-col gap-2 items-center w-full">
                         {compOptions}
                     </div>
                 )}

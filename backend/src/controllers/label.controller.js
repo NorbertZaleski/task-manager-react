@@ -3,6 +3,7 @@ import Board from "../models/Board.model.js";
 import Label from "../models/Label.model.js";
 import Note from "../models/Note.model.js";
 import { toClientLabel } from "./board.controller.js";
+import BoardMember from "../models/BoardMember.model.js";
 
 
 export async function getBoardLabels(req,res){
@@ -46,11 +47,19 @@ export async function createLabel(req,res){
 
 export async function updateLabel(req,res){
     try {
-        const label = await Label.findById(req.params.id).populate("board", "user");
-        if (!label || !label.board) return res.status(404).json({message: "Label not found"});
+        const { boardId, id } = req.params;
 
-        if (label.board.user.toString() !== req.user._id.toString()) {
-            return res.status(403).json({message: "Not authorized"});
+        const label = await Label.findOne({ _id: id, board: boardId });
+        if (!label) {
+            return res.status(404).json({ message: "Label not found" });
+        }
+
+        const membership = await BoardMember.findOne({
+            board: boardId,
+            user: req.user._id,
+        });
+        if (!membership) {
+            return res.status(403).json({ message: "Not authorized" });
         }
 
         const { title, color } = req.body;

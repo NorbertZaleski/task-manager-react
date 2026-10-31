@@ -14,19 +14,12 @@ function ColorPicker({ value, onChange }: ColorPickerProps) {
                     type="button"
                     aria-label={color}
                     onClick={() => onChange(color)}
-                    className={`w-8 h-6 rounded ${
+                    className={`w-9 h-8 rounded ${
                         value === color ? "ring-2 ring-white" : ""
                     }`}
                     style={{ backgroundColor: color }}
                 />
             ))}
-            <input
-                type="color"
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                aria-label="Custom color"
-                className="w-8 h-6 p-0 bg-transparent cursor-pointer"
-            />
         </div>
     );
 }

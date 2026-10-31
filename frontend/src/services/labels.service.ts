@@ -48,6 +48,16 @@ export const LabelsService = {
         }
     },
 
-
+    updateLabel: async (boardId: string, labelId: string, data: {title: string; color: string}): Promise<Label> => {
+        try {
+            const response = await api.patch(`/boards/${boardId}/labels/${labelId}`, data);
+            return response.data;
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
+        }
+    }
 
 }

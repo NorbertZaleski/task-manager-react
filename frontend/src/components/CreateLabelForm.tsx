@@ -18,9 +18,9 @@ function CreateLabelForm({ onSubmit, onCancel }: CreateLabelFormProps) {
             setSubmitting(true);
             setError(null);
             await onSubmit({ title: title.trim(), color });
-        } catch (err) {
-            console.error("Error:", err);
-            setError(err instanceof Error ? err.message : "Failed to create label");
+        } catch (error) {
+            console.error("Error:", error);
+            setError(error instanceof Error ? error.message : "Failed to create label");
         } finally {
             setSubmitting(false);
         }
@@ -30,7 +30,7 @@ function CreateLabelForm({ onSubmit, onCancel }: CreateLabelFormProps) {
         <div className="flex flex-col gap-3">
             <div className="flex items-center justify-center py-2">
                 <span
-                    className="text-xs font-medium px-2 h-4 min-w-10 rounded flex items-center max-w-full truncate"
+                    className="text-xs font-medium px-2 py-1 min-w-20 rounded text-center whitespace-normal wrap-break-word"
                     style={{ backgroundColor: color}}
                 >
                     {title.trim()}
@@ -46,14 +46,14 @@ function CreateLabelForm({ onSubmit, onCancel }: CreateLabelFormProps) {
                 placeholder="Label title (optional)"
                 maxLength={30}
                 autoFocus
-                className="px-2 py-1 rounded bg-(--card)"
+                className="px-2 py-1 rounded bg-(--bg-input) w-full min-w-0 truncate overflow-hidden"
             />
 
             <ColorPicker value={color} onChange={setColor} />
 
             {error && <p className="text-sm text-red-400">{error}</p>}
 
-            <div className="flex gap-2">
+            <div className="flex justify-center gap-2">
                 <Button variant="primary" onClick={handleSubmit} disabled={submitting}>
                     {submitting ? "Creating..." : "Create"}
                 </Button>

@@ -17,7 +17,7 @@ const variants: Record<ButtonVariant, string> = {
     primary:
         "bg-(--button) hover:bg-(--button-hover) px-3 text-base text-(--text-dark)",
     ghost:
-        "hover:bg-(--mute)/20 px-3 text-base text-(--text)",
+        "hover:bg-(--mute)/20 px-3 text-base text-(--text) border-none",
     list:
         "border-(--border-mute) px-3 text-base text-(--text-mute) hover:bg-(--border-mute)/40",
 };

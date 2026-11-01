@@ -23,16 +23,16 @@ function Card({note, onOpen}: CardProps) {
         onClick={onOpen}
         >
             {noteLabels.length > 0 && (
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-1 items-center w-full">
                 {noteLabels.map((label) => (
                     <span
                     key={label.id}
-                    className={`text-xs font-medium justify-center p-2 h-4 rounded flex items-center max-w-full truncate ${
-                    !label.title ? 'min-w-10' : 'min-w-fit'
+                    className={`text-xs font-medium p-2 h-4 rounded flex items-center justify-center max-w-full overflow-hidden select-none ${
+                    !label.title ? 'min-w-10' : ''
                     }`}
                     style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
                     >
-                        {label.title}
+                        <span className="truncate min-w-0">{label.title}</span>
                     </span>
                 ))}
                 </div>

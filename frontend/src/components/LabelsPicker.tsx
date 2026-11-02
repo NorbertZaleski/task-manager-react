@@ -1,4 +1,4 @@
-import { Edit } from "lucide-react";
+import { ChevronDown, ChevronUp, Edit } from "lucide-react";
 import type { Label } from "../types/types";
 import Button from "./Button";
 import { getTextColor } from "../utils/getTextColor";
@@ -12,7 +12,7 @@ type LabelsPickerProps = {
     max?: number;
 }
 
-function LabelsPicker({labels, selectedIds, onToggle, onEdit, max=10}: LabelsPickerProps) {
+function LabelsPicker({labels, selectedIds, onToggle, onEdit, max=8}: LabelsPickerProps) {
     const [numberOfLabelsToShow, setNumberOfLabelsToShow] = useState(max);
     const visible = labels.slice(0, numberOfLabelsToShow)
 
@@ -50,12 +50,14 @@ function LabelsPicker({labels, selectedIds, onToggle, onEdit, max=10}: LabelsPic
                 {numberOfLabelsToShow === max ? (
                     <Button
                     className="w-full"
+                    iconl={<ChevronDown size={20}/>}
                     onClick={()=> setNumberOfLabelsToShow(labels.length)}
                     >
                         <span>Show more</span>
                     </Button>
                     ) : (
                     <Button
+                    iconl={<ChevronUp size={20} className="-mx-0.5"/>}
                     className="w-full"
                     onClick={()=> setNumberOfLabelsToShow(max)}
                     >

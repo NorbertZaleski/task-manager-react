@@ -9,13 +9,15 @@
   --mute:#9aa0ab;
   --line:#f1f1f3;
   --card:#272b34;
+  --bg-board-header:#0000003d;
   --bg-main:#1F1F21;
   --bg-notemodal-right: #303134;
   --border-mute: hsla(0,0%,100%,0.16);
   --border-btn-simple: hsla(0, 0%, 100%, 0.226);
   --border-avatar: #a5a5a56b;
   --border-avatar-shareboard: #a5a5a56b;
-  --bg-modal: #2B2C30;
+  --border-active-textarea: #7ab2ff;
+  --bg-modal:#252629;
   --bg-icon: #4e4e4e8c;
   --bg-input: #242528;
 

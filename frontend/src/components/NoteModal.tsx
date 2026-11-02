@@ -1,4 +1,4 @@
-import { Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
+import { Clock, Ellipsis, LucideTag, MessageSquareText, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
 import type { Label, Note } from "../types/types";
 import { useEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
@@ -26,6 +26,7 @@ type NoteModalProps = {
 function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onDelete, onNoteUpdated}: NoteModalProps){
 
     const [isEditingNoteContent, setIsEditingNoteContent] = useState(false);
+    const [isNoteContentVisible, setIsNoteContentVisible] = useState(true);
     const [draftContent, setDraftContent] = useState(note.content ?? "");
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const ellipsisRef = useRef<HTMLButtonElement>(null);
@@ -109,10 +110,10 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                 if (e.target === e.currentTarget) onClose();
             }}
         >
-            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-99 w-fit min-w-265 min-h-140.25 max-h-[calc(100dvh-128px)] 
-            bg-(--panel) rounded-2xl overflow-hidden"
+            <div className="fixed top-13 left-1/2 -translate-x-1/2 z-99 w-fit min-w-270 min-h-140.25 max-h-[calc(100dvh-128px)] 
+            bg-(--bg-modal) rounded-2xl overflow-hidden shadow-2xl"
             >
-                <div className="flex items-center justify-between w-full h-full min-w-md border-b border-(--border-mute) px-6 py-2">
+                <div className="flex items-center justify-between w-full h-14 min-w-md border-b border-(--border-mute) px-6 py-2">
                     <h3 className="text-sm font-semibold">{columnTitle}</h3>
                     <div className="flex gap-2">
 
@@ -146,9 +147,8 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                     </div>
                 </div>
                 <div className="flex flex-col justify-evenly">
-                    
-                    <div className="flex w-full h-175 justify-between">
-                        <div className="flex flex-col w-full text-left min-w-150 max-w-150 border-r border-(--border-mute) px-6 py-2">
+                    <div className="flex w-full h-175">
+                        <div className="flex flex-col w-full text-left min-w-155 border-r border-(--border-mute) pr-10 pb-4 pl-5">
                         
                         <EditableText
                             value={note.title ?? ""}
@@ -161,7 +161,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                         
                             <div className="flex flex-col gap-8">
 
-                                <div className="flex gap-2 py-2">
+                                <div className="flex gap-2 py-2 ml-8">
                                     <Button iconl={<Plus size={16} className="-mx-0.5" />}> Add </Button>
                                     <Button iconl={
                                         <LucideTag size={16} className="-mr-0.5" />} 
@@ -240,7 +240,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                 )}
 
                                 {noteLabels.length > 0 && (
-                                    <div className="flex flex-wrap gap-1">
+                                    <div className="flex flex-wrap gap-1 ml-8">
                                         {noteLabels.map((label) => (
                                             <span
                                                 key={label.id}
@@ -256,18 +256,38 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                 )}
 
                                 <div className="flex flex-col">
-                                    <div className="flex flex-row gap-2">                                
-                                        <TextAlignStart />
-                                        <p className="text-[14px] font-semibold pb-4">
-                                        Description
-                                        </p>
+                                    <div className="flex justify-between">                                
+                                        <div className="flex gap-2 justify-center items-center mb-2">
+                                            <button
+                                            className="cursor-pointer"
+                                            onClick={()=> {
+                                                if (isNoteContentVisible===true) setIsNoteContentVisible(false);
+                                                if (isNoteContentVisible===false) setIsNoteContentVisible(true);
+                                            }}
+                                            >
+                                                <TextAlignStart />
+                                            </button>
+                                            <p className="text-[14px] font-semibold">
+                                            Description
+                                            </p>
+                                        </div>
+                                        
+                                        {!isEditingNoteContent && (
+                                            <Button
+                                            onClick={()=>setIsEditingNoteContent(true)}
+                                            >
+                                                Edit
+                                            </Button>
+                                        )}
+
                                     </div>
 
-                                    {isEditingNoteContent ? (
-                                        <div className="flex flex-col gap-2">
+                                    {isNoteContentVisible && (
+                                        isEditingNoteContent ? (
+                                        <div className="flex flex-col gap-2 ml-8">
                                             <textarea
                                                 autoFocus
-                                                maxLength={200}
+                                                maxLength={1000}
                                                 value={draftContent}
                                                 onChange={(e) => setDraftContent(e.target.value)}
                                                 onBlur={commitContent}
@@ -284,8 +304,9 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                                         cancelEditingContent();
                                                     }
                                                 }}
-                                                className="resize-none outline-1 outline-(--mute) rounded-xs px-3 py-2 min-w-0 w-full text-sm text-left font-medium h-60
-                                                wrap-break-word"
+                                                className="resize-none outline-1 outline-(--border-mute) rounded-xs px-3 py-2 min-w-0 w-full max-h-full h-80
+                                                text-sm text-left font-medium wrap-break-word scrollbar-thick scroll-smooth scrollbar-thumb-gray-700 
+                                                scrollbar-track-transparent overflow-auto"
                                             />
 
                                             <div className="flex gap-1">
@@ -308,23 +329,38 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
 
                                         </div>
                                     ) : (
-                                        <button 
-                                        type="button" 
-                                        onClick={startEditingContent}
-                                        className="w-full min-w-0 text-left"
-                                        >
-                                            <p className="px-3 py-2 rounded-xs outline-1 outline-(--mute) text-sm font-medium text-left text-(--text-mute) h-20
-                                            wrap-break-word whitespace-pre-wrap hover:bg-(--hover-white)/10">
-                                                {note.content || "Add content..."}
-                                            </p>
-                                        </button>
-                                    )}
+                                        <div className="flex flex-col gap-2">
+                                            <button 
+                                            type="button" 
+                                            onClick={startEditingContent}
+                                            className="min-w-0 text-left ml-8 cursor-pointer"
+                                            >
+                                                <p className="px-3 py-2 rounded-xs text-sm font-medium text-left text-(--text-mute) 
+                                                wrap-break-word whitespace-pre-wrap overflow-hidden max-h-full h-110">
+                                                    {note.content || "Add content..."}
+                                                </p>
+                                            </button>
+                                            <Button
+                                            className="w-full"
+                                            >
+                                                Show more
+                                            </Button>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
-                        <div className="flex justify-items-start h-175 text-left w-full py-4 px-8 bg-(--bg-notemodal-right)">
-                            <div className="flex">
-                                aktywność
+                        <div className="flex justify-items-start h-175 text-left w-full px-6 py-6 bg-(--bg-notemodal-right) ">
+                            <div className="flex flex-col">
+                                <div className="flex gap-4">
+                                    <MessageSquareText size={18} />
+                                    <span className="text-sm font-semibold">Comments and activity</span>
+                                </div>
+                                <Button
+                                className="w-full mt-6 mb-4"
+                                >
+                                    <p>Write a comment...</p>
+                                </Button>
                                 {/*Komentarze i aktywność (pole do wpisania komentarza, lista komentarzy + aktywność jako ta sama lista)*/}
                             </div>
                         </div>

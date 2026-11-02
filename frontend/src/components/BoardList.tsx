@@ -172,7 +172,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
     return (
         <div className="flex flex-col h-full w-full overflow-hidden">
             <div className="flex text-center items-center justify-between shrink-0 
-            h-14 px-3 py-1 bg-black/30">
+            h-14 px-3 py-1 bg-(--bg-board-header) backdrop-blur-[6px]">
                 
                 <EditableText
                     value={board.title}

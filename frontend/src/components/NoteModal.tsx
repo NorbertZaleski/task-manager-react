@@ -1,6 +1,6 @@
 import { Clock, Ellipsis, LucideTag, MessageSquareText, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
 import type { Label, Note } from "../types/types";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
 import Button from "./Button";
 import OptionsModal from "./OptionsModal";
@@ -27,13 +27,17 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
 
     const [isEditingNoteContent, setIsEditingNoteContent] = useState(false);
     const [isNoteContentVisible, setIsNoteContentVisible] = useState(true);
+    const [isNoteContentExpanded, setIsNoteContentExpanded] = useState(false);
+    const [isNoteContentOverflowing, setIsNoteContentOverflowing] = useState(false);
     const [draftContent, setDraftContent] = useState(note.content ?? "");
+
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const ellipsisRef = useRef<HTMLButtonElement>(null);
     const [editingLabel, setEditingLabel] = useState<Label | null>(null);
     const [labelsModal, setLabelsModal] = useState<"closed" | "list" | "create" | "edit">("closed");
 
     const labelsRef = useRef<HTMLButtonElement>(null);
+    const bodyRef = useRef<HTMLDivElement>(null);
 
     const { boardId } = useParams<{ boardId: string }>();
     const { labels, reloadLabels } = useLabels();
@@ -104,16 +108,35 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
         return () => window.removeEventListener("keydown", onKey);
     }, [onClose, isEditingNoteContent]);
 
+    useLayoutEffect(() => {
+        const el = bodyRef.current;
+        if (!el) return;
+
+        const check = () =>
+            setIsNoteContentOverflowing(el.scrollHeight > el.clientHeight + 1);
+        check();
+
+        const ro = new ResizeObserver(check);
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, [
+        note.content,
+        noteLabels.length,
+        isNoteContentVisible,
+        isEditingNoteContent,
+        isNoteContentExpanded,
+    ]);
+
     return (
-        <div className="fixed inset-0 z-98 bg-black/80" 
+        <div className="fixed inset-0 z-98 bg-black/80 overflow-y-auto" 
             onMouseDown={(e) => {
                 if (e.target === e.currentTarget) onClose();
             }}
         >
-            <div className="fixed top-13 left-1/2 -translate-x-1/2 z-99 w-fit min-w-270 min-h-140.25 max-h-[calc(100dvh-128px)] 
+            <div className="relative mx-auto mt-13 mb-16 z-99 w-270 flex flex-col max-w-[calc(100vw-32px)] max-h-[calc(100dvh-128px)]
             bg-(--bg-modal) rounded-2xl overflow-hidden shadow-2xl"
             >
-                <div className="flex items-center justify-between w-full h-14 min-w-md border-b border-(--border-mute) px-6 py-2">
+                <div className="flex items-center justify-between w-full shrink-0 h-14 min-w-md border-b border-(--border-mute) px-6 py-2">
                     <h3 className="text-sm font-semibold">{columnTitle}</h3>
                     <div className="flex gap-2">
 
@@ -146,211 +169,226 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                         )}
                     </div>
                 </div>
-                <div className="flex flex-col justify-evenly">
-                    <div className="flex w-full h-175">
-                        <div className="flex flex-col w-full text-left min-w-155 border-r border-(--border-mute) pr-10 pb-4 pl-5">
+                <div className="flex flex-col min-h-0">
+                    <div className={`flex w-full min-h-0 ${isNoteContentExpanded ? "" : "max-h-175"}`}>
+                        <div className="flex flex-col text-left w-155 min-h-0 shrink-0 border-r border-(--border-mute) pr-10 pb-4 pl-5">
                         
-                        <EditableText
-                            value={note.title ?? ""}
-                            maxLength={30}
-                            onCommit={(title) => onRenameNote(note.id, title)}
-                            className="w-full px-2 h-16 text-3xl font-bold rounded-xs leading-none"
-                            viewClassName="hover:bg-(--hover-white)/10 outline-1 outline-transparent"
-                            editClassName="outline-1 outline-(--mute)"
-                        />
+                            <div className="shrink-0">
+                                <EditableText
+                                    value={note.title ?? ""}
+                                    maxLength={30}
+                                    onCommit={(title) => onRenameNote(note.id, title)}
+                                    className="w-full px-2 h-16 text-3xl font-bold rounded-xs leading-none"
+                                    viewClassName="hover:bg-(--hover-white)/10 outline-1 outline-transparent"
+                                    editClassName="outline-1 outline-(--mute)"
+                                />
+                            </div>
                         
-                            <div className="flex flex-col gap-8">
+                            {labelsModal === "list" && (
+                                <OptionsModal
+                                    title="Labels"
+                                    onClose={() => setLabelsModal("closed")}
+                                    anchorRef={labelsRef}
+                                    compOptions={[
+                                        <LabelsPicker 
+                                        key="labels_picker" 
+                                        labels={labels}
+                                        selectedIds={selectedLabelIds}
+                                        onToggle={handleToggleLabel}
+                                        onEdit={(label)=> {
+                                            setEditingLabel(label);
+                                            setLabelsModal("edit");
+                                        }}
+                                        />,
+                                        
+                                        <Button 
+                                        key="add_label_button" 
+                                        onClick={() => setLabelsModal("create")}
+                                        className="w-full"
+                                        >
+                                            Create new label
+                                        </Button>
+                                        ]
+                                    }
+                                    className="w-76"
+                                />
+                            )}
 
-                                <div className="flex gap-2 py-2 ml-8">
-                                    <Button iconl={<Plus size={16} className="-mx-0.5" />}> Add </Button>
-                                    <Button iconl={
-                                        <LucideTag size={16} className="-mr-0.5" />} 
-                                        onClick={()=>setLabelsModal("list")}
-                                        ref={labelsRef}
-                                    > 
-                                        Labels 
-                                    </Button>
-                                    <Button iconl={<Clock size={16} className="-mr-0.5" />}> Date </Button>
-                                    <Button iconl={<SquareCheck size={16} className="-mr-0.5" />}> To do list </Button>
-                                    <Button iconl={<UserRoundPlus size={16} className="-mr-0.5" />}> Members </Button>
-                                    <Button iconl={<Paperclip size={16} className="-mr-0.5" />}> Files </Button>
-                                </div>
+                            {labelsModal === "create" && (
+                                <OptionsModal
+                                    title="New label"
+                                    onClose={() => setLabelsModal("closed")}
+                                    anchorRef={labelsRef}
+                                    options={[]}
+                                    compOptions={
+                                        <CreateLabelForm
+                                            onSubmit={handleCreateLabel}
+                                            onCancel={() => setLabelsModal("list")}
+                                        />
+                                    }
+                                />
+                            )}
 
-                                {labelsModal === "list" && (
-                                    <OptionsModal
-                                        title="Labels"
-                                        onClose={() => setLabelsModal("closed")}
-                                        anchorRef={labelsRef}
-                                        compOptions={[
-                                            <LabelsPicker 
-                                            key="labels_picker" 
-                                            labels={labels}
-                                            selectedIds={selectedLabelIds}
-                                            onToggle={handleToggleLabel}
-                                            onEdit={(label)=> {
-                                                setEditingLabel(label);
-                                                setLabelsModal("edit");
-                                            }}
-                                            />,
-                                            
-                                            <Button 
-                                            key="add_label_button" 
-                                            onClick={() => setLabelsModal("create")}
-                                            className="w-full"
-                                            >
-                                                Create new label
-                                            </Button>
-                                            ]
-                                        }
-                                        className="w-76"
-                                    />
-                                )}
-
-                                {labelsModal === "create" && (
-                                    <OptionsModal
-                                        title="New label"
-                                        onClose={() => setLabelsModal("closed")}
-                                        anchorRef={labelsRef}
-                                        options={[]}
-                                        compOptions={
-                                            <CreateLabelForm
-                                                onSubmit={handleCreateLabel}
-                                                onCancel={() => setLabelsModal("list")}
+                            {labelsModal === "edit" && (
+                                <OptionsModal 
+                                    title="Edit label"
+                                    onClose={() => setLabelsModal("closed")}
+                                    anchorRef={labelsRef}
+                                    options={[]}
+                                    compOptions={
+                                        editingLabel && (
+                                            <LabelEditModal
+                                            label={editingLabel}
+                                            onSubmit={handleEditLabel} 
+                                            onCancel={()=> setLabelsModal("list")}
                                             />
-                                        }
-                                    />
-                                )}
+                                        )
+                                    }
+                                />
+                            )}
 
-                                {labelsModal === "edit" && (
-                                    <OptionsModal 
-                                        title="Edit label"
-                                        onClose={() => setLabelsModal("closed")}
-                                        anchorRef={labelsRef}
-                                        options={[]}
-                                        compOptions={
-                                            editingLabel && (
-                                                <LabelEditModal
-                                                label={editingLabel}
-                                                onSubmit={handleEditLabel} 
-                                                onCancel={()=> setLabelsModal("list")}
+                            <div className="relative flex flex-col flex-1 min-h-0">
+                                <div 
+                                ref={bodyRef}
+                                className={`flex flex-col gap-4 flex-1 min-h-0 *:shrink-0 ${
+                                    isNoteContentExpanded || isEditingNoteContent ? "overflow-y-hidden" : "overflow-hidden"
+                                }`}>
+
+                                    <div className="flex gap-2 py-2 ml-8">
+                                        <Button iconl={<Plus size={16} className="-mx-0.5" />}> Add </Button>
+                                        <Button iconl={
+                                            <LucideTag size={16} className="-mr-0.5" />} 
+                                            onClick={()=>setLabelsModal("list")}
+                                            ref={labelsRef}
+                                        > 
+                                            Labels 
+                                        </Button>
+                                        <Button iconl={<Clock size={16} className="-mr-0.5" />}> Date </Button>
+                                        <Button iconl={<SquareCheck size={16} className="-mr-0.5" />}> To do list </Button>
+                                        <Button iconl={<UserRoundPlus size={16} className="-mr-0.5" />}> Members </Button>
+                                        <Button iconl={<Paperclip size={16} className="-mr-0.5" />}> Files </Button>
+                                    </div>
+
+                                    {noteLabels.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 ml-8">
+                                            {noteLabels.map((label) => (
+                                                <span
+                                                    key={label.id}
+                                                    className={`text-xs font-medium justify-center p-2 h-4 rounded flex items-center max-w-full overflow-hidden select-none ${
+                                                    !label.title ? 'min-w-10' : ''
+                                                    }`}
+                                                    style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
+                                                >
+                                                    <span className="truncate min-w-0">{label.title}</span>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    <div className="flex flex-col">
+                                        <div className="flex justify-between">                                
+                                            <div className="flex gap-2 justify-center items-center mb-2">
+                                                <button
+                                                className="cursor-pointer"
+                                                onClick={()=> {
+                                                    if (isNoteContentVisible===true) setIsNoteContentVisible(false);
+                                                    if (isNoteContentVisible===false) setIsNoteContentVisible(true);
+                                                }}
+                                                >
+                                                    <TextAlignStart />
+                                                </button>
+                                                <p className="text-[14px] font-semibold">
+                                                Description
+                                                </p>
+                                            </div>
+                                            
+                                            {!isEditingNoteContent && isNoteContentVisible && (
+                                                <Button
+                                                onClick={()=>setIsEditingNoteContent(true)}
+                                                >
+                                                    Edit
+                                                </Button>
+                                            )}
+
+                                        </div>
+
+                                        {isNoteContentVisible && (
+                                            isEditingNoteContent ? (
+                                            <div className="flex flex-col gap-2 ml-8">
+                                                <textarea
+                                                    autoFocus
+                                                    maxLength={1000}
+                                                    value={draftContent}
+                                                    onChange={(e) => setDraftContent(e.target.value)}
+                                                    onBlur={commitContent}
+                                                    onFocus={(e)=> {
+                                                        const len = e.target.value.length;
+                                                        e.target.setSelectionRange(len, len);
+                                                    }}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === "Enter" && !e.shiftKey) {
+                                                            e.preventDefault();
+                                                            commitContent();
+                                                        }
+                                                        if (e.key === "Escape") {
+                                                            cancelEditingContent();
+                                                        }
+                                                    }}
+                                                    className="resize-none outline-1 outline-(--border-mute) rounded-xs px-3 py-2 min-w-0 w-full max-h-full h-80
+                                                    text-sm text-left font-medium wrap-break-word scrollbar-thick scroll-smooth scrollbar-thumb-gray-700 
+                                                    scrollbar-track-transparent overflow-auto"
                                                 />
-                                            )
-                                        }
-                                    />
-                                )}
 
-                                {noteLabels.length > 0 && (
-                                    <div className="flex flex-wrap gap-1 ml-8">
-                                        {noteLabels.map((label) => (
-                                            <span
-                                                key={label.id}
-                                                className={`text-xs font-medium justify-center p-2 h-4 rounded flex items-center max-w-full overflow-hidden select-none ${
-                                                !label.title ? 'min-w-10' : ''
-                                                }`}
-                                                style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
-                                            >
-                                                <span className="truncate min-w-0">{label.title}</span>
-                                            </span>
+                                                <div className="flex gap-1">
+                                                    <Button
+                                                        variant="primary"
+                                                        onMouseDown={(e) => e.preventDefault()}
+                                                        onClick={commitContent}
+                                                    >
+                                                        Save
+                                                    </Button>
+
+                                                    <Button
+                                                        variant="ghost"
+                                                        onMouseDown={(e) => e.preventDefault()}
+                                                        onClick={cancelEditingContent}
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                </div>
+
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col gap-2">
+                                                <button 
+                                                type="button" 
+                                                onClick={startEditingContent}
+                                                className="min-w-0 text-left ml-8 cursor-pointer"
+                                                >
+                                                    <p className="px-3 py-2 rounded-xs text-sm font-medium text-left text-(--text-mute) 
+                                                    wrap-break-word whitespace-pre-wrap">
+                                                        {note.content || "Add content..."}
+                                                    </p>
+                                                </button>
+                                                
+                                            </div>
                                         ))}
                                     </div>
-                                )}
 
-                                <div className="flex flex-col">
-                                    <div className="flex justify-between">                                
-                                        <div className="flex gap-2 justify-center items-center mb-2">
-                                            <button
-                                            className="cursor-pointer"
-                                            onClick={()=> {
-                                                if (isNoteContentVisible===true) setIsNoteContentVisible(false);
-                                                if (isNoteContentVisible===false) setIsNoteContentVisible(true);
-                                            }}
-                                            >
-                                                <TextAlignStart />
-                                            </button>
-                                            <p className="text-[14px] font-semibold">
-                                            Description
-                                            </p>
-                                        </div>
-                                        
-                                        {!isEditingNoteContent && (
-                                            <Button
-                                            onClick={()=>setIsEditingNoteContent(true)}
-                                            >
-                                                Edit
-                                            </Button>
-                                        )}
-
-                                    </div>
-
-                                    {isNoteContentVisible && (
-                                        isEditingNoteContent ? (
-                                        <div className="flex flex-col gap-2 ml-8">
-                                            <textarea
-                                                autoFocus
-                                                maxLength={1000}
-                                                value={draftContent}
-                                                onChange={(e) => setDraftContent(e.target.value)}
-                                                onBlur={commitContent}
-                                                onFocus={(e)=> {
-                                                    const len = e.target.value.length;
-                                                    e.target.setSelectionRange(len, len);
-                                                }}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === "Enter" && !e.shiftKey) {
-                                                        e.preventDefault();
-                                                        commitContent();
-                                                    }
-                                                    if (e.key === "Escape") {
-                                                        cancelEditingContent();
-                                                    }
-                                                }}
-                                                className="resize-none outline-1 outline-(--border-mute) rounded-xs px-3 py-2 min-w-0 w-full max-h-full h-80
-                                                text-sm text-left font-medium wrap-break-word scrollbar-thick scroll-smooth scrollbar-thumb-gray-700 
-                                                scrollbar-track-transparent overflow-auto"
-                                            />
-
-                                            <div className="flex gap-1">
-                                                <Button
-                                                    variant="primary"
-                                                    onMouseDown={(e) => e.preventDefault()}
-                                                    onClick={commitContent}
-                                                >
-                                                    Save
-                                                </Button>
-
-                                                <Button
-                                                    variant="ghost"
-                                                    onMouseDown={(e) => e.preventDefault()}
-                                                    onClick={cancelEditingContent}
-                                                >
-                                                    Cancel
-                                                </Button>
-                                            </div>
-
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col gap-2">
-                                            <button 
-                                            type="button" 
-                                            onClick={startEditingContent}
-                                            className="min-w-0 text-left ml-8 cursor-pointer"
-                                            >
-                                                <p className="px-3 py-2 rounded-xs text-sm font-medium text-left text-(--text-mute) 
-                                                wrap-break-word whitespace-pre-wrap overflow-hidden max-h-full h-110">
-                                                    {note.content || "Add content..."}
-                                                </p>
-                                            </button>
-                                            <Button
-                                            className="w-full"
-                                            >
-                                                Show more
-                                            </Button>
-                                        </div>
-                                    ))}
                                 </div>
+                                    {!isNoteContentExpanded && isNoteContentOverflowing && !isEditingNoteContent && (
+                                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-(--bg-modal) to-transparent" />
+                                    )}
                             </div>
+                            {!isEditingNoteContent && (isNoteContentOverflowing || isNoteContentExpanded) && (
+                                <div className="shrink-0 pt-2">
+                                    <Button className="w-full" onClick={() => setIsNoteContentExpanded((v) => !v)}>
+                                        {isNoteContentExpanded ? "Show less" : "Show more"}
+                                    </Button>
+                                </div>
+                            )}
                         </div>
-                        <div className="flex justify-items-start h-175 text-left w-full px-6 py-6 bg-(--bg-notemodal-right) ">
+                        <div className="flex flex-1 min-w-0 justify-items-start text-left p-6 bg-(--bg-notemodal-right)">
                             <div className="flex flex-col">
                                 <div className="flex gap-4">
                                     <MessageSquareText size={18} />

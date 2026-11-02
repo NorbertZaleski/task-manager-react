@@ -196,6 +196,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                             <Button 
                                             key="add_label_button" 
                                             onClick={() => setLabelsModal("create")}
+                                            className="w-full"
                                             >
                                                 Create new label
                                             </Button>

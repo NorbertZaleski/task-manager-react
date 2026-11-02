@@ -18,7 +18,7 @@ function LabelsPicker({labels, selectedIds, onToggle, onEdit, max=10}: LabelsPic
 
     return (
         <>
-            <div className="w-full flex flex-col py-2 max-h-125 overflow-y-auto scrollbar-thin">
+            <div className="w-full flex flex-col py-2 max-h-125 scrollbar-thick scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent overflow-auto">
                 {visible.map((label)=> {
                     const selected = selectedIds.includes(label.id);
 
@@ -28,7 +28,7 @@ function LabelsPicker({labels, selectedIds, onToggle, onEdit, max=10}: LabelsPic
                         className="flex gap-2 py-0.5 items-center w-full h-max-150 px-1"
                         onClick={()=>onToggle(label.id)}
                         >
-                            <input type="checkbox" checked={selected} readOnly tabIndex={-1} className="size-6"/>
+                            <input type="checkbox" checked={selected} readOnly tabIndex={-1} className="size-5"/>
                             <span className="w-full w-max-[212px] h-8 rounded px-2 py-1 truncate overflow-hidden select-none" 
                             style={{backgroundColor: label.color, color: getTextColor(label.color)}}>
                                 {label.title}

@@ -1,4 +1,4 @@
-export const COLORS = ["#0079bf", "#d29034", "#519839", "#b04632", "#89609e"];
+export const COLORS = ["#0079bf", "#d29034", "#a64b28", "#b04632", "#89609e"];
 
 export const IMAGES = [
     "https://images.unsplash.com/photo-1790059718313-ffc4963313d0?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D",

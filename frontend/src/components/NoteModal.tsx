@@ -27,9 +27,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
 
     const [isEditingNoteContent, setIsEditingNoteContent] = useState(false);
     const [isNoteContentVisible, setIsNoteContentVisible] = useState(true);
-    const [isNoteContentExpanded, setIsNoteContentExpanded] = useState(false);
     const [isNoteContentOverflowing, setIsNoteContentOverflowing] = useState(false);
-    const [draftContent, setDraftContent] = useState(note.content ?? "");
 
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const ellipsisRef = useRef<HTMLButtonElement>(null);
@@ -37,7 +35,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     const [labelsModal, setLabelsModal] = useState<"closed" | "list" | "create" | "edit">("closed");
 
     const labelsRef = useRef<HTMLButtonElement>(null);
-    const bodyRef = useRef<HTMLDivElement>(null);
+    const descRef = useRef<HTMLDivElement>(null);
 
     const { boardId } = useParams<{ boardId: string }>();
     const { labels, reloadLabels } = useLabels();
@@ -45,24 +43,6 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
         () => note.labelIds ?? []
     );
-
-    function startEditingContent() {
-        setDraftContent(note.content ?? "");
-        setIsEditingNoteContent(true);
-    }
-
-    function cancelEditingContent() {
-        setDraftContent(note.content ?? "");
-        setIsEditingNoteContent(false);
-    }
-
-    function commitContent(){
-        const trimmed = draftContent.trim();
-        if (trimmed !== (note.content ?? "")) {
-            onSaveContent(note.id, trimmed);
-        }
-        setIsEditingNoteContent(false);
-    }
 
     async function handleToggleLabel(labelId: string) {
         if (!labelId) {
@@ -109,8 +89,8 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     }, [onClose, isEditingNoteContent]);
 
     useLayoutEffect(() => {
-        const el = bodyRef.current;
-        if (!el) return;
+        const el = descRef.current;
+        if (!el || isEditingNoteContent) return;
 
         const check = () =>
             setIsNoteContentOverflowing(el.scrollHeight > el.clientHeight + 1);
@@ -119,13 +99,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
         const ro = new ResizeObserver(check);
         ro.observe(el);
         return () => ro.disconnect();
-    }, [
-        note.content,
-        noteLabels.length,
-        isNoteContentVisible,
-        isEditingNoteContent,
-        isNoteContentExpanded,
-    ]);
+    }, [note.content, isNoteContentVisible, isEditingNoteContent]);
 
     return (
         <div className="fixed inset-0 z-98 bg-black/80 overflow-y-auto" 
@@ -169,18 +143,19 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                         )}
                     </div>
                 </div>
-                <div className="flex flex-col min-h-0">
-                    <div className={`flex w-full min-h-0 ${isNoteContentExpanded ? "" : "max-h-175"}`}>
-                        <div className="flex flex-col text-left w-155 min-h-0 shrink-0 border-r border-(--border-mute) pr-10 pb-4 pl-5">
+                <div className="flex flex-col min-h-0 flex-1">
+                    <div className="flex w-full min-h-0 flex-1">
+                        <div className="flex flex-col text-left w-155 min-h-0 shrink-0 border-r border-(--border-mute) pl-5 pr-6 pb-4 overflow-y-auto scrollbar-gutter-stable scrollbar-thin">
                         
                             <div className="shrink-0">
                                 <EditableText
                                     value={note.title ?? ""}
-                                    maxLength={30}
+                                    maxLength={400}
                                     onCommit={(title) => onRenameNote(note.id, title)}
-                                    className="w-full px-2 h-16 text-3xl font-bold rounded-xs leading-none"
-                                    viewClassName="hover:bg-(--hover-white)/10 outline-1 outline-transparent"
+                                    className="w-full px-2 py-1 my-3 min-h-16 h-fit text-3xl font-bold rounded-xs leading-tight wrap-break-word"
+                                    viewClassName="outline-1 outline-transparent cursor-text"
                                     editClassName="outline-1 outline-(--mute)"
+
                                 />
                             </div>
                         
@@ -247,12 +222,12 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                 />
                             )}
 
-                            <div className="relative flex flex-col flex-1 min-h-0">
-                                <div 
-                                ref={bodyRef}
-                                className={`flex flex-col gap-4 flex-1 min-h-0 *:shrink-0 ${
-                                    isNoteContentExpanded || isEditingNoteContent ? "overflow-y-hidden" : "overflow-hidden"
-                                }`}>
+                            <div className={`relative flex flex-col ${
+                                isEditingNoteContent ? "" : "flex-1 min-h-0"
+                            }`}>
+                                <div
+                                    className="flex flex-col gap-4"
+                                >
 
                                     <div className="flex gap-2 py-2 ml-8">
                                         <Button iconl={<Plus size={16} className="-mx-0.5" />}> Add </Button>
@@ -301,92 +276,43 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                                 Description
                                                 </p>
                                             </div>
-                                            
-                                            {!isEditingNoteContent && isNoteContentVisible && (
-                                                <Button
-                                                onClick={()=>setIsEditingNoteContent(true)}
-                                                >
-                                                    Edit
-                                                </Button>
-                                            )}
-
                                         </div>
 
-                                        {isNoteContentVisible && (
-                                            isEditingNoteContent ? (
-                                            <div className="flex flex-col gap-2 ml-8">
-                                                <textarea
-                                                    autoFocus
-                                                    maxLength={1000}
-                                                    value={draftContent}
-                                                    onChange={(e) => setDraftContent(e.target.value)}
-                                                    onBlur={commitContent}
-                                                    onFocus={(e)=> {
-                                                        const len = e.target.value.length;
-                                                        e.target.setSelectionRange(len, len);
-                                                    }}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === "Enter" && !e.shiftKey) {
-                                                            e.preventDefault();
-                                                            commitContent();
-                                                        }
-                                                        if (e.key === "Escape") {
-                                                            cancelEditingContent();
-                                                        }
-                                                    }}
-                                                    className="resize-none outline-1 outline-(--border-mute) rounded-xs px-3 py-2 min-w-0 w-full max-h-full h-80
-                                                    text-sm text-left font-medium wrap-break-word scrollbar-thick scroll-smooth scrollbar-thumb-gray-700 
-                                                    scrollbar-track-transparent overflow-auto"
-                                                />
-
-                                                <div className="flex gap-1">
-                                                    <Button
-                                                        variant="primary"
-                                                        onMouseDown={(e) => e.preventDefault()}
-                                                        onClick={commitContent}
-                                                    >
-                                                        Save
-                                                    </Button>
-
-                                                    <Button
-                                                        variant="ghost"
-                                                        onMouseDown={(e) => e.preventDefault()}
-                                                        onClick={cancelEditingContent}
-                                                    >
-                                                        Cancel
-                                                    </Button>
+                                    {isNoteContentVisible && (
+                                        <div className="ml-8">
+                                            <div className="relative">
+                                                <div
+                                                    ref={descRef}
+                                                    className={isEditingNoteContent ? "" : "max-h-60 overflow-hidden"}
+                                                >
+                                                    <EditableText
+                                                        value={note.content ?? ""}
+                                                        maxLength={1000}
+                                                        allowEmpty
+                                                        multiline
+                                                        placeholder="Add content..."
+                                                        onCommit={(content) => onSaveContent(note.id, content)}
+                                                        onEditingChange={setIsEditingNoteContent}
+                                                        className="w-full px-3 py-2 rounded-xs text-sm font-medium"
+                                                        viewClassName="text-(--text-mute) cursor-pointer"
+                                                        editClassName="outline-1 -outline-offset-1 outline-(--border-mute) min-h-40"
+                                                    />
                                                 </div>
 
+                                                {!isEditingNoteContent && isNoteContentOverflowing && (
+                                                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-(--bg-modal) to-transparent" />
+                                                )}
                                             </div>
-                                        ) : (
-                                            <div className="flex flex-col gap-2">
-                                                <button 
-                                                type="button" 
-                                                onClick={startEditingContent}
-                                                className="min-w-0 text-left ml-8 cursor-pointer"
-                                                >
-                                                    <p className="px-3 py-2 rounded-xs text-sm font-medium text-left text-(--text-mute) 
-                                                    wrap-break-word whitespace-pre-wrap">
-                                                        {note.content || "Add content..."}
-                                                    </p>
-                                                </button>
-                                                
-                                            </div>
-                                        ))}
+                                        </div>
+                                    )}
                                     </div>
 
                                 </div>
-                                    {!isNoteContentExpanded && isNoteContentOverflowing && !isEditingNoteContent && (
+                                    {isNoteContentOverflowing && !isEditingNoteContent && (
                                         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-(--bg-modal) to-transparent" />
                                     )}
                             </div>
-                            {!isEditingNoteContent && (isNoteContentOverflowing || isNoteContentExpanded) && (
-                                <div className="shrink-0 pt-2">
-                                    <Button className="w-full" onClick={() => setIsNoteContentExpanded((v) => !v)}>
-                                        {isNoteContentExpanded ? "Show less" : "Show more"}
-                                    </Button>
-                                </div>
-                            )}
+
                         </div>
                         <div className="flex flex-1 min-w-0 justify-items-start text-left p-6 bg-(--bg-notemodal-right)">
                             <div className="flex flex-col">

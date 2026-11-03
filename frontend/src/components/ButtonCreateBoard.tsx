@@ -77,7 +77,7 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
                         <form
                             onSubmit={handleCreateBoard}
                             style={{ top: pos.top, left: pos.left }}
-                            className="fixed z-100 w-76 max-h-[80vh] overflow-y-auto rounded-lg bg-(--panel) p-3 shadow-lg flex flex-col gap-3"
+                            className="fixed z-100 w-76 max-h-[80vh] overflow-y-auto rounded-lg bg-(--bg-modal-light) p-3 shadow-lg flex flex-col gap-3"
                         >
                             <div className="flex items-center justify-between">
                                 <ChevronLeft />

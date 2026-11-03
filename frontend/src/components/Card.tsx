@@ -13,7 +13,7 @@ function Card({note, onOpen}: CardProps) {
 
     return (
         <div
-        className="px-4 py-2 bg-(--card) flex flex-col text-start w-full wrap-break-word whitespace-pre-wrap rounded-xl gap-1
+        className="px-4 py-2 bg-(--card) flex flex-col text-start w-full wrap-break-word whitespace-pre-wrap rounded-lg gap-1
         cursor-grab active:cursor-grabbing"
         draggable 
         onDragStart={(e) => {

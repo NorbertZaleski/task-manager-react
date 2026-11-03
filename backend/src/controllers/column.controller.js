@@ -46,9 +46,6 @@ export async function updateColumn(req, res) {
             if (typeof title !== "string" || !title.trim()) {
                 return res.status(400).json({ message: "Title is required" });
             }
-            if (title.trim().length > 30) {
-                return res.status(400).json({ message: "Title is too long (max 30 characters)" });
-            }
             column.title = title.trim();
         }
 

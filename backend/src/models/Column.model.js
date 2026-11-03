@@ -11,7 +11,6 @@ const columnSchema = new mongoose.Schema({
         type: String, 
         required: true,
         trim: true,
-        maxlength: [30, "title can't be longer than 30 characters"],
     },
     color: { 
         type: String, 

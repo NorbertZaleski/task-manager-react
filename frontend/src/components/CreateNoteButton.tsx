@@ -1,5 +1,6 @@
 import { Plus, X } from "lucide-react";
 import { useRef, useState } from "react";
+import Button from "./Button";
 
 type CreateNoteButtonprops = {
     onCreate: (content: string) => Promise<void>;
@@ -18,12 +19,13 @@ function CreateNoteButton({onCreate}: CreateNoteButtonprops){
 
     if (!isAdding) {
         return (
-            <button 
+            <Button 
             type="submit" 
+            variant="ghost"
             onClick={() => setIsAdding(true)} 
-            className="flex w-full items-center text-center gap-1 p-1 text-sm font-semibold">
+            className="flex w-full items-center text-left justify-start gap-1 p-1 text-sm font-semibold cursor-pointer">
                 <Plus size={16} /> Add card
-            </button>
+            </Button>
         );
     }
 
@@ -65,6 +67,7 @@ function CreateNoteButton({onCreate}: CreateNoteButtonprops){
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Note title"
+                maxLength={400}
                 onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {
                                 e.preventDefault();
@@ -74,17 +77,24 @@ function CreateNoteButton({onCreate}: CreateNoteButtonprops){
                                 cancelAdding();
                             }
                         }}
-                className="bg-(--card) px-4 py-2 outline-0 rounded-lg w-full h-20 resize-none text-md"
+                className="bg-(--card) px-4 py-2 outline-0 rounded-md w-full h-20 resize-none text-md"
             />
             <div className="flex gap-2 justify-start w-full">
-                <button 
+                <Button
+                variant="primary"
                 type="submit"
                 disabled={submitting || !title.trim()}
-                className="px-2 py-1 rounded-lg text-sm text-semibold text-(--card) bg-(--button) disabled:opacity-60"
+                className="disabled:opacity-60"
                 >
-                    <p className="font-semibold">Add card</p>
-                </button>
-                <button type="button" onClick={() => cancelAdding()}><X size={18}/></button>
+                    <span className="font-semibold text-sm">Add card</span>
+                </Button>
+                <Button
+                type="button" 
+                onClick={() => cancelAdding()}
+                className="px-2 border-none"
+                >
+                    <X size={18}/>
+                </Button>
             </div>
         </form>
     );

@@ -207,14 +207,6 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                         />
                     )}
 
-                    {isMemberInviteModalOpen && (
-                        <ShareBoardModal
-                        board={board}
-                        onClose={() => setIsMemberInviteModalOpen(false)}
-                        addMember={handleAddMember}
-                        />
-                    )}
-
                 </div>
             </div>
 
@@ -258,7 +250,15 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                 onNoteUpdated={handleNoteUpdated}
                 />
             )}
-            
+    
+            {isMemberInviteModalOpen && (
+                <ShareBoardModal
+                board={board}
+                onClose={() => setIsMemberInviteModalOpen(false)}
+                addMember={handleAddMember}
+                />
+            )}
+
             <FloatingBottomBar />
 
         </div>

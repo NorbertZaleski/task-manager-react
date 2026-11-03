@@ -36,10 +36,8 @@ function ShareBoardModal({board, onClose, addMember}: ShareBoardModalProps) {
             if (e.target === e.currentTarget) onClose();
         }}
         >
-            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-99 w-fit min-w-146 min-h-202 max-h-[calc(100dvh-128px)
-            bg-(--bg-modal) rounded-2xl overflow-hidden py-4 px-6 flex flex-col gap-6
-            ">
-
+            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-99 w-146 max-w-[calc(100vw-32px)] min-h-0 max-h-[calc(100dvh-128px)] 
+            bg-(--bg-modal) rounded-2xl overflow-y-auto py-4 px-6 flex flex-col gap-6">
                 <div className="flex justify-between">
                     <h2 className="text-xl">Share board</h2>
                     <button

@@ -1,4 +1,4 @@
-import { Clock, Ellipsis, LucideTag, MessageSquareText, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
+import { Clock, Ellipsis, LucideTag, MessageSquareText, Paperclip, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
 import type { Label, Note } from "../types/types";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
@@ -145,7 +145,8 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                 </div>
                 <div className="flex flex-col min-h-0 flex-1">
                     <div className="flex w-full min-h-0 flex-1">
-                        <div className="flex flex-col text-left w-155 min-h-0 shrink-0 border-r border-(--border-mute) pl-5 pr-6 pb-4 overflow-y-auto scrollbar-gutter-stable scrollbar-thin">
+                        <div className="flex flex-col text-left w-155 min-h-0 shrink-0 border-r border-(--border-mute) pl-5 pr-6 pb-4 
+                        overflow-y-auto scrollbar-gutter-stable scrollbar-thin scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent">
                         
                             <div className="shrink-0">
                                 <EditableText
@@ -230,7 +231,6 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                 >
 
                                     <div className="flex gap-2 py-2 ml-8">
-                                        <Button iconl={<Plus size={16} className="-mx-0.5" />}> Add </Button>
                                         <Button iconl={
                                             <LucideTag size={16} className="-mr-0.5" />} 
                                             onClick={()=>setLabelsModal("list")}
@@ -289,11 +289,11 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                                         value={note.content ?? ""}
                                                         maxLength={1000}
                                                         allowEmpty
-                                                        multiline
+                                                        multiline={true}
                                                         placeholder="Add content..."
                                                         onCommit={(content) => onSaveContent(note.id, content)}
                                                         onEditingChange={setIsEditingNoteContent}
-                                                        className="w-full px-3 py-2 rounded-xs text-sm font-medium"
+                                                        className="w-full px-3 py-2 rounded-xs text-sm font-normal"
                                                         viewClassName="text-(--text-mute) cursor-pointer"
                                                         editClassName="outline-1 -outline-offset-1 outline-(--border-mute) min-h-40"
                                                     />

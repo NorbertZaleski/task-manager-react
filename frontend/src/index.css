@@ -3,22 +3,28 @@
 :root {
   --bg:#1F1F21;
   --panel:#101204;
+  --card: #252629;
+
   --text:#dfdfdf;
   --text-dark: #1F1f21;
   --text-mute: #A9ABAF;
+
   --mute:#9aa0ab;
+
   --line:#f1f1f3;
-  --card: #252629;
+
   --bg-board-header:#00000038;
   --bg-main:#1F1F21;
   --bg-notemodal-right: #303134;
+
   --border-mute: hsla(0,0%,100%,0.16);
-  --border-btn-simple: hsla(0, 0%, 100%, 0.226);
   --border-avatar: #a5a5a56b;
   --border-avatar-shareboard: #a5a5a56b;
   --border-active-textarea: #7ab2ff;
+  
   --bg-modal:#252629;
   --bg-modal-light:#2a2b2e;
+  
   --bg-icon: #4e4e4e8c;
   --bg-input: #242528;
 
@@ -28,6 +34,8 @@
 
   --button:#6895ff;
   --button-hover: #88acff;
+  --border-btn: hsla(0, 0%, 100%, 0.226);
+
   --hover-white: rgba(255, 255, 255, 0.24);
   --hover-white-darker: rgba(255, 255, 255, 0.18);
 

@@ -13,7 +13,7 @@ const base =
 
 const variants: Record<ButtonVariant, string> = {
     outline:
-        "border border-(color:--border-btn-simple) px-2 text-[14px] text-(--text-mute) hover:bg-white/5",
+        "border border-(color:--border-btn) px-2 text-[14px] text-(--text-mute) hover:bg-white/5",
     primary:
         "bg-(--button) hover:bg-(--button-hover) px-3 text-base text-(--text-dark)",
     ghost:

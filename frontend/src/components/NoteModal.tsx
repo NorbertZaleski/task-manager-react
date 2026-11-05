@@ -1,4 +1,4 @@
-import { Clock, Ellipsis, LucideTag, MessageSquareText, Paperclip, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
+import { Check, ChevronDown, Circle, CircleCheck, Clock, Ellipsis, LucideTag, MessageSquareText, Paperclip, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
 import type { Label, Note } from "../types/types";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
@@ -12,6 +12,8 @@ import { useLabels } from "../context/LabelsContext";
 import { useParams } from "react-router";
 import { getTextColor } from "../utils/getTextColor";
 import LabelEditModal from "./LabelEditModal";
+import DueDateForm from "./DueDateForm";
+import { dueClassBase, dueStatusClass, formatDue, getDueStatus } from "../utils/dueDate";
 
 type NoteModalProps = {
     note: Note;
@@ -28,14 +30,20 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     const [isEditingNoteContent, setIsEditingNoteContent] = useState(false);
     const [isNoteContentVisible, setIsNoteContentVisible] = useState(true);
     const [isNoteContentOverflowing, setIsNoteContentOverflowing] = useState(false);
-
+    
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-    const ellipsisRef = useRef<HTMLButtonElement>(null);
+    const [isDueOpen, setIsDueOpen] = useState(false);
+
     const [editingLabel, setEditingLabel] = useState<Label | null>(null);
     const [labelsModal, setLabelsModal] = useState<"closed" | "list" | "create" | "edit">("closed");
-
+    
+    const ellipsisRef = useRef<HTMLButtonElement>(null);
     const labelsRef = useRef<HTMLButtonElement>(null);
     const descRef = useRef<HTMLDivElement>(null);
+    const dueRef = useRef<HTMLButtonElement>(null);
+    const dueRefActive = useRef<HTMLButtonElement>(null);
+    const [dueAnchor, setDueAnchor] = useState<"toolbar" | "badge">("toolbar");
+    const dueAnchorRef = dueAnchor === "badge" ? dueRefActive : dueRef;
 
     const { boardId } = useParams<{ boardId: string }>();
     const { labels, reloadLabels } = useLabels();
@@ -43,6 +51,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
         () => note.labelIds ?? []
     );
+    const status = note.dueDate ? getDueStatus(note.dueDate, note.completed) : null;
 
     async function handleToggleLabel(labelId: string) {
         if (!labelId) {
@@ -80,6 +89,25 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
         setLabelsModal("list");
     };
 
+    async function handleSaveDueDate(dueDate: string | null) {
+        try {
+            const updatedNote = await notesService.setDueDate(note.id, dueDate);
+            onNoteUpdated?.(updatedNote);
+            setIsDueOpen(false);
+        } catch (err) {
+            console.error("Error:", err);
+        }
+    };
+
+    async function handleToggleCompleted(next: boolean) {
+        try {
+            const updatedNote = await notesService.setCompleted(note.id, next);
+            onNoteUpdated?.(updatedNote);
+        } catch (err) {
+            console.error("Error:", err);
+        }
+    };
+
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             if (e.key === "Escape" && !isEditingNoteContent) onClose();
@@ -114,22 +142,20 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                     <h3 className="text-sm font-semibold">{columnTitle}</h3>
                     <div className="flex gap-2">
 
-                        <button 
-                        type="button" 
+                        <Button 
+                        variant="ghost_small"
                         onClick={() => setIsOptionsOpen(true)}
                         ref={ellipsisRef}
-                        className="flex size-8 items-center justify-center rounded-full hover:bg-white/5"
                         >
                             <Ellipsis size={16} />
-                        </button>
+                        </Button>
 
-                        <button 
-                        type="button" 
+                        <Button
+                        variant="ghost_small"
                         onClick={onClose}
-                        className="flex size-8 items-center justify-center rounded-full hover:bg-white/5"
                         >
                             <X size={16}/>
-                        </button>
+                        </Button>
 
                         {isOptionsOpen && (
                             <OptionsModal 
@@ -148,16 +174,29 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                         <div className="flex flex-col text-left w-155 min-h-0 shrink-0 border-r border-(--border-mute) pl-5 pr-6 pb-4 
                         overflow-y-auto scrollbar-gutter-stable scrollbar-thin scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent">
                         
-                            <div className="shrink-0">
-                                <EditableText
-                                    value={note.title ?? ""}
-                                    maxLength={400}
-                                    onCommit={(title) => onRenameNote(note.id, title)}
-                                    className="w-full px-2 py-1 my-3 min-h-16 h-fit text-3xl font-bold rounded-xs leading-tight wrap-break-word"
-                                    viewClassName="outline-1 outline-transparent cursor-text"
-                                    editClassName="outline-1 outline-(--mute)"
+                            <div className="shrink-0 flex items-start gap-3">
+                                <button
+                                    type="button"
+                                    onClick={()=>handleToggleCompleted(!note.completed)}
+                                    aria-pressed={!!note.completed}
+                                    aria-label={note.completed ? "Mark as not completed" : "Mark as completed"}
+                                    className={`mt-6 flex shrink-0 h-10 cursor-pointer rounded-full transition-colors ${
+                                        note.completed ? "text-green-400" : "text-(--text-mute) hover:text-white"
+                                    }`}
+                                >
+                                    {note.completed ? <CircleCheck size={24} /> : <Circle size={24} />}
+                                </button>
 
-                                />
+                                <div className="flex-1 min-w-0 mt-3">
+                                    <EditableText
+                                        value={note.title ?? ""}
+                                        maxLength={400}
+                                        onCommit={(title) => onRenameNote(note.id, title)}
+                                        className="block w-full px-2 py-1 min-h-10 h-fit text-3xl font-bold rounded-xs leading-tight wrap-break-word"
+                                        viewClassName="outline-1 outline-transparent cursor-text"
+                                        editClassName="outline-1 outline-(--mute)"
+                                    />
+                                </div>
                             </div>
                         
                             {labelsModal === "list" && (
@@ -223,6 +262,21 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                 />
                             )}
 
+                            {isDueOpen && (
+                                <OptionsModal
+                                    title="Date"
+                                    onClose={() => setIsDueOpen(false)}
+                                    anchorRef={dueAnchorRef}
+                                    options={[]}
+                                    compOptions={
+                                        <DueDateForm
+                                            value={note.dueDate}
+                                            onSave={handleSaveDueDate}
+                                        />
+                                    }
+                                />
+                            )}
+
                             <div className={`relative flex flex-col ${
                                 isEditingNoteContent ? "" : "flex-1 min-h-0"
                             }`}>
@@ -231,14 +285,20 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                 >
 
                                     <div className="flex gap-2 py-2 ml-8">
-                                        <Button iconl={
-                                            <LucideTag size={16} className="-mr-0.5" />} 
+                                        <Button 
+                                            iconl={ <LucideTag size={16} className="-mr-0.5" />} 
                                             onClick={()=>setLabelsModal("list")}
                                             ref={labelsRef}
                                         > 
                                             Labels 
                                         </Button>
-                                        <Button iconl={<Clock size={16} className="-mr-0.5" />}> Date </Button>
+                                        <Button 
+                                            iconl={<Clock size={16} className="-mr-0.5" />}
+                                            onClick={() => { setDueAnchor("toolbar"); setIsDueOpen(true); }}
+                                            ref={dueRef}
+                                        > 
+                                            Date 
+                                        </Button>
                                         <Button iconl={<SquareCheck size={16} className="-mr-0.5" />}> To do list </Button>
                                         <Button iconl={<UserRoundPlus size={16} className="-mr-0.5" />}> Members </Button>
                                         <Button iconl={<Paperclip size={16} className="-mr-0.5" />}> Files </Button>
@@ -257,6 +317,24 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                                     <span className="truncate min-w-0">{label.title}</span>
                                                 </span>
                                             ))}
+                                        </div>
+                                    )}
+
+                                    {note.dueDate && status && (
+                                        <div className="ml-8 flex flex-col gap-1 text-(--text-mute)">
+                                            <label className="text-xs">Due date</label>
+                                            <Button
+                                                variant="ghost"
+                                                ref={dueRefActive}
+                                                onClick={() => { setDueAnchor("badge"); setIsDueOpen(true); }}
+                                                className={`flex items-center gap-1 rounded h-fit pl-2 pr-1.5 py-1 text-xs font-medium cursor-pointer select-none bg-(--mute)/10`}
+                                            >
+                                                {formatDue(note.dueDate)}
+                                                {status === "completed" && <span className={`${dueClassBase} ${dueStatusClass[status]}`}>Completed</span>}
+                                                {status === "soon" && <span className={`${dueClassBase} ${dueStatusClass[status]}`}>Due soon</span>}
+                                                {status === "overdue" && <span className={`${dueClassBase} ${dueStatusClass[status]}`}>Overdue</span>}
+                                                <ChevronDown size={16}/>
+                                            </Button>
                                         </div>
                                     )}
 

@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 
-type ButtonVariant = "outline" | "primary" | "ghost" | "list";
+type ButtonVariant = "outline" | "primary" | "ghost" | "ghost_small" | "list";
 
 type ButtonProps = ComponentProps<"button"> & {
     variant?: ButtonVariant;
@@ -9,17 +9,19 @@ type ButtonProps = ComponentProps<"button"> & {
 };
 
 const base =
-    "flex items-center justify-center text-center gap-2 w-fit h-8 rounded-md font-medium leading-none border cursor-pointer";
+    "flex items-center justify-center text-center gap-2 w-fit h-8 font-medium leading-none border cursor-pointer";
 
 const variants: Record<ButtonVariant, string> = {
     outline:
-        "border border-(color:--border-btn) px-2 text-[14px] text-(--text-mute) hover:bg-white/5",
+        "border border-(color:--border-btn) px-2 text-[14px] text-(--text-mute) hover:bg-white/5 rounded-md",
     primary:
-        "bg-(--button) hover:bg-(--button-hover) px-3 text-base text-(--text-dark)",
+        "bg-(--button) hover:bg-(--button-hover) px-3 text-base text-(--text-dark) rounded-md",
     ghost:
-        "hover:bg-(--mute)/20 px-3 text-base text-(--text) border-none",
+        "hover:bg-(--mute)/20 px-3 text-base text-(--text) border-none rounded-md",
+    ghost_small:
+        "size-8 p-2 text-base text-(--text) border-none rounded-full hover:bg-white/5 hover:text-(--text-mute)",
     list:
-        "border-(--border-mute) px-3 text-base text-(--text-mute) hover:bg-(--border-mute)/40",
+        "border-(--border-mute) px-3 text-base text-(--text-mute) hover:bg-(--border-mute)/40 rounded-md",
 };
 
 function Button({

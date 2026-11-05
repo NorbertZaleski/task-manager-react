@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
 import { useLayoutEffect, useState, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
+import Button from "./Button";
 
 export type ModalOption = {
     id: string;
@@ -38,17 +39,16 @@ function OptionsModal({title, onClose, options=[], anchorRef, compOptions, class
 
             <div 
             style={{ top: pos.top, left: pos.left }}
-            className={`fixed z-100 w-60 rounded-lg bg-(--bg-modal) py-3 px-2 shadow-2xl flex flex-col gap-1 ${className}`}>
+            className={`fixed z-100 w-60 rounded-lg bg-(--bg-modal) py-2 px-3 shadow-2xl flex flex-col gap-1 ${className}`}>
                 <div className="flex items-center justify-between text-center">
-                    <div></div>
+                    <div className="p-2"></div>
                     <h3 className="text-sm font-semibold text-(--text-mute)">{title}</h3>
-                    <button
-                    type="button"
+                    <Button
+                    variant="ghost_small"
                     onClick={onClose}
-                    className="hover:text-(--text-mute)"
                     >
-                        <X size={18} />
-                    </button>
+                        <X size={16} />
+                    </Button>
                 </div>
 
                 {options.map((option)=> (

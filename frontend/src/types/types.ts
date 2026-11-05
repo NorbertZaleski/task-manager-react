@@ -18,6 +18,8 @@ export type Note = {
   columnId: string;
   labelIds: string[];
   assigneeIds: string[];
+  dueDate?: string | null;
+  completed?: boolean;
   position: number;
 };
 

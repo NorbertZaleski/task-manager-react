@@ -193,4 +193,70 @@ export async function setNoteLabels(req, res) {
         console.error("Error in setNoteLabels controller", error);
         res.status(500).json({ message: "Internal server error" });
     }
-}
+};
+
+export async function setNoteDueDate(req, res) {
+    try {
+        const { dueDate, dueComplete } = req.body;
+        const update = {};
+        const filter = { _id: req.params.id };
+
+        if (dueDate !== undefined) {
+            if (dueDate === null) {
+                update.dueDate = null;
+                update.dueComplete = false;
+            } else {
+                const parsed = typeof dueDate === "string" ? new Date(dueDate) : null;
+                if (!parsed || Number.isNaN(parsed.getTime())) {
+                    return res.status(400).json({ message: "Invalid due date" });
+                }
+                update.dueDate = parsed;
+            }
+        }
+
+        if (dueComplete !== undefined && update.dueDate !== null) {
+            if (typeof dueComplete !== "boolean") {
+                return res.status(400).json({ message: "Invalid dueComplete" });
+            }
+            update.dueComplete = dueComplete;
+
+            if (dueDate === undefined) filter.dueDate = { $ne: null };
+        }
+
+        if (Object.keys(update).length === 0) {
+            return res.status(400).json({ message: "Nothing to update" });
+        }
+
+        const note = await Note.findOneAndUpdate(filter, update, {
+            new: true,
+            runValidators: true,
+        });
+        if (!note) return res.status(404).json({ message: "Note not found" });
+
+        res.status(200).json(toClientNote(note.toObject()));
+    } catch (error) {
+        console.error("Error in setNoteDueDate controller", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export async function setNoteCompleted(req, res) {
+    try {
+        const { completed } = req.body;
+        if (typeof completed !== "boolean") {
+            return res.status(400).json({ message: "Invalid completed value" });
+        }
+
+        const note = await Note.findByIdAndUpdate(
+            req.params.id,
+            { completed },
+            { new: true }
+        );
+        if (!note) return res.status(404).json({ message: "Note not found" });
+
+        res.status(200).json(toClientNote(note.toObject()));
+    } catch (error) {
+        console.error("Error in setNoteCompleted controller", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};

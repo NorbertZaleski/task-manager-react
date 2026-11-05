@@ -69,6 +69,29 @@ export const notesService = {
         }
     },
 
+    async setDueDate(noteId: string, dueDate: string | null): Promise<Note> {
+        try {
+            const response = await api.patch(`/${noteId}/due-date`, {dueDate});
+            return response.data;
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
+        }
+    },
+
+    async setCompleted(noteId: string, completed: boolean): Promise<Note> {
+        try {
+            const response = await api.patch(`/${noteId}/completed`, {completed});
+            return response.data;
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
+        }
+    }
 };
 
 

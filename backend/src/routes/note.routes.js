@@ -1,5 +1,5 @@
 import express from "express";
-import { createNote, deleteNote, getAllNotes, getNote, setNoteLabels, updateNote } from "../controllers/note.controller.js";
+import { createNote, deleteNote, getAllNotes, getNote, setNoteCompleted, setNoteDueDate, setNoteLabels, updateNote } from "../controllers/note.controller.js";
 import { requireBoardMember, requireColumnAccess, requireNoteAccess } from "../middleware/boardAccess.js";
 
 const router = express.Router();
@@ -11,6 +11,8 @@ router.post("/columns/:columnId/notes", requireColumnAccess("member"), createNot
 
 router.patch("/:id", requireNoteAccess("member"), updateNote);
 router.put("/:id/labels", requireNoteAccess("member"), setNoteLabels);
+router.patch("/:id/due-date", requireNoteAccess("member"), setNoteDueDate);
+router.patch("/:id/completed", requireNoteAccess("member"), setNoteCompleted);
 
 router.delete("/:id", requireNoteAccess("member"), deleteNote);
 

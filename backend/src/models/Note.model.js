@@ -31,6 +31,14 @@ const noteSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
     }],
+    dueDate: { 
+        type: Date, 
+        default: null 
+    },
+    completed: { 
+        type: Boolean, 
+        default: false 
+    },
 }, { timestamps: true }
 );
 

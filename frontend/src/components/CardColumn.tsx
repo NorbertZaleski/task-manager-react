@@ -66,7 +66,7 @@ function CardColumn({column, board, notes, onMoveNote, onCreateNote, onDeleteCol
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-2 px-1 my-2 overflow-y-auto min-h-0 
+                <div className="flex flex-col gap-2 px-1 my-1 overflow-y-auto min-h-0 
                 scrollbar-thick scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent overflow-auto">
                     {notes.map((note) => (
                         <Card key={note.id} note={note} onOpen={()=> onOpenNote(note.id)}/>

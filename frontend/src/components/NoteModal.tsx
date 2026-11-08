@@ -193,7 +193,9 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                         maxLength={400}
                                         onCommit={(title) => onRenameNote(note.id, title)}
                                         className="block w-full px-2 py-1 min-h-10 h-fit text-3xl font-bold rounded-xs leading-tight wrap-break-word"
-                                        viewClassName="outline-1 outline-transparent cursor-text"
+                                        viewClassName={`outline-1 outline-transparent cursor-text
+                                            ${note.completed ? "line-through text-(--text-mute)" : ""}
+                                        `}
                                         editClassName="outline-1 outline-(--mute)"
                                     />
                                 </div>

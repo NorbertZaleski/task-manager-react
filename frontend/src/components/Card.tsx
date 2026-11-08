@@ -41,11 +41,11 @@ function Card({ note, onOpen }: CardProps) {
                 </div>
             )}
 
-            <p className={`text-md pt-2 ${note.completed ? "line-through text-(--text-mute)" : ""}`}>
+            <p className={`text-md pt-1 ${note.completed ? "line-through text-(--text-mute)" : ""}`}>
                 {note.title}
             </p>
 
-            <div className="pt-2">
+            <div className="pt-1">
                 {note.dueDate && dueStatus && dueStatus !== "completed" && (
                     <Clock size={16} />
                 )}

@@ -30,7 +30,7 @@ function TopBar({onBoardCreated}: TopBarPops) {
     };
 
     return (
-        <div className="sticky top-0 left-0 w-full flex shrink-0 items-center justify-between px-3 py-2 min-h-fit border-b border-(--border-mute)"> 
+        <div className="sticky top-0 left-0 w-full flex shrink-0 items-center justify-between px-3 py-2 min-h-fit border-b border-(--border-mute) gap-2"> 
             <Link to={`/boards`}>Logo</Link>
             <div className="flex gap-2 w-fit">
 

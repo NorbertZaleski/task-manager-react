@@ -1,4 +1,4 @@
-import { Check, ChevronDown, Circle, CircleCheck, Clock, Ellipsis, LucideTag, MessageSquareText, Paperclip, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
+import { ChevronDown, Circle, CircleCheck, Clock, Ellipsis, LucideTag, MessageSquareText, Paperclip, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
 import type { Label, Note } from "../types/types";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
@@ -368,6 +368,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                                         maxLength={1000}
                                                         allowEmpty
                                                         multiline={true}
+                                                        showActions
                                                         placeholder="Add content..."
                                                         onCommit={(content) => onSaveContent(note.id, content)}
                                                         onEditingChange={setIsEditingNoteContent}

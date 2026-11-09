@@ -17,19 +17,20 @@ type OptionsModalProps = {
     anchorRef: RefObject<HTMLElement | null>;
     compOptions?: ReactNode;
     className?: string;
+    width?: number;
 };
 
-const WIDTH = 240;
+const DEFAULT_WIDTH = 240;
 const GAP = 8;
 
-function OptionsModal({title, onClose, options=[], anchorRef, compOptions, className}: OptionsModalProps) {
+function OptionsModal({title, onClose, options=[], anchorRef, compOptions, className, width = DEFAULT_WIDTH}: OptionsModalProps) {
     const [pos, setPos] = useState({ top: 0, left: 0 });
 
     useLayoutEffect(() => {
         const rect = anchorRef.current?.getBoundingClientRect();
         if (!rect) return;
 
-        const left = Math.min(rect.left, window.innerWidth - WIDTH - GAP);
+        const left = Math.min(rect.left, window.innerWidth - width - GAP);
         setPos({ top: rect.bottom + GAP, left: Math.max(GAP, left) });
     }, [anchorRef]);
 
@@ -38,8 +39,8 @@ function OptionsModal({title, onClose, options=[], anchorRef, compOptions, class
             <div className="fixed inset-0 z-99" onClick={onClose} />
 
             <div 
-            style={{ top: pos.top, left: pos.left }}
-            className={`fixed z-100 w-60 rounded-lg bg-(--bg-modal) py-2 px-3 shadow-2xl flex flex-col gap-1 ${className}`}>
+            style={{ top: pos.top, left: pos.left, width }}
+            className={`fixed z-100 rounded-lg bg-(--bg-modal) py-2 px-3 shadow-2xl flex flex-col gap-1 ${className}`}>
                 <div className="flex items-center justify-between text-center">
                     <div className="p-2"></div>
                     <h3 className="text-sm font-semibold text-(--text-mute)">{title}</h3>

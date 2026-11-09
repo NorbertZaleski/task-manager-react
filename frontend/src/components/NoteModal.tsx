@@ -206,6 +206,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                     title="Labels"
                                     onClose={() => setLabelsModal("closed")}
                                     anchorRef={labelsRef}
+                                    width={304}
                                     compOptions={[
                                         <LabelsPicker 
                                         key="labels_picker" 
@@ -227,7 +228,6 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                         </Button>
                                         ]
                                     }
-                                    className="w-76"
                                 />
                             )}
 
@@ -237,6 +237,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                     onClose={() => setLabelsModal("closed")}
                                     anchorRef={labelsRef}
                                     options={[]}
+                                    width={304}
                                     compOptions={
                                         <CreateLabelForm
                                             onSubmit={handleCreateLabel}
@@ -252,6 +253,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                     onClose={() => setLabelsModal("closed")}
                                     anchorRef={labelsRef}
                                     options={[]}
+                                    width={304}
                                     compOptions={
                                         editingLabel && (
                                             <LabelEditModal
@@ -270,6 +272,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                     onClose={() => setIsDueOpen(false)}
                                     anchorRef={dueAnchorRef}
                                     options={[]}
+                                    width={304}
                                     compOptions={
                                         <DueDateForm
                                             value={note.dueDate}

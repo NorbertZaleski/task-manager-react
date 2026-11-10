@@ -2,7 +2,7 @@ import { COLORS_AVATAR } from "../constants/backgroundConstants";
 import type { User } from "../types/types";
 
 type AvatarProps = {
-    user: User
+    user?: User | null;
     className?: string;
 };
 
@@ -25,6 +25,18 @@ const getAvatarColor = (seed: string) => {
 function Avatar ({user, className=""}: AvatarProps) {
 
     const base = "flex items-center justify-center size-7 rounded-full overflow-hidden text-sm font-medium text-(--text)"
+
+    if (!user) {
+        return (
+            <div
+                title="Unknown user"
+                className={`${base} bg-base-300 opacity-60 ${className}`}
+            >
+                ?
+            </div>
+        );
+    }
+
     return (
         <div 
         key={user.id}
@@ -40,7 +52,7 @@ function Avatar ({user, className=""}: AvatarProps) {
                 className="size-full object-cover"
                 />
             ) : (
-                getInitial(user.name)
+                getInitial(user.name) || "?"
             )}
 
         </div>

@@ -1,4 +1,4 @@
-import { ChevronDown, Circle, CircleCheck, Clock, Ellipsis, LucideTag, MessageSquareText, Paperclip, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
+import { ChevronDown, Circle, CircleCheck, Clock, Ellipsis, LucideTag, Paperclip, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
 import type { Label, Note } from "../types/types";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
@@ -14,6 +14,9 @@ import { getTextColor } from "../utils/getTextColor";
 import LabelEditModal from "./LabelEditModal";
 import DueDateForm from "./DueDateForm";
 import { dueClassBase, dueStatusClass, formatDue, getDueStatus } from "../utils/dueDate";
+import CommentsPanel from "./CommentsPanel";
+import { useAuth } from "../context/AuthContext";
+import { useNoteActivity } from "../hooks/useNoteActivity";
 
 type NoteModalProps = {
     note: Note;
@@ -46,6 +49,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     const dueAnchorRef = dueAnchor === "badge" ? dueRefActive : dueRef;
 
     const { boardId } = useParams<{ boardId: string }>();
+    const { user } = useAuth();
     const { labels, reloadLabels } = useLabels();
     const noteLabels = labels.filter((l) => note.labelIds?.includes(l.id));
     const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
@@ -53,6 +57,8 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     );
     const status = note.dueDate ? getDueStatus(note.dueDate, note.completed) : null;
 
+    const activity = useNoteActivity(boardId ?? "", note.id);
+    const firstRun = useRef(true);
     async function handleToggleLabel(labelId: string) {
         if (!labelId) {
             console.error("Label without id", labelId);
@@ -115,6 +121,19 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
     }, [onClose, isEditingNoteContent]);
+
+    useEffect(() => {
+        if (firstRun.current) {
+            firstRun.current = false;
+            return;
+        }
+        activity.reload();
+    }, [
+        note.title,
+        note.completed,
+        note.dueDate,
+        note.labelIds?.join(","),
+    ]);
 
     useLayoutEffect(() => {
         const el = descRef.current;
@@ -379,7 +398,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                                         onEditingChange={setIsEditingNoteContent}
                                                         className="w-full px-3 py-2 rounded-xs text-sm font-normal"
                                                         viewClassName="text-(--text-mute) cursor-pointer"
-                                                        editClassName="outline-1 -outline-offset-1 outline-(--border-mute) min-h-40"
+                                                        editClassName="outline outline-1 min-h-40"
                                                     />
                                                 </div>
 
@@ -398,19 +417,8 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                             </div>
 
                         </div>
-                        <div className="flex flex-1 min-w-0 justify-items-start text-left p-6 bg-(--bg-notemodal-right)">
-                            <div className="flex flex-col">
-                                <div className="flex gap-4">
-                                    <MessageSquareText size={18} />
-                                    <span className="text-sm font-semibold">Comments and activity</span>
-                                </div>
-                                <Button
-                                className="w-full mt-6 mb-4"
-                                >
-                                    <p>Write a comment...</p>
-                                </Button>
-                                {/*Komentarze i aktywność (pole do wpisania komentarza, lista komentarzy + aktywność jako ta sama lista)*/}
-                            </div>
+                        <div className="flex flex-1 min-w-0 justify-items-start text-left p-6 bg-(--bg-notemodal-right) overflow-y-auto scrollbar-gutter-stable scrollbar-thin scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent">
+                            {user && <CommentsPanel activity={activity} currentUserId={user.id} />}
                         </div>
                     </div>
                     

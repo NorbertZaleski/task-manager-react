@@ -52,7 +52,9 @@
   }
 }
 
-
+@theme inline {
+  --color-input: var(--bg-input);
+}
 
 #root {
   height: auto;

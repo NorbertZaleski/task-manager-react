@@ -50,3 +50,27 @@ export type Board = {
   role: BoardRole;
   background: BoardBackground;
 };
+
+//activity
+export type ActivityAuthor = { id: string; name: string; avatar?: string };
+
+type Base = {
+  id: string;
+  noteId: string;
+  createdAt: string;
+  author: ActivityAuthor | null;
+};
+
+export type CommentItem = Base & {
+  type: "comment";
+  text: string;
+  editedAt: string | null;
+};
+
+export type ActivityLogItem = Base & {
+  type: "activity";
+  action: string;
+  meta?: Record<string, string>;
+};
+
+export type NoteActivityItem = CommentItem | ActivityLogItem;

@@ -13,16 +13,28 @@ type EditableTextProps = {
     className?: string;
     viewClassName?: string;
     editClassName?: string;
+    editing?: boolean;
 };
 
-function EditableText({ value, onCommit, onEditingChange, multiline = false, allowEmpty = false, showActions = false, maxLength, placeholder = "Add title...", className = "", viewClassName = "", editClassName = "", }: EditableTextProps) {
+function EditableText({ value, onCommit, onEditingChange, multiline = false, allowEmpty = false, showActions = false, editing, maxLength, placeholder = "Add title...", className = "", viewClassName = "", editClassName = "", }: EditableTextProps) {
     const [isEditing, setIsEditing] = useState(false);
+    const [focused, setFocused] = useState(true);
     const [draft, setDraft] = useState(value);
     const ref = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
         onEditingChange?.(isEditing);
     }, [isEditing]);
+
+    useEffect(() => {
+        if (editing === undefined) return;
+        if (editing) {
+            setDraft(value);
+            setIsEditing(true);
+        } else {
+            setIsEditing(false);
+        }
+    }, [editing]);
 
     useLayoutEffect(() => {
         const el = ref.current;
@@ -34,6 +46,7 @@ function EditableText({ value, onCommit, onEditingChange, multiline = false, all
     const start = () => {
         setDraft(value);
         setIsEditing(true);
+        setFocused(true);
     };
 
     const cancel = () => {
@@ -48,7 +61,7 @@ function EditableText({ value, onCommit, onEditingChange, multiline = false, all
         setIsEditing(false);
     };
 
-    const base = "block min-w-0 text-left bg-transparent border-0 m-0 appearance-none";
+    const base = "block min-w-0 text-left border-0 m-0 appearance-none whitespace-pre-wrap wrap-break-word";
 
     if (isEditing) {
         const textarea = (
@@ -59,8 +72,12 @@ function EditableText({ value, onCommit, onEditingChange, multiline = false, all
                 maxLength={maxLength}
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                onBlur={commit}
+                onBlur={()=> {
+                    if (showActions) setFocused(false);
+                    else commit();   
+                }}
                 onFocus={(e) => {
+                    setFocused(true);
                     const len = e.target.value.length;
                     e.target.setSelectionRange(len, len);
                 }}
@@ -72,7 +89,11 @@ function EditableText({ value, onCommit, onEditingChange, multiline = false, all
                     }
                     if (e.key === "Escape") cancel();
                 }}
-                className={`${base} ${className} ${editClassName} resize-none overflow-hidden`}
+                className={`${base} ${className} ${editClassName || "bg-transparent"} ${
+                focused
+                        ? "outline-(--border-active-textarea)"
+                        : "outline-(--border-mute)"
+                } resize-none overflow-hidden`}
             />
         );
 
@@ -105,7 +126,7 @@ function EditableText({ value, onCommit, onEditingChange, multiline = false, all
        <button
             type="button"
             onClick={start}
-            className={`${base} wrap-break-word ${className} ${viewClassName}`}
+            className={`${base} ${className} ${viewClassName || "bg-transparent"}`}
         >
             {value || placeholder}
         </button>

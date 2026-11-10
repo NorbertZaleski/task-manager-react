@@ -4,12 +4,41 @@ import Label from "../models/Label.model.js";
 import Column from "../models/Column.model.js";
 import { toClientNote } from "./board.controller.js";
 import { getMembership } from "../middleware/boardAccess.js";
+import logActivity from "../utils/logActivity.js";
 
 async function resolveLabels(labels, boardId) {
     if (!Array.isArray(labels) || !labels.every((l) => mongoose.isValidObjectId(l))) return null;
     const unique = [...new Set(labels.map(String))];
     const count = await Label.countDocuments({ _id: { $in: unique }, board: boardId });
     return count === unique.length ? unique : null;
+};
+
+async function logEvents(note, author, events) {
+    for (const event of events) {
+        await logActivity({ note, author, ...event });
+    }
+};
+
+async function diffLabels(oldIds, newIds) {
+    const oldSet = new Set(oldIds);
+    const newSet = new Set(newIds);
+    const added = newIds.filter((id) => !oldSet.has(id));
+    const removed = oldIds.filter((id) => !newSet.has(id));
+    if (!added.length && !removed.length) return [];
+
+    const docs = await Label.find({ _id: { $in: [...added, ...removed] } })
+        .select("title color")
+        .lean();
+    const byId = new Map(docs.map((l) => [String(l._id), l]));
+    const toMeta = (id) => ({
+        title: byId.get(id)?.title ?? "",
+        color: byId.get(id)?.color ?? "",
+    });
+
+    return [
+        ...added.map((id) => ({ action: "label_added", meta: toMeta(id) })),
+        ...removed.map((id) => ({ action: "label_removed", meta: toMeta(id) })),
+    ];
 }
 
 export async function getAllNotes(req, res) {
@@ -84,6 +113,13 @@ export async function createNote(req,res) {
             position,
         });
 
+        await logActivity({
+            note,
+            author: req.user._id,
+            action: "created",
+            meta: { columnTitle: column.title },
+        });
+
         res.status(201).json(toClientNote(note.toObject()));
     } catch (error) {
         console.error("Error in createNote controller", error);
@@ -106,8 +142,20 @@ export async function updateNote(req, res) {
         const membership = await getMembership(note.board, req.user._id);
         if (!membership) return res.status(404).json({ message: "Board not found" });
 
-        if (title !== undefined) note.title = title;
-        if (content !==undefined) note.content = content;
+        const prev = {
+            title: note.title,
+            column: String(note.column),
+            labels: note.labels.map(String),
+        };
+        const events = [];
+
+        if (title !== undefined) {
+            note.title = title;
+            if (note.title !== prev.title) {
+                events.push({ action: "renamed", meta: { from: prev.title, to: note.title } });
+            }
+        }
+        if (content !== undefined) note.content = content;
 
         if (position !== undefined) {
             if (typeof position !== "number" || !Number.isFinite(position)) {
@@ -122,16 +170,27 @@ export async function updateNote(req, res) {
             }
             const column = await Column.findOne({ _id: columnId, board: note.board });
             if (!column) return res.status(404).json({ message: "Column not found" });
+
+            if (String(column._id) !== prev.column) {
+                const from = await Column.findById(prev.column).select("title").lean();
+                events.push({
+                    action: "moved",
+                    meta: { from: from?.title ?? "", to: column.title },
+                });
+            }
             note.column = column._id;
         }
 
         if (labels !== undefined) {
             const labelIds = await resolveLabels(labels, note.board);
             if (!labelIds) return res.status(400).json({ message: "Invalid labels" });
+            events.push(...(await diffLabels(prev.labels, labelIds)));
             note.labels = labelIds;
         }
 
         await note.save();
+        await logEvents(note, req.user._id, events);
+
         res.status(200).json(toClientNote(note.toObject()));
     } catch (error) {
         console.error("Error in updateNote controller", error);
@@ -154,6 +213,7 @@ export async function deleteNote(req, res){
         if (!membership) return res.status(404).json({ message: "Board not found" });
 
         await note.deleteOne();
+        await NoteActivity.deleteMany({ note: note._id });
 
         res.status(200).json({message: "note deleted", note: note});
     } catch (error) {
@@ -164,31 +224,29 @@ export async function deleteNote(req, res){
 
 export async function setNoteLabels(req, res) {
     try {
-        const { id, boardId } = req.params;
+        const { id } = req.params;
         const { labels } = req.body;
 
-        if (!Array.isArray(labels) || !labels.every((l) => mongoose.isValidObjectId(l))) {
-            return res.status(400).json({ message: "Invalid labels" });
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: "Invalid note ID" });
         }
 
-        const uniqueIds = [...new Set(labels.map(String))];
-
-        const count = await Label.countDocuments({
-            _id: { $in: uniqueIds },
-            board: boardId,
-        });
-        if (count !== uniqueIds.length) {
-            return res.status(400).json({ message: "Invalid labels" });
-        }
-
-        const note = await Note.findByIdAndUpdate(
-            id,
-            { labels: uniqueIds },
-            { returnDocument: "after" }
-        );
+        const note = await Note.findById(id);
         if (!note) return res.status(404).json({ message: "Note not found" });
 
-    return res.status(200).json(toClientNote(note.toObject()));
+        const membership = await getMembership(note.board, req.user._id);
+        if (!membership) return res.status(404).json({ message: "Board not found" });
+
+        const labelIds = await resolveLabels(labels, note.board);
+        if (!labelIds) return res.status(400).json({ message: "Invalid labels" });
+
+        const events = await diffLabels(note.labels.map(String), labelIds);
+
+        note.labels = labelIds;
+        await note.save();
+        await logEvents(note, req.user._id, events);
+
+        return res.status(200).json(toClientNote(note.toObject()));
     } catch (error) {
         console.error("Error in setNoteLabels controller", error);
         res.status(500).json({ message: "Internal server error" });
@@ -197,9 +255,21 @@ export async function setNoteLabels(req, res) {
 
 export async function setNoteDueDate(req, res) {
     try {
+        const { id } = req.params;
         const { dueDate, dueComplete } = req.body;
+
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: "Invalid note ID" });
+        }
+
+        const before = await Note.findById(id).lean();
+        if (!before) return res.status(404).json({ message: "Note not found" });
+
+        const membership = await getMembership(before.board, req.user._id);
+        if (!membership) return res.status(404).json({ message: "Board not found" });
+
         const update = {};
-        const filter = { _id: req.params.id };
+        const filter = { _id: id };
 
         if (dueDate !== undefined) {
             if (dueDate === null) {
@@ -233,26 +303,56 @@ export async function setNoteDueDate(req, res) {
         });
         if (!note) return res.status(404).json({ message: "Note not found" });
 
+        const events = [];
+        const beforeTime = before.dueDate ? new Date(before.dueDate).getTime() : null;
+        const afterTime = note.dueDate ? note.dueDate.getTime() : null;
+
+        if (afterTime !== beforeTime) {
+            events.push(
+                afterTime === null
+                    ? { action: "due_removed" }
+                    : { action: "due_set", meta: { dueDate: note.dueDate.toISOString() } }
+            );
+        }
+        if (note.dueDate && Boolean(before.dueComplete) !== Boolean(note.dueComplete)) {
+            events.push({ action: note.dueComplete ? "due_completed" : "due_reopened" });
+        }
+        await logEvents(note, req.user._id, events);
+
         res.status(200).json(toClientNote(note.toObject()));
     } catch (error) {
         console.error("Error in setNoteDueDate controller", error);
         res.status(500).json({ message: "Internal server error" });
     }
-};
+};;
 
 export async function setNoteCompleted(req, res) {
     try {
+        const { id } = req.params;
         const { completed } = req.body;
+
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: "Invalid note ID" });
+        }
         if (typeof completed !== "boolean") {
             return res.status(400).json({ message: "Invalid completed value" });
         }
 
-        const note = await Note.findByIdAndUpdate(
-            req.params.id,
-            { completed },
-            { new: true }
-        );
+        const note = await Note.findById(id);
         if (!note) return res.status(404).json({ message: "Note not found" });
+
+        const membership = await getMembership(note.board, req.user._id);
+        if (!membership) return res.status(404).json({ message: "Board not found" });
+
+        if (note.completed !== completed) {
+            note.completed = completed;
+            await note.save();
+            await logActivity({
+                note,
+                author: req.user._id,
+                action: completed ? "completed" : "reopened",
+            });
+        }
 
         res.status(200).json(toClientNote(note.toObject()));
     } catch (error) {

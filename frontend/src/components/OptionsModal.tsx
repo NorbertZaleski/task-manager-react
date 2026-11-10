@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { useLayoutEffect, useState, type ReactNode, type RefObject } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import Button from "./Button";
 
@@ -24,23 +24,57 @@ const DEFAULT_WIDTH = 240;
 const GAP = 8;
 
 function OptionsModal({title, onClose, options=[], anchorRef, compOptions, className, width = DEFAULT_WIDTH}: OptionsModalProps) {
-    const [pos, setPos] = useState({ top: 0, left: 0 });
+    const popRef = useRef<HTMLDivElement>(null);
+    const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
     useLayoutEffect(() => {
-        const rect = anchorRef.current?.getBoundingClientRect();
-        if (!rect) return;
+        const update = () => {
+            const anchor = anchorRef.current?.getBoundingClientRect();
+            const pop = popRef.current;
+            if (!anchor || !pop) return;
 
-        const left = Math.min(rect.left, window.innerWidth - width - GAP);
-        setPos({ top: rect.bottom + GAP, left: Math.max(GAP, left) });
-    }, [anchorRef]);
+            const height = pop.offsetHeight;
+            const vh = window.innerHeight;
+
+            let top = anchor.bottom + GAP;
+            if (top + height > vh - GAP) {
+                const above = anchor.top - height - GAP;
+                top = above >= GAP ? above : Math.max(GAP, vh - height - GAP);
+            }
+
+            const left = Math.max(GAP, Math.min(anchor.left, window.innerWidth - width - GAP));
+            setPos({ top, left });
+        };
+
+        update();
+
+        const ro = new ResizeObserver(update);
+        if (popRef.current) ro.observe(popRef.current);
+
+        window.addEventListener("resize", update);
+        window.addEventListener("scroll", update, true);
+        return () => {
+            ro.disconnect();
+            window.removeEventListener("resize", update);
+            window.removeEventListener("scroll", update, true);
+        };
+    }, [anchorRef, width]);
 
     return createPortal(
         <>
             <div className="fixed inset-0 z-99" onClick={onClose} />
 
-            <div 
-            style={{ top: pos.top, left: pos.left, width }}
-            className={`fixed z-100 rounded-lg bg-(--bg-modal) py-2 px-3 shadow-2xl flex flex-col gap-1 ${className}`}>
+            <div
+                ref={popRef}
+                style={{
+                    top: pos?.top ?? 0,
+                    left: pos?.left ?? 0,
+                    width,
+                    maxHeight: `calc(100dvh - ${GAP * 2}px)`,
+                    visibility: pos ? "visible" : "hidden",
+                }}
+                className={`fixed z-100 overflow-y-auto rounded-lg bg-(--bg-modal) py-2 px-3 shadow-2xl flex flex-col gap-1 ${className}`}
+            >
                 <div className="flex items-center justify-between text-center">
                     <div className="p-2"></div>
                     <h3 className="text-sm font-semibold text-(--text-mute)">{title}</h3>

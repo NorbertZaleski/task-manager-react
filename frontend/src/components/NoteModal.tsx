@@ -1,4 +1,4 @@
-import { ChevronDown, Circle, CircleCheck, Clock, Ellipsis, LucideTag, Paperclip, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
+import { ChevronDown, Circle, CircleCheck, Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
 import type { Label, Note } from "../types/types";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
@@ -30,6 +30,15 @@ type NoteModalProps = {
 
 function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onDelete, onNoteUpdated}: NoteModalProps){
 
+    const { boardId } = useParams<{ boardId: string }>();
+    const { user } = useAuth();
+    const { labels, reloadLabels } = useLabels();
+    const noteLabels = labels.filter((l) => note.labelIds?.includes(l.id));
+    const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
+        () => note.labelIds ?? []
+    );
+    const status = note.dueDate ? getDueStatus(note.dueDate, note.completed) : null;
+
     const [isEditingNoteContent, setIsEditingNoteContent] = useState(false);
     const [isNoteContentVisible, setIsNoteContentVisible] = useState(true);
     const [isNoteContentOverflowing, setIsNoteContentOverflowing] = useState(false);
@@ -42,20 +51,15 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     
     const ellipsisRef = useRef<HTMLButtonElement>(null);
     const labelsRef = useRef<HTMLButtonElement>(null);
+    const labelsRefActive = useRef<HTMLElement>(null);
+    const [labelsAnchor, setLabelsAnchor] = useState<"toolbar" | "badge">("toolbar");
+    const labelsAnchorRef = labelsAnchor === "badge" && noteLabels.length > 0 ? labelsRefActive : labelsRef;
+
     const descRef = useRef<HTMLDivElement>(null);
     const dueRef = useRef<HTMLButtonElement>(null);
     const dueRefActive = useRef<HTMLButtonElement>(null);
     const [dueAnchor, setDueAnchor] = useState<"toolbar" | "badge">("toolbar");
     const dueAnchorRef = dueAnchor === "badge" ? dueRefActive : dueRef;
-
-    const { boardId } = useParams<{ boardId: string }>();
-    const { user } = useAuth();
-    const { labels, reloadLabels } = useLabels();
-    const noteLabels = labels.filter((l) => note.labelIds?.includes(l.id));
-    const [selectedLabelIds, setSelectedLabelIds] = useState<string[]>(
-        () => note.labelIds ?? []
-    );
-    const status = note.dueDate ? getDueStatus(note.dueDate, note.completed) : null;
 
     const activity = useNoteActivity(boardId ?? "", note.id);
     const firstRun = useRef(true);
@@ -224,7 +228,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                 <OptionsModal
                                     title="Labels"
                                     onClose={() => setLabelsModal("closed")}
-                                    anchorRef={labelsRef}
+                                    anchorRef={labelsAnchorRef}
                                     width={304}
                                     compOptions={[
                                         <LabelsPicker 
@@ -254,7 +258,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                 <OptionsModal
                                     title="New label"
                                     onClose={() => setLabelsModal("closed")}
-                                    anchorRef={labelsRef}
+                                    anchorRef={labelsAnchorRef}
                                     options={[]}
                                     width={304}
                                     compOptions={
@@ -270,7 +274,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                 <OptionsModal 
                                     title="Edit label"
                                     onClose={() => setLabelsModal("closed")}
-                                    anchorRef={labelsRef}
+                                    anchorRef={labelsAnchorRef}
                                     options={[]}
                                     width={304}
                                     compOptions={
@@ -309,20 +313,24 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                 >
 
                                     <div className="flex gap-2 py-2 ml-8">
-                                        <Button 
-                                            iconl={ <LucideTag size={16} className="-mr-0.5" />} 
-                                            onClick={()=>setLabelsModal("list")}
-                                            ref={labelsRef}
-                                        > 
-                                            Labels 
-                                        </Button>
-                                        <Button 
-                                            iconl={<Clock size={16} className="-mr-0.5" />}
-                                            onClick={() => { setDueAnchor("toolbar"); setIsDueOpen(true); }}
-                                            ref={dueRef}
-                                        > 
-                                            Date 
-                                        </Button>
+                                        {labels.length < 1 && (
+                                            <Button 
+                                                iconl={ <LucideTag size={16} className="-mr-0.5" />} 
+                                                onClick={()=> { setDueAnchor("toolbar"); setLabelsModal("list"); }}
+                                                ref={labelsRef}
+                                            > 
+                                                Labels 
+                                            </Button>
+                                        )}
+                                        {!note.dueDate && (
+                                            <Button 
+                                                iconl={<Clock size={16} className="-mr-0.5" />}
+                                                onClick={() => { setDueAnchor("toolbar"); setIsDueOpen(true); }}
+                                                ref={dueRef}
+                                            > 
+                                                Date 
+                                            </Button>
+                                        )}
                                         <Button iconl={<SquareCheck size={16} className="-mr-0.5" />}> To do list </Button>
                                         <Button iconl={<UserRoundPlus size={16} className="-mr-0.5" />}> Members </Button>
                                         <Button iconl={<Paperclip size={16} className="-mr-0.5" />}> Files </Button>
@@ -330,17 +338,28 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
 
                                     {noteLabels.length > 0 && (
                                         <div className="flex flex-wrap gap-1 ml-8">
-                                            {noteLabels.map((label) => (
+                                            {noteLabels.map((label, index) => (
                                                 <span
                                                     key={label.id}
-                                                    className={`text-xs font-medium justify-start px-2 pb-1 rounded flex items-center max-w-full overflow-hidden select-none ${
-                                                    label.title ? 'min-w-10' : ''
+                                                    ref={index === 0 ? labelsRefActive : undefined}
+                                                    className={`text-s font-medium justify-start px-2 py-1 rounded flex items-center max-w-full 
+                                                        cursor-pointer overflow-hidden select-none ${
+                                                    label.title ? 'min-w-10' : 'min-w-6'
                                                     }`}
                                                     style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
+                                                    onClick={()=> { setLabelsAnchor("badge"); setLabelsModal("list"); }}
+
                                                 >
                                                     <span className="truncate min-w-0">{label.title}</span>
                                                 </span>
                                             ))}
+                                            <Button
+                                                variant="ghost_small"
+                                                onClick={() => { setLabelsAnchor("badge"); setLabelsModal("create"); }}
+                                                className="rounded-s"
+                                            >
+                                                <Plus size={16} />
+                                            </Button>
                                         </div>
                                     )}
 
@@ -398,7 +417,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                                         onEditingChange={setIsEditingNoteContent}
                                                         className="w-full px-3 py-2 rounded-xs text-sm font-normal"
                                                         viewClassName="text-(--text-mute) cursor-pointer"
-                                                        editClassName="outline outline-1 min-h-40"
+                                                        editClassName="outline-1 min-h-40"
                                                     />
                                                 </div>
 

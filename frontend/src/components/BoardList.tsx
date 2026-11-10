@@ -63,7 +63,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
 
     async function handleAddColumn() {
         try {
-            const newColumn = await columnsService.createColumn(board.id, {title: "Nowa lista"});
+            const newColumn = await columnsService.createColumn(board.id, {title: "New list"});
             setColumns((prev)=>[...prev, newColumn]);
         } catch (error) {
             console.log("Error in addColumn function: ", error);

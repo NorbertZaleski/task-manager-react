@@ -82,7 +82,7 @@ function CommentRow({
           editClassName="rounded-md px-3 py-2 outline outline-1 outline-(--border-mute)"
         />
       ) : (
-        <p className="rounded-md px-3 py-2 bg-black/5 text-sm whitespace-pre-wrap wrap-break-word">
+        <p className="rounded-md px-3 py-2 bg-input text-sm whitespace-pre-wrap wrap-break-word">
           {comment.text}
         </p>
       )}
@@ -111,7 +111,7 @@ function CommentRow({
 }
 
 function CommentsPanel({ activity, currentUserId }: CommentsPanelProps) {
-  const { items, hasMore, loading, error, loadMore, addComment, editComment, removeComment } = activity;
+  const { items, hasMore, error, loadMore, addComment, editComment, removeComment } = activity;
   const [showDetails, setShowDetails] = useState(false);
 
   const visibleItems = showDetails ? items : items.filter((item) => item.type === "comment");
@@ -147,7 +147,6 @@ function CommentsPanel({ activity, currentUserId }: CommentsPanelProps) {
         />
       </div>
 
-      {loading && <p className="text-sm opacity-60">Loading...</p>}
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       <ul className="flex flex-col gap-4">

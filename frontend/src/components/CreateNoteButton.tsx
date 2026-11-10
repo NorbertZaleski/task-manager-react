@@ -77,7 +77,8 @@ function CreateNoteButton({onCreate}: CreateNoteButtonprops){
                                 cancelAdding();
                             }
                         }}
-                className="bg-(--card) px-4 py-2 outline-0 rounded-md w-full h-20 resize-none text-md"
+                className="bg-(--card) px-4 py-2 outline-0 rounded-md w-full h-20 resize-none text-md 
+                scrollbar-gutter-stable scrollbar-thin scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent"
             />
             <div className="flex gap-2 justify-start w-full">
                 <Button

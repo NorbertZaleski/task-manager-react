@@ -23,8 +23,8 @@ function CardColumn({column, board, notes, onMoveNote, onCreateNote, onDeleteCol
 
     return(
             <div 
-                className="bg-(--panel) rounded-xl px-1 py-2 flex flex-col  
-                w-60 max-h-full min-h-0 shrink-0"
+                className="bg-(--panel) rounded-xl pl-1 pr-2 py-2 flex flex-col
+                w-70 max-h-[calc(100dvh-12rem)] min-h-0 shrink-0"
                 onDragOver={(e)=> e.preventDefault()}
                 onDrop={(e)=>{
                     e.preventDefault();
@@ -66,8 +66,8 @@ function CardColumn({column, board, notes, onMoveNote, onCreateNote, onDeleteCol
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-2 px-1 my-1 overflow-y-auto min-h-0 
-                scrollbar-thick scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent overflow-auto">
+                <div className="flex flex-col gap-2 px-2 my-1 overflow-y-auto min-h-0 
+                scrollbar-thin scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent overflow-auto">
                     {notes.map((note) => (
                         <Card key={note.id} note={note} onOpen={()=> onOpenNote(note.id)}/>
                     ))}

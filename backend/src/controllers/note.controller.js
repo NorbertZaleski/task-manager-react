@@ -5,6 +5,7 @@ import Column from "../models/Column.model.js";
 import { toClientNote } from "./board.controller.js";
 import { getMembership } from "../middleware/boardAccess.js";
 import logActivity from "../utils/logActivity.js";
+import NoteActivityModel from "../models/NoteActivity.model.js";
 
 async function resolveLabels(labels, boardId) {
     if (!Array.isArray(labels) || !labels.every((l) => mongoose.isValidObjectId(l))) return null;
@@ -212,8 +213,10 @@ export async function deleteNote(req, res){
         const membership = await getMembership(note.board, req.user._id);
         if (!membership) return res.status(404).json({ message: "Board not found" });
 
-        await note.deleteOne();
-        await NoteActivity.deleteMany({ note: note._id });
+        await Promise.all([
+            note.deleteOne(),
+            NoteActivityModel.deleteMany({ note: note._id }),
+        ]);
 
         res.status(200).json({message: "note deleted", note: note});
     } catch (error) {

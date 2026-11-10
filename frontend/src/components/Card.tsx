@@ -16,8 +16,8 @@ function Card({ note, onOpen }: CardProps) {
 
     return (
         <div
-            className="px-4 py-3 bg-(--card) flex flex-col text-start w-full wrap-break-word rounded-lg gap-1
-            cursor-grab active:cursor-grabbing"
+            className="px-4 py-3 bg-(--card) flex flex-col text-start w-full wrap-break-word rounded-lg gap-1 cursor-grab active:cursor-grabbing
+            outline-2 -outline-offset-2 outline-transparent hover:outline-(--border-active-textarea) transition-colors duration-30"
             draggable
             onDragStart={(e) => {
                 e.dataTransfer.setData("text/plain", note.id);
@@ -30,8 +30,8 @@ function Card({ note, onOpen }: CardProps) {
                     {noteLabels.map((label) => (
                         <span
                             key={label.id}
-                            className={`text-xs font-medium px-2 pb-1 rounded flex items-center justify-start max-w-full overflow-hidden select-none ${
-                                label.title ? "min-w-10" : ""
+                            className={`text-xs font-medium px-2 min-h-6 rounded flex items-center justify-start max-w-full overflow-hidden select-none ${
+                                label.title ? "min-w-10 " : "min-w-4"
                             }`}
                             style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
                         >

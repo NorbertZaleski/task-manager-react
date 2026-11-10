@@ -47,7 +47,8 @@ function LabelsPicker({labels, selectedIds, onToggle, onEdit, max=8}: LabelsPick
                 })}
             </div>
             <div className="flex w-full items-center pt-1">
-                {numberOfLabelsToShow === max ? (
+                {labels.length > 0 && (
+                    numberOfLabelsToShow === max ? (
                     <Button
                     className="w-full"
                     iconl={<ChevronDown size={20}/>}
@@ -63,7 +64,9 @@ function LabelsPicker({labels, selectedIds, onToggle, onEdit, max=8}: LabelsPick
                     >
                         <span>Show less</span>
                     </Button>
-                    )}
+                    ))
+                }
+
             </div>
         </>
     )

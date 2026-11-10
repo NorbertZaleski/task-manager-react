@@ -333,8 +333,8 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                             {noteLabels.map((label) => (
                                                 <span
                                                     key={label.id}
-                                                    className={`text-xs font-medium justify-center p-2 h-4 rounded flex items-center max-w-full overflow-hidden select-none ${
-                                                    !label.title ? 'min-w-10' : ''
+                                                    className={`text-xs font-medium justify-start px-2 pb-1 rounded flex items-center max-w-full overflow-hidden select-none ${
+                                                    label.title ? 'min-w-10' : ''
                                                     }`}
                                                     style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
                                                 >

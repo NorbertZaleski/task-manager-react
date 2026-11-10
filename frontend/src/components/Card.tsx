@@ -16,7 +16,7 @@ function Card({ note, onOpen }: CardProps) {
 
     return (
         <div
-            className="px-4 py-3 bg-(--card) flex flex-col text-start w-full wrap-break-word whitespace-pre-wrap rounded-lg gap-1
+            className="px-4 py-3 bg-(--card) flex flex-col text-start w-full wrap-break-word rounded-lg gap-1
             cursor-grab active:cursor-grabbing"
             draggable
             onDragStart={(e) => {
@@ -30,8 +30,8 @@ function Card({ note, onOpen }: CardProps) {
                     {noteLabels.map((label) => (
                         <span
                             key={label.id}
-                            className={`text-xs font-medium px-2 h-4 rounded flex items-center justify-center max-w-full overflow-hidden select-none ${
-                                !label.title ? "min-w-10" : ""
+                            className={`text-xs font-medium px-2 pb-1 rounded flex items-center justify-start max-w-full overflow-hidden select-none ${
+                                label.title ? "min-w-10" : ""
                             }`}
                             style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
                         >

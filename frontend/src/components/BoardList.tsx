@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import type { Board, Column, Note } from "../types/types";
+import { useEffect, useRef, useState } from "react";
+import type { Board, Column, Note, DragState, DropTarget } from "../types/types";
 import CardColumn from "./CardColumn";
 import { columnsService } from "../services/columns.service";
 import notesService from "../services/notes.service";
@@ -12,6 +12,7 @@ import BoardMembers from "./BoardMembers.js";
 import OptionsModal from "./OptionsModal.js";
 import ShareBoardModal from "./ShareBoardModal.js";
 import NoteModal from "./NoteModal.js";
+import { useDragScroll } from "../hooks/useDragScroll.js";
 
 type BoardListProps = {
     board: Board;
@@ -35,29 +36,84 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
     const ellipsisRef = useRef<HTMLButtonElement>(null);
     const [isMemberInviteModalOpen, setIsMemberInviteModalOpen] = useState(false);
 
-    async function handleMoveNote(noteId: string, columnId: string) {
+    const [drag, setDrag] = useState<DragState>(null);
+    const [dropTarget, setDropTarget] = useState<DropTarget>(null);
+
+    const boardScrollRef = useRef<HTMLDivElement>(null);
+    useDragScroll(boardScrollRef, !!drag, { axis: "x" });
+
+    const sortedColumns = [...columns].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+
+    function getNewPosition(items: { position: number }[], index: number): number {
+        const prev = items[index - 1];
+        const next = items[index];
+        if (!prev && !next) return 0;
+        if (!prev) return next.position - 1;
+        if (!next) return prev.position + 1;
+        return (prev.position + next.position) / 2;
+    };
+
+    function handleDropOnNote(draggedId: string, targetId: string, after: boolean) {
+        const target = notes.find((n) => n.id === targetId);
+        if (!target) return;
+
+        const columnNotes = notes
+            .filter((n) => n.columnId === target.columnId && n.id !== draggedId)
+            .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+
+        const targetIndex = columnNotes.findIndex((n) => n.id === targetId);
+        const index = after ? targetIndex + 1 : targetIndex;
+
+        handleMoveNote(draggedId, target.columnId, index);
+    };
+
+    async function handleMoveNote(noteId: string, columnId: string, index?: number) {
         const prevNotes = notes;
-        
-        const columnNotes = notes.filter(
-            (note) => note.columnId === columnId && note.id !== noteId
+
+        const columnNotes = notes
+            .filter((note) => note.columnId === columnId && note.id !== noteId)
+            .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+
+        const position = getNewPosition(
+            columnNotes.map((n) => ({ position: n.position ?? 0 })),
+            index ?? columnNotes.length // brak indexu = na koniec
         );
-        const position = columnNotes.length
-            ? Math.max(...columnNotes.map((note) => note.position ?? 0)) + 1
-            : 0;
 
         setNotes((prev) =>
-            prev.map((note) => 
-                note.id === noteId 
-                    ? {...note, columnId, position: position ?? note.position} 
-                    : note
-                )
+            prev.map((note) =>
+                note.id === noteId ? { ...note, columnId, position } : note
+            )
         );
 
         try {
-            await notesService.updateNote(noteId, {columnId, position});
+            await notesService.updateNote(noteId, { columnId, position });
         } catch (error) {
             console.log("Error in moveNote function: ", error);
             setNotes(prevNotes);
+        }
+    };
+
+    async function handleMoveColumn(columnId: string, newIndex: number) {
+        const sorted = [...columns].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+        const currentIndex = sorted.findIndex(c => c.id === columnId);
+        if (currentIndex === -1 || currentIndex === newIndex) return;
+
+        const without = sorted.filter(c => c.id !== columnId);
+        const newPosition = getNewPosition(
+            without.map(c => ({ position: c.position ?? 0 })),
+            Math.max(0, Math.min(without.length, newIndex))
+        );
+
+        const prevColumns = columns;
+        setColumns(prev =>
+            prev.map(c => (c.id === columnId ? { ...c, position: newPosition } : c))
+        );
+
+        try {
+            await columnsService.updateColumn(board.id, columnId, { position: newPosition });
+        } catch (err) {
+            console.log("Error moving column: ", err);
+            setColumns(prevColumns);
         }
     };
 
@@ -169,6 +225,19 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
         setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
     }
 
+    useEffect(() => {
+        const reset = () => {
+            setDrag(null);
+            setDropTarget(null);
+        };
+        window.addEventListener("dragend", reset);
+        window.addEventListener("drop", reset);
+        return () => {
+            window.removeEventListener("dragend", reset);
+            window.removeEventListener("drop", reset);
+        };
+    }, []);
+
     return (
         <div className="flex flex-col h-full w-full overflow-hidden">
             <div className="flex text-center items-center justify-between shrink-0 
@@ -210,23 +279,33 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                 </div>
             </div>
 
-            <div className="flex flex-1 min-h-0 max-h-[calc(100dvh-128px)] items-stretch justify-start gap-4 mt-4 px-4 pb-4 overflow-x-auto overflow-y-hidden">
-                {columns.map((column) => (
-                    <div key={column.id} className="shrink-0">
-                        <CardColumn
-                            board={board}
-                            column={column}
-                            notes={notes
-                                .filter((note) => note.columnId === column.id)
-                                .sort((a, b) => a.position - b.position)}
-                            onMoveNote={handleMoveNote}
-                            onCreateNote={handleCreateNote}
-                            onDeleteColumn={handleDeleteColumn}
-                            onOpenNote={setSelectedNoteId}
-                            onRenameColumn={renameColumn}
-                        />
-                    </div>
-                ))}
+            <div 
+            ref={boardScrollRef}
+            className="flex flex-1 min-h-0 max-h-[calc(100dvh-128px)] items-stretch justify-start gap-4 mt-4 px-4 pb-4 overflow-x-auto overflow-y-hidden">
+                {sortedColumns.map((column, index) => (
+                        <div key={column.id} className="shrink-0">
+                            <CardColumn
+                                board={board}
+                                column={column}
+                                columnIndex={index}
+                                columnsCount={sortedColumns.length}
+                                onMoveColumn={handleMoveColumn}
+                                notes={notes
+                                    .filter(note => note.columnId === column.id)
+                                    .sort((a, b) => a.position - b.position)}
+                                onMoveNote={handleMoveNote}
+                                onCreateNote={handleCreateNote}
+                                onDeleteColumn={handleDeleteColumn}
+                                onOpenNote={setSelectedNoteId}
+                                onRenameColumn={renameColumn}
+                                onDropNote={handleDropOnNote}
+                                drag={drag}
+                                onDragChange={setDrag}
+                                dropTarget={dropTarget}
+                                onDropTargetChange={setDropTarget}
+                            />
+                        </div>
+                    ))}
 
                 <div className="flex shrink-0 rounded-lg min-w-55 h-fit p-2 text-md font-medium text-left items-start
                 bg-(--hover-white) hover:bg-(--hover-white-darker)">

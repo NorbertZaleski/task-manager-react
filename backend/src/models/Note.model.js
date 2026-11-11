@@ -42,6 +42,7 @@ const noteSchema = new mongoose.Schema({
 }, { timestamps: true }
 );
 
+noteSchema.index({ column: 1, position: 1 });
 
 const Note = mongoose.model("Note", noteSchema);
 

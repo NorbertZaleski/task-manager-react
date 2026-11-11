@@ -27,6 +27,7 @@ export type Column = {
   id: string;
   title: string;
   color: string;
+  position: number;
 };
 
 export type Label = {
@@ -74,3 +75,9 @@ export type ActivityLogItem = Base & {
 };
 
 export type NoteActivityItem = CommentItem | ActivityLogItem;
+
+export type DragState = { id: string; height: number } | null;
+
+export type DropTarget =
+  | { columnId: string; noteId: string | null; after: boolean }
+  | null;

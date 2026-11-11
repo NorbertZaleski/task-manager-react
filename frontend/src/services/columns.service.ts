@@ -22,6 +22,8 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
+export type ColumnUpdate = Partial<Pick<Column, 'title' | 'position'>>;
+
 export const columnsService = {
         createColumn: async (boardId: string, data: {title: string}): Promise<Column> => {
             try {
@@ -35,7 +37,7 @@ export const columnsService = {
             }
         },
        
-        updateColumn: async (boardId: string, columnId: string, data: {title: string}): Promise<Column> => {
+        updateColumn: async (boardId: string, columnId: string, data: ColumnUpdate): Promise<Column> => {
             try {
                 const response = await api.patch<{ message: string; column: Column }>(
                     `/${boardId}/columns/${columnId}`,

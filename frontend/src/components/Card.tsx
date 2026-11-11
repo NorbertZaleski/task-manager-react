@@ -7,21 +7,50 @@ import type { Note } from "../types/types";
 type CardProps = {
     note: Note;
     onOpen: () => void;
+    onDropNote?: (draggedId: string, targetNoteId: string, after: boolean) => void;
+    isDragging?: boolean;
+    onDragStartNote?: (noteId: string, height: number) => void;
+    onDragHover?: (noteId: string, after: boolean) => void;
+    onDragEnd?: () => void;
 }
 
-function Card({ note, onOpen }: CardProps) {
+function Card({ note, onOpen, onDropNote, isDragging, onDragStartNote, onDragHover, onDragEnd }: CardProps) {
     const { labels } = useLabels();
     const noteLabels = labels.filter((l) => note.labelIds?.includes(l.id));
     const dueStatus = note.dueDate ? getDueStatus(note.dueDate, note.completed) : null;
 
     return (
         <div
-            className="px-4 py-3 bg-(--card) flex flex-col text-start w-full wrap-break-word rounded-lg gap-1 cursor-grab active:cursor-grabbing
-            outline-2 -outline-offset-2 outline-transparent hover:outline-(--border-active-textarea) transition-colors duration-30"
+            data-note-id={note.id}
+            className={`px-4 py-3 bg-(--card) flex flex-col text-start w-full wrap-break-word rounded-lg gap-1 cursor-grab active:cursor-grabbing
+            outline-2 -outline-offset-2 outline-transparent hover:outline-(--border-active-textarea) transition-colors duration-30 ${isDragging ? "hidden" : "" }`}
             draggable
             onDragStart={(e) => {
+                e.dataTransfer.setData("note-id", note.id);
                 e.dataTransfer.setData("text/plain", note.id);
                 e.dataTransfer.effectAllowed = "move";
+                const height = e.currentTarget.getBoundingClientRect().height;
+                setTimeout(() => onDragStartNote?.(note.id, height), 0);
+            }}
+            onDragEnd={onDragEnd}
+            onDragOver={(e) => {
+                if (!e.dataTransfer.types.includes("note-id")) return;
+                e.preventDefault();
+                e.stopPropagation();
+                e.dataTransfer.dropEffect = "move";
+                const rect = e.currentTarget.getBoundingClientRect();
+                onDragHover?.(note.id, e.clientY > rect.top + rect.height / 2);
+            }}
+            onDrop={(e) => {
+                if (!e.dataTransfer.types.includes("note-id")) return;
+                e.preventDefault();
+                e.stopPropagation();
+                const draggedId = e.dataTransfer.getData("note-id");
+                const rect = e.currentTarget.getBoundingClientRect();
+                const after = e.clientY > rect.top + rect.height / 2;
+                onDragEnd?.();
+                if (!draggedId || draggedId === note.id) return;
+                onDropNote?.(draggedId, note.id, after);
             }}
             onClick={onOpen}
         >

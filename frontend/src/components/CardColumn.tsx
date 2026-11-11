@@ -297,7 +297,7 @@ function CardColumn({column, board, notes, drag, onDragChange, onDropNote, dropT
 
                 </div>
 
-                <div className="shrink-0 px-1">
+                <div className="shrink-0 px-2 pt-1">
                     <CreateNoteButton onCreate={(content) => onCreateNote(column.id, content)}></CreateNoteButton>
                 </div>
             </div>

@@ -62,24 +62,26 @@ function CreateNoteButton({onCreate}: CreateNoteButtonprops){
        }}
        className="flex flex-col gap-3
        ">
-            <textarea
-                autoFocus
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Note title"
-                maxLength={400}
-                onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault();
-                                submitNote();
-                            }
-                            if (e.key === "Escape") {
-                                cancelAdding();
-                            }
-                        }}
-                className="bg-(--card) px-4 py-2 outline-0 rounded-md w-full h-20 resize-none text-md 
-                scrollbar-gutter-stable scrollbar-thin scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent"
-            />
+            <div className="rounded-md overflow-hidden bg-(--card)">
+                <textarea
+                    autoFocus
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Note title"
+                    maxLength={400}
+                    onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    submitNote();
+                                }
+                                if (e.key === "Escape") {
+                                    cancelAdding();
+                                }
+                            }}
+                    className="px-4 py-3 outline-0 w-full h-20 resize-none text-md 
+                    scrollbar-gutter-stable scrollbar-thin scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent"
+                />
+            </div>
             <div className="flex gap-2 justify-start w-full">
                 <Button
                 variant="primary"

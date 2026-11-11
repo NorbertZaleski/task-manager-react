@@ -313,7 +313,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                 >
 
                                     <div className="flex gap-2 py-2 ml-8">
-                                        {labels.length < 1 && (
+                                        {!noteLabels?.length && (
                                             <Button 
                                                 iconl={ <LucideTag size={16} className="-mr-0.5" />} 
                                                 onClick={()=> { setDueAnchor("toolbar"); setLabelsModal("list"); }}
@@ -356,7 +356,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                             <Button
                                                 variant="ghost_small"
                                                 onClick={() => { setLabelsAnchor("badge"); setLabelsModal("create"); }}
-                                                className="rounded-s"
+                                                className="p-0 w-7 h-7 shrink-0 flex items-center justify-center rounded-md"
                                             >
                                                 <Plus size={16} />
                                             </Button>

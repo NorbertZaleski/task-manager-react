@@ -74,6 +74,7 @@ function CommentRow({
           onCommit={onEdit}
           editing={editing}
           onEditingChange={setEditing}
+          clickToEdit={false}
           multiline
           showActions
           maxLength={2000}
@@ -161,7 +162,6 @@ function CommentsPanel({ activity, currentUserId }: CommentsPanelProps) {
             />
           ) : (
             <li key={item.id} className="text-xs opacity-70">
-              <span><Avatar user={item.author}/></span>
               <span className="font-semibold">{item.author?.name ?? "Someone"}</span>{" "}
               {describeActivity(item)}
               <span className="ml-2 opacity-60">{formatDate(item.createdAt)}</span>

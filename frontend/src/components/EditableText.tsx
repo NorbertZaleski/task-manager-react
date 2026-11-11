@@ -14,9 +14,11 @@ type EditableTextProps = {
     viewClassName?: string;
     editClassName?: string;
     editing?: boolean;
+    clickToEdit?: boolean;
 };
 
-function EditableText({ value, onCommit, onEditingChange, multiline = false, allowEmpty = false, showActions = false, editing, maxLength, placeholder = "Add title...", className = "", viewClassName = "", editClassName = "", }: EditableTextProps) {
+function EditableText({ value, onCommit, onEditingChange, multiline = false, allowEmpty = false, showActions = false, editing, maxLength, 
+    placeholder = "Add title...", className = "", viewClassName = "", editClassName = "", clickToEdit = true}: EditableTextProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [focused, setFocused] = useState(true);
     const [draft, setDraft] = useState(value);
@@ -123,13 +125,15 @@ function EditableText({ value, onCommit, onEditingChange, multiline = false, all
     }
 
     return (
-       <button
+    <button
             type="button"
-            onClick={start}
-            className={`${base} ${className} ${viewClassName || "bg-transparent"}`}
-        >
+            onClick={clickToEdit ? start : undefined}
+            className={`${base} ${className} ${viewClassName || "bg-transparent"} ${
+                clickToEdit ? "" : "cursor-default"
+            }`}
+    >
             {value || placeholder}
-        </button>
+    </button>
     );
 }
 

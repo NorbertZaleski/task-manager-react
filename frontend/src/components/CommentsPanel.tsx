@@ -28,7 +28,7 @@ const describeActivity = (a: ActivityLogItem) => {
     case "label_removed":
       return `removed label ${m.title || m.color}`;
     case "due_set":
-      return `set the due date to ${new Date(m.dueDate).toLocaleDateString()}`;
+      return `set the due date to ${new Date(m.dueDate).toLocaleDateString()} ${new Date(m.dueDate).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}`;
     case "due_removed":
       return "removed the due date";
     case "due_completed":

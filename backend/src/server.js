@@ -26,6 +26,8 @@ app.use(express.json());
 
 app.use('/api', routes);
 
+app.use(express.json({ limit: "10mb" }))
+
 connectDB().then(()=> {
     app.listen(PORT, () => {
         console.log("Server just started on port: ", PORT);

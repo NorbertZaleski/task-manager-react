@@ -17,6 +17,7 @@ import { dueClassBase, dueStatusClass, formatDue, getDueStatus } from "../utils/
 import CommentsPanel from "./CommentsPanel";
 import { useAuth } from "../context/AuthContext";
 import { useNoteActivity } from "../hooks/useNoteActivity";
+import RichTextEditor from "./RichTextEditor";
 
 type NoteModalProps = {
     note: Note;
@@ -417,18 +418,13 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                                                 : "max-h-110 overflow-hidden"
                                                     }
                                                 >
-                                                    <EditableText
+                                                    <RichTextEditor
                                                         value={note.content ?? ""}
-                                                        maxLength={1000}
-                                                        allowEmpty
-                                                        multiline={true}
-                                                        showActions
                                                         placeholder="Add content..."
                                                         onCommit={(content) => onSaveContent(note.id, content)}
                                                         onEditingChange={setIsEditingNoteContent}
-                                                        className="w-full px-3 py-2 rounded-xs text-sm font-normal"
-                                                        viewClassName="text-(--text-mute) cursor-pointer"
-                                                        editClassName="outline-1 min-h-40"
+                                                        className="w-full"
+                                                        viewClassName="text-(--text-mute) px-3 py-2"
                                                     />
                                                 </div>
 

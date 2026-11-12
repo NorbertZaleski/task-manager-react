@@ -1,38 +1,17 @@
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import api from "./api";
 import type { Board, BoardBackground, BoardMember, BoardRole, Column } from '../types/types';
-
-const getToken = () => localStorage.getItem('token');
-
-const api = axios.create({
-    baseURL: 'http://localhost:5001/api/boards',
-    headers: {
-        'Content-Type': 'application/json'
-    }
-});
-
-// Interceptor do dodawania tokenu
-api.interceptors.request.use(
-    (config) => {
-        const token = getToken();
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
 
 type CreateBoardInput = {
     title: string;
     background?: BoardBackground;
 };
 
-
 export const boardsService = {
 
     getBoards: async (): Promise<Board[]> => {
         try {
-            const response = await api.get<Board[]>(`/`);
+            const response = await api.get<Board[]>(`/boards`);
             return response.data;
         } catch (error) {
             if (error instanceof AxiosError) {
@@ -44,7 +23,7 @@ export const boardsService = {
 
     getBoard: async (boardId: string): Promise<Board> => {
         try {
-            const response = await api.get<Board>(`/${boardId}`);
+            const response = await api.get<Board>(`/boards/${boardId}`);
             return response.data;
         } catch (error) {
             if (error instanceof AxiosError) {
@@ -56,7 +35,7 @@ export const boardsService = {
 
     createBoard: async(data: CreateBoardInput): Promise<Board> => {
         try {
-            const response = await api.post<Board>(`/`, data);
+            const response = await api.post<Board>(`/boards`, data);
             return response.data;
         } catch (error) {
         if (error instanceof AxiosError) {
@@ -68,7 +47,7 @@ export const boardsService = {
 
     updateBoard: async(boardId: string, data: {title: string}): Promise<Board> => {
         try {
-            const reponse = await api.patch<Board>(`/${boardId}`, data);
+            const reponse = await api.patch<Board>(`/boards/${boardId}`, data);
             return reponse.data;
         } catch (error) {
         if (error instanceof AxiosError) {
@@ -80,7 +59,7 @@ export const boardsService = {
 
     deleteBoard: async(boardId: string): Promise<void> => {
         try {
-            await api.delete<Board>(`/${boardId}`);
+            await api.delete<Board>(`/boards/${boardId}`);
         } catch (error) {
         if (error instanceof AxiosError) {
                 throw error.response?.data ?? error;
@@ -91,7 +70,7 @@ export const boardsService = {
 
     createColumn: async (boardId: string, data: {title: string}): Promise<Column> => {
         try {
-            const response = await api.post<Column>(`/${boardId}/columns`, data);
+            const response = await api.post<Column>(`/boards/${boardId}/columns`, data);
             return response.data;
         } catch (error) {
             if (error instanceof AxiosError) {
@@ -103,7 +82,7 @@ export const boardsService = {
 
     addMember: async (boardId: string, userId: string, role: BoardRole = "member"): Promise<BoardMember> => {
         try {
-            const response = await api.post<BoardMember>(`/${boardId}/members`, {userId, role});
+            const response = await api.post<BoardMember>(`/boards/${boardId}/members`, {userId, role});
             return response.data;
         } catch (error) {
             if (error instanceof AxiosError) {
@@ -115,7 +94,7 @@ export const boardsService = {
 
     updateMemberRole: async (boardId: string, userId: string, role: BoardRole): Promise<BoardMember> => {
         try {
-            const res = await api.patch<BoardMember>(`/${boardId}/members/${userId}`, { role });
+            const res = await api.patch<BoardMember>(`/boards/${boardId}/members/${userId}`, { role });
             return res.data;
         } catch (error) {
         if (error instanceof AxiosError) {
@@ -127,7 +106,7 @@ export const boardsService = {
 
     removeMember: async (boardId: string, userId: string): Promise<void> => {
         try {
-            await api.delete(`/${boardId}/members/${userId}`);
+            await api.delete(`/boards/${boardId}/members/${userId}`);
         } catch (error) {
         if (error instanceof AxiosError) {
                 throw error.response?.data ?? error;

@@ -12,13 +12,21 @@ export const toClientColumn = ({ _id, __v, board, ...rest }) => ({ id: _id.toStr
 
 export const toClientLabel = ({ _id, __v, board, ...rest }) => ({ id: _id.toString(), ...rest });
 
-export const toClientNote = ({ _id, __v, board, column, labels = [], assignees = [], dueDate, completed = false, ...rest }) => ({
+export const toClientNote = ({ _id, __v, board, column, labels = [], assignees = [], dueDate, completed = false, attachments=[], ...rest }) => ({
     id: _id.toString(),
     columnId: column?.toString() ?? null,
     labelIds: labels.map((l) => (l._id ?? l).toString()),
     assigneeIds: assignees.map((a) => (a._id ?? a).toString()),
     dueDate: dueDate ? new Date(dueDate).toISOString() : null,
     completed: Boolean(completed),
+    attachments: attachments.map((a) => ({
+        id: a._id.toString(),
+        originalName: a.originalName,
+        mimeType: a.mimeType,
+        size: a.size,
+        uploadedBy: a.uploadedBy ? a.uploadedBy.toString() : undefined,
+        createdAt: a.createdAt ? new Date(a.createdAt).toISOString() : undefined,
+    })),
     ...rest,
 });
 

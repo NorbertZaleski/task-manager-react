@@ -39,6 +39,14 @@ const noteSchema = new mongoose.Schema({
         type: Boolean, 
         default: false 
     },
+    attachments: [{
+        filename: { type: String, required: true },
+        originalName: { type: String, required: true },
+        mimeType: String,
+        size: Number,
+        uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        createdAt: { type: Date, default: Date.now },
+    }],
 }, { timestamps: true }
 );
 

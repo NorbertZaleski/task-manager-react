@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp, Circle, CircleCheck, Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
-import type { Label, Note } from "../types/types";
+import type { Attachment, Label, Note } from "../types/types";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
 import Button from "./Button";
@@ -18,6 +18,7 @@ import CommentsPanel from "./CommentsPanel";
 import { useAuth } from "../context/AuthContext";
 import { useNoteActivity } from "../hooks/useNoteActivity";
 import RichTextEditor from "./RichTextEditor";
+import { formatSize } from "../utils/formatSize";
 
 type NoteModalProps = {
     note: Note;
@@ -53,6 +54,8 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     const [editingLabel, setEditingLabel] = useState<Label | null>(null);
     const [labelsModal, setLabelsModal] = useState<"closed" | "list" | "create" | "edit">("closed");
     
+    const pendingRef = useRef(false);
+
     const ellipsisRef = useRef<HTMLButtonElement>(null);
     const labelsRef = useRef<HTMLButtonElement>(null);
     const labelsRefActive = useRef<HTMLElement>(null);
@@ -65,26 +68,32 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     const [dueAnchor, setDueAnchor] = useState<"toolbar" | "badge">("toolbar");
     const dueAnchorRef = dueAnchor === "badge" ? dueRefActive : dueRef;
 
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const [uploading, setUploading] = useState(false);
+
     const activity = useNoteActivity(boardId ?? "", note.id);
     const firstRun = useRef(true);
+
+    const ACCEPT = ".txt,.md,.csv,.pdf,.png,.jpg,.jpeg,.webp,.gif,.docx,.xlsx";
+    const MAX_SIZE = 10 * 1024 * 1024;
+
     async function handleToggleLabel(labelId: string) {
-        if (!labelId) {
-            console.error("Label without id", labelId);
-            return;
-        }
+        if (!labelId || pendingRef.current) return;
+        pendingRef.current = true;
         const prev = selectedLabelIds;
         const next = prev.includes(labelId)
             ? prev.filter((id) => id !== labelId)
             : [...prev, labelId];
-
         setSelectedLabelIds(next);
-
         try {
             const updatedNote = await notesService.setLabels(note.id, next);
             onNoteUpdated?.(updatedNote);
         } catch (err) {
             console.error("Error:", err);
             setSelectedLabelIds(prev);
+        } finally {
+            pendingRef.current = false;
         }
     };
 
@@ -117,6 +126,46 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
         try {
             const updatedNote = await notesService.setCompleted(note.id, next);
             onNoteUpdated?.(updatedNote);
+        } catch (err) {
+            console.error("Error:", err);
+        }
+    };
+
+    async function handleUpload(files: File[]) {
+        if (!files.length) return;
+        const tooBig = files.find((f) => f.size > MAX_SIZE);
+        if (tooBig) return setUploadError(`${tooBig.name} is larger than 10 MB`);
+
+        setUploadError(null);
+        setUploading(true);
+        try {
+            const updated = await notesService.uploadAttachments(note.id, files);
+            onNoteUpdated?.(updated);
+        } catch (err: any) {
+            setUploadError(err?.response?.data?.message ?? "Upload failed");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    async function handleOpenAttachment(a: Attachment) {
+        try {
+            setUploadError(null);
+            const canPreview =
+                a.mimeType?.startsWith("image/") ||
+                ["application/pdf", "text/plain", "text/csv"].includes(a.mimeType ?? "");
+
+            if (canPreview) await notesService.openAttachment(note.id, a);
+            else await notesService.downloadAttachment(note.id, a);
+        } catch (err: any) {
+            setUploadError(err?.message ?? "Could not open file");
+        }
+    };
+
+    async function handleDeleteAttachment(attachmentId: string) {
+        try {
+            const updated = await notesService.deleteAttachment(note.id, attachmentId);
+            onNoteUpdated?.(updated);
         } catch (err) {
             console.error("Error:", err);
         }
@@ -335,18 +384,37 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                         )}
                                         <Button iconl={<SquareCheck size={16} className="-mr-0.5" />}> To do list </Button>
                                         <Button iconl={<UserRoundPlus size={16} className="-mr-0.5" />}> Members </Button>
-                                        <Button iconl={<Paperclip size={16} className="-mr-0.5" />}> Files </Button>
+                                        <Button 
+                                            iconl={<Paperclip size={16} 
+                                            className="-mr-0.5" />}
+                                            onClick={() => fileInputRef.current?.click()}
+                                        > 
+                                            Files 
+                                        </Button>
+
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            multiple
+                                            hidden
+                                            accept={ACCEPT}
+                                            onChange={(e) => {
+                                                handleUpload(Array.from(e.target.files ?? []));
+                                                e.target.value = "";
+                                            }}
+                                        />
+
                                     </div>
-                                    <div className="flex h-14 gap-4">
+                                    <div className="ml-8 flex flex-wrap items-start gap-x-4 gap-y-3 min-w-0">
                                         {noteLabels.length > 0 && (
-                                            <div className="ml-8 flex flex-col gap-1 text-(--text-mute)">
+                                            <div className="flex flex-col gap-1 shrink-0 max-w-full text-(--text-mute)">
                                                 <label className="text-xs">Labels</label>
-                                                <div className="flex flex-wrap gap-1 h-4">
+                                                <div className="flex flex-wrap items-center gap-1">
                                                     {noteLabels.map((label, index) => (
                                                         <span
                                                             key={label.id}
                                                             ref={index === 0 ? labelsRefActive : undefined}
-                                                            className={`text-s font-medium justify-start px-2 py-1 rounded flex items-center max-w-full 
+                                                            className={`text-s font-medium justify-start px-2 py-1 rounded flex items-center max-w-full min-h-8
                                                                 cursor-pointer overflow-hidden select-none ${
                                                             label.title ? 'min-w-10' : 'min-w-6'
                                                             }`}
@@ -369,13 +437,13 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                         )}
 
                                         {note.dueDate && status && (
-                                            <div className="flex flex-col gap-1 text-(--text-mute)">
+                                            <div className="flex flex-col gap-1 shrink-0 text-(--text-mute)">
                                                 <label className="text-xs">Due date</label>
                                                 <Button
                                                     variant="outline"
                                                     ref={dueRefActive}
                                                     onClick={() => { setDueAnchor("badge"); setIsDueOpen(true); }}
-                                                    className={`flex items-center gap-1 rounded h-4 pl-2 pr-1.5 py-1 text-xs font-medium cursor-pointer select-none`}
+                                                    className={`flex items-center gap-1 rounded h-7 pl-2 pr-1.5 py-1 text-xs font-medium cursor-pointer select-none`}
                                                 >
                                                     {formatDue(note.dueDate)}
                                                     {status === "completed" && <span className={`${dueClassBase} ${dueStatusClass[status]}`}>Completed</span>}
@@ -383,6 +451,49 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                                     {status === "overdue" && <span className={`${dueClassBase} ${dueStatusClass[status]}`}>Overdue</span>}
                                                     <ChevronDown size={16}/>
                                                 </Button>
+                                            </div>
+                                        )}
+
+                                        {(note.attachments?.length || uploading || uploadError) && (
+                                            <div className="flex flex-col gap-1 min-w-0 max-w-full text-(--text-mute)">
+                                                <label className="text-xs">Attachments</label>
+
+                                                {note.attachments?.map((a) => (
+                                                    <Button
+                                                        key={a.id}
+                                                        variant="outline"
+                                                        onClick={() => handleOpenAttachment(a)}
+                                                        title={a.originalName}
+                                                        className="flex w-full min-w-0 items-center gap-2 rounded px-2 py-1 text-sm"
+                                                    >
+                                                        <Paperclip size={14} className="shrink-0" />
+                                                        <span className="min-w-0 truncate text-left">{a.originalName}</span>
+                                                        <span className="shrink-0 text-xs">{formatSize(a.size)}</span>
+
+                                                        <span
+                                                            role="button"
+                                                            tabIndex={0}
+                                                            aria-label={`Delete ${a.originalName}`}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteAttachment(a.id);
+                                                            }}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === "Enter" || e.key === " ") {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    handleDeleteAttachment(a.id);
+                                                                }
+                                                            }}
+                                                            className="ml-auto shrink-0 p-1 cursor-poiner text-(--text-mute) border-none rounded-full hover:bg-white/5"
+                                                        >
+                                                            <X size={14} />
+                                                        </span>
+                                                    </Button>
+                                                ))}
+
+                                                {uploading && <p className="text-xs">Uploading...</p>}
+                                                {uploadError && <p className="text-xs text-red-400">{uploadError}</p>}
                                             </div>
                                         )}
                                     </div>
@@ -449,7 +560,8 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                 </div>
                             </div>
                         </div>
-                        <div className="flex flex-1 min-w-0 justify-items-start text-left p-6 bg-(--bg-notemodal-right) overflow-y-auto scrollbar-gutter-stable scrollbar-thin scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent">
+                        <div className="flex flex-1 min-w-0 justify-items-start text-left p-6 bg-(--bg-notemodal-right) 
+                        overflow-y-auto scrollbar-gutter-stable scrollbar-thin scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent">
                             {user && <CommentsPanel activity={activity} currentUserId={user.id} />}
                         </div>
                     </div>

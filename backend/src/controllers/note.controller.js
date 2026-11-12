@@ -6,6 +6,9 @@ import { toClientNote } from "./board.controller.js";
 import { getMembership } from "../middleware/boardAccess.js";
 import logActivity from "../utils/logActivity.js";
 import NoteActivityModel from "../models/NoteActivity.model.js";
+import { UPLOAD_DIR } from "../middleware/upload.js";
+import fs from "fs/promises";
+import path from "path";
 
 async function resolveLabels(labels, boardId) {
     if (!Array.isArray(labels) || !labels.every((l) => mongoose.isValidObjectId(l))) return null;
@@ -216,6 +219,7 @@ export async function deleteNote(req, res){
         await Promise.all([
             note.deleteOne(),
             NoteActivityModel.deleteMany({ note: note._id }),
+            removeFiles(note.attachments.map((a) => a.filename)),
         ]);
 
         res.status(200).json({message: "note deleted", note: note});
@@ -234,22 +238,27 @@ export async function setNoteLabels(req, res) {
             return res.status(400).json({ message: "Invalid note ID" });
         }
 
-        const note = await Note.findById(id);
-        if (!note) return res.status(404).json({ message: "Note not found" });
+        const before = await Note.findById(id).select("board labels").lean();
+        if (!before) return res.status(404).json({ message: "Note not found" });
 
-        const membership = await getMembership(note.board, req.user._id);
+        const membership = await getMembership(before.board, req.user._id);
         if (!membership) return res.status(404).json({ message: "Board not found" });
 
-        const labelIds = await resolveLabels(labels, note.board);
+        const labelIds = await resolveLabels(labels, before.board);
         if (!labelIds) return res.status(400).json({ message: "Invalid labels" });
 
-        const events = await diffLabels(note.labels.map(String), labelIds);
+        const events = await diffLabels(before.labels.map(String), labelIds);
 
-        note.labels = labelIds;
-        await note.save();
+        const note = await Note.findByIdAndUpdate(
+            id,
+            { $set: { labels: labelIds } },
+            { new: true }
+        ).lean();
+        if (!note) return res.status(404).json({ message: "Note not found" });
+
         await logEvents(note, req.user._id, events);
 
-        return res.status(200).json(toClientNote(note.toObject()));
+        return res.status(200).json(toClientNote(note));
     } catch (error) {
         console.error("Error in setNoteLabels controller", error);
         res.status(500).json({ message: "Internal server error" });
@@ -360,6 +369,98 @@ export async function setNoteCompleted(req, res) {
         res.status(200).json(toClientNote(note.toObject()));
     } catch (error) {
         console.error("Error in setNoteCompleted controller", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+const removeFiles = (names) =>
+    Promise.all(names.map((n) => fs.unlink(path.join(UPLOAD_DIR, n)).catch(() => {})));
+
+export async function uploadAttachments(req, res) {
+    const files = req.files ?? [];
+    try {
+        const { id } = req.params;
+        if (!mongoose.isValidObjectId(id)) {
+            await removeFiles(files.map((f) => f.filename));
+            return res.status(400).json({ message: "Invalid note ID" });
+        }
+
+        const note = await Note.findById(id);
+        const membership = note && (await getMembership(note.board, req.user._id));
+        if (!note || !membership) {
+            await removeFiles(files.map((f) => f.filename));
+            return res.status(404).json({ message: "Note not found" });
+        }
+
+        note.attachments.push(
+            ...files.map((f) => ({
+                filename: f.filename,
+                originalName: Buffer.from(f.originalname, "latin1").toString("utf8"),
+                mimeType: f.mimetype,
+                size: f.size,
+                uploadedBy: req.user._id,
+            }))
+        );
+        await note.save();
+
+        res.status(201).json(toClientNote(note.toObject()));
+    } catch (error) {
+        await removeFiles(files.map((f) => f.filename));
+        console.error("Error in uploadAttachments controller", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export async function downloadAttachment(req, res) {
+    try {
+        const { id, attachmentId } = req.params;
+        if (!mongoose.isValidObjectId(id) || !mongoose.isValidObjectId(attachmentId)) {
+            return res.status(400).json({ message: "Invalid id" });
+        }
+
+        const note = await Note.findById(id).lean();
+        const membership = note && (await getMembership(note.board, req.user._id));
+        if (!note || !membership) return res.status(404).json({ message: "Note not found" });
+
+        const att = note.attachments?.find((a) => String(a._id) === attachmentId);
+        if (!att) return res.status(404).json({ message: "Attachment not found" });
+
+        res.setHeader("X-Content-Type-Options", "nosniff");
+        const filePath = path.join(UPLOAD_DIR, att.filename);
+
+        if (req.query.inline === "1" && att.mimeType?.startsWith("image/")) {
+            res.type(att.mimeType);
+            return res.sendFile(filePath);
+        }
+        res.download(filePath, att.originalName);
+    } catch (error) {
+        console.error("Error in downloadAttachment controller", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export async function deleteAttachment(req, res) {
+    try {
+        const { id, attachmentId } = req.params;
+        if (!mongoose.isValidObjectId(id) || !mongoose.isValidObjectId(attachmentId)) {
+            return res.status(400).json({ message: "Invalid id" });
+        }
+
+        const note = await Note.findById(id);
+        const membership = note && (await getMembership(note.board, req.user._id));
+        if (!note || !membership) return res.status(404).json({ message: "Note not found" });
+
+        const att = note.attachments.id(attachmentId);
+        if (!att) return res.status(404).json({ message: "Attachment not found" });
+
+        const filename = att.filename;
+        att.deleteOne();
+        await note.save();
+        await removeFiles([filename]);
+
+        res.status(200).json(toClientNote(note.toObject()));
+    } catch (error) {
+        console.error("Error in deleteAttachment controller", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };

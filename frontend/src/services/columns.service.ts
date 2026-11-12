@@ -1,33 +1,13 @@
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import api from "./api";
 import type { Column } from '../types/types';
-
-const getToken = () => localStorage.getItem('token');
-
-const api = axios.create({
-    baseURL: 'http://localhost:5001/api/boards',
-    headers: {
-        'Content-Type': 'application/json'
-    }
-});
-
-// Interceptor do dodawania tokenu
-api.interceptors.request.use(
-    (config) => {
-        const token = getToken();
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
 
 export type ColumnUpdate = Partial<Pick<Column, 'title' | 'position'>>;
 
 export const columnsService = {
         createColumn: async (boardId: string, data: {title: string}): Promise<Column> => {
             try {
-                const response = await api.post<Column>(`/${boardId}/columns`, data);
+                const response = await api.post<Column>(`/boards/${boardId}/columns`, data);
                 return response.data;
             } catch (error) {
                 if (error instanceof AxiosError) {
@@ -40,7 +20,7 @@ export const columnsService = {
         updateColumn: async (boardId: string, columnId: string, data: ColumnUpdate): Promise<Column> => {
             try {
                 const response = await api.patch<{ message: string; column: Column }>(
-                    `/${boardId}/columns/${columnId}`,
+                    `/boards/${boardId}/columns/${columnId}`,
                     data
                 );
                 return response.data.column;
@@ -54,7 +34,7 @@ export const columnsService = {
 
         deleteColumn: async (boardId: string, columnId: string): Promise<void> => {
             try {
-                await api.delete<Column>(`/${boardId}/columns/${columnId}`);
+                await api.delete<Column>(`/boards/${boardId}/columns/${columnId}`);
             } catch (error) {
                 if (error instanceof AxiosError) {
                     throw error.response?.data ?? error;

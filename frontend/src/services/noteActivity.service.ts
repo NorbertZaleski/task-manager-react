@@ -1,26 +1,5 @@
-import axios from 'axios';
+import api from "./api";
 import type { CommentItem, NoteActivityItem } from "../types/types";
-
-const getToken = () => localStorage.getItem('token');
-
-const api = axios.create({
-    baseURL: 'http://localhost:5001/api/',
-    headers: {
-        'Content-Type': 'application/json'
-    }
-});
-
-// Interceptor do dodawania tokenu
-api.interceptors.request.use(
-    (config) => {
-        const token = getToken();
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
 
 const base = (boardId: string, noteId: string) => `/boards/${boardId}/notes/${noteId}`;
 

@@ -11,6 +11,15 @@ export type BoardMember = User & {
   role: BoardRole;
 };
 
+export type Attachment = {
+  id: string;
+  originalName: string;
+  mimeType?: string;
+  size: number;
+  uploadedBy?: string;
+  createdAt?: string;
+};
+
 export type Note = {
   id: string;
   title?: string;
@@ -21,6 +30,7 @@ export type Note = {
   dueDate?: string | null;
   completed?: boolean;
   position: number;
+  attachments?: Attachment[];
 };
 
 export type Column = {

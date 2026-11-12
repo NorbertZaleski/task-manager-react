@@ -1,4 +1,4 @@
-import { MessageSquareText } from "lucide-react";
+import { ChevronDown, MessageSquareText } from "lucide-react";
 import EditableText from "./EditableText";
 import { useNoteActivity } from "../hooks/useNoteActivity";
 import type { ActivityLogItem, CommentItem } from "../types/types";
@@ -170,11 +170,18 @@ function CommentsPanel({ activity, currentUserId }: CommentsPanelProps) {
         )}
       </ul>
 
-      {hasMore && (
-        <button type="button" onClick={loadMore} className="mt-4 self-start text-xs underline">
+      {hasMore && showDetails && (
+        <Button
+          variant="outline"
+          onClick={loadMore}
+          iconl={<ChevronDown size={16} />}
+          className="w-full mt-4 py-2"
+        >
           Show more
-        </button>
+        </Button>
       )}
+
+      <div className="h-6 shrink-0" aria-hidden="true" />
     </div>
   );
 }

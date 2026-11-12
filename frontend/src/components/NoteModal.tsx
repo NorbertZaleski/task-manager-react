@@ -1,4 +1,4 @@
-import { ChevronDown, Circle, CircleCheck, Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Circle, CircleCheck, Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
 import type { Label, Note } from "../types/types";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
@@ -28,6 +28,8 @@ type NoteModalProps = {
     onNoteUpdated?: (note: Note) => void;
 } 
 
+const NOTE_CONTENT_COLLAPSED_MAX = 440;
+
 function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onDelete, onNoteUpdated}: NoteModalProps){
 
     const { boardId } = useParams<{ boardId: string }>();
@@ -42,7 +44,8 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     const [isEditingNoteContent, setIsEditingNoteContent] = useState(false);
     const [isNoteContentVisible, setIsNoteContentVisible] = useState(true);
     const [isNoteContentOverflowing, setIsNoteContentOverflowing] = useState(false);
-    
+    const [isNoteContentExpanded, setIsNoteContentExpanded] = useState(false);
+
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const [isDueOpen, setIsDueOpen] = useState(false);
 
@@ -144,13 +147,13 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
         if (!el || isEditingNoteContent) return;
 
         const check = () =>
-            setIsNoteContentOverflowing(el.scrollHeight > el.clientHeight + 1);
+            setIsNoteContentOverflowing(el.scrollHeight > NOTE_CONTENT_COLLAPSED_MAX + 1);
         check();
 
         const ro = new ResizeObserver(check);
         ro.observe(el);
         return () => ro.disconnect();
-    }, [note.content, isNoteContentVisible, isEditingNoteContent]);
+    }, [note.content, isNoteContentVisible, isEditingNoteContent, isNoteContentExpanded]);
 
     return (
         <div className="fixed inset-0 z-98 bg-black/80 overflow-y-auto" 
@@ -305,9 +308,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                 />
                             )}
 
-                            <div className={`relative flex flex-col ${
-                                isEditingNoteContent ? "" : "flex-1 min-h-0"
-                            }`}>
+                            <div className="relative flex flex-col">
                                 <div
                                     className="flex flex-col gap-4"
                                 >
@@ -335,52 +336,56 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                         <Button iconl={<UserRoundPlus size={16} className="-mr-0.5" />}> Members </Button>
                                         <Button iconl={<Paperclip size={16} className="-mr-0.5" />}> Files </Button>
                                     </div>
+                                    <div className="flex h-14 gap-4">
+                                        {noteLabels.length > 0 && (
+                                            <div className="ml-8 flex flex-col gap-1 text-(--text-mute)">
+                                                <label className="text-xs">Labels</label>
+                                                <div className="flex flex-wrap gap-1 h-4">
+                                                    {noteLabels.map((label, index) => (
+                                                        <span
+                                                            key={label.id}
+                                                            ref={index === 0 ? labelsRefActive : undefined}
+                                                            className={`text-s font-medium justify-start px-2 py-1 rounded flex items-center max-w-full 
+                                                                cursor-pointer overflow-hidden select-none ${
+                                                            label.title ? 'min-w-10' : 'min-w-6'
+                                                            }`}
+                                                            style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
+                                                            onClick={()=> { setLabelsAnchor("badge"); setLabelsModal("list"); }}
 
-                                    {noteLabels.length > 0 && (
-                                        <div className="flex flex-wrap gap-1 ml-8">
-                                            {noteLabels.map((label, index) => (
-                                                <span
-                                                    key={label.id}
-                                                    ref={index === 0 ? labelsRefActive : undefined}
-                                                    className={`text-s font-medium justify-start px-2 py-1 rounded flex items-center max-w-full 
-                                                        cursor-pointer overflow-hidden select-none ${
-                                                    label.title ? 'min-w-10' : 'min-w-6'
-                                                    }`}
-                                                    style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
-                                                    onClick={()=> { setLabelsAnchor("badge"); setLabelsModal("list"); }}
+                                                        >
+                                                            <span className="truncate min-w-0">{label.title}</span>
+                                                        </span>
+                                                    ))}
+                                                    <Button
+                                                        variant="outline_small"
+                                                        onClick={() => { setLabelsAnchor("badge"); setLabelsModal("create"); }}
+                                                        className="p-0 w-7 h-7 shrink-0 flex items-center justify-center rounded-md"
+                                                    >
+                                                        <Plus size={18} />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )}
 
+                                        {note.dueDate && status && (
+                                            <div className="flex flex-col gap-1 text-(--text-mute)">
+                                                <label className="text-xs">Due date</label>
+                                                <Button
+                                                    variant="outline"
+                                                    ref={dueRefActive}
+                                                    onClick={() => { setDueAnchor("badge"); setIsDueOpen(true); }}
+                                                    className={`flex items-center gap-1 rounded h-4 pl-2 pr-1.5 py-1 text-xs font-medium cursor-pointer select-none`}
                                                 >
-                                                    <span className="truncate min-w-0">{label.title}</span>
-                                                </span>
-                                            ))}
-                                            <Button
-                                                variant="ghost_small"
-                                                onClick={() => { setLabelsAnchor("badge"); setLabelsModal("create"); }}
-                                                className="p-0 w-7 h-7 shrink-0 flex items-center justify-center rounded-md"
-                                            >
-                                                <Plus size={16} />
-                                            </Button>
-                                        </div>
-                                    )}
-
-                                    {note.dueDate && status && (
-                                        <div className="ml-8 flex flex-col gap-1 text-(--text-mute)">
-                                            <label className="text-xs">Due date</label>
-                                            <Button
-                                                variant="ghost"
-                                                ref={dueRefActive}
-                                                onClick={() => { setDueAnchor("badge"); setIsDueOpen(true); }}
-                                                className={`flex items-center gap-1 rounded h-fit pl-2 pr-1.5 py-1 text-xs font-medium cursor-pointer select-none bg-(--mute)/10`}
-                                            >
-                                                {formatDue(note.dueDate)}
-                                                {status === "completed" && <span className={`${dueClassBase} ${dueStatusClass[status]}`}>Completed</span>}
-                                                {status === "soon" && <span className={`${dueClassBase} ${dueStatusClass[status]}`}>Due soon</span>}
-                                                {status === "overdue" && <span className={`${dueClassBase} ${dueStatusClass[status]}`}>Overdue</span>}
-                                                <ChevronDown size={16}/>
-                                            </Button>
-                                        </div>
-                                    )}
-
+                                                    {formatDue(note.dueDate)}
+                                                    {status === "completed" && <span className={`${dueClassBase} ${dueStatusClass[status]}`}>Completed</span>}
+                                                    {status === "soon" && <span className={`${dueClassBase} ${dueStatusClass[status]}`}>Due soon</span>}
+                                                    {status === "overdue" && <span className={`${dueClassBase} ${dueStatusClass[status]}`}>Overdue</span>}
+                                                    <ChevronDown size={16}/>
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
                                     <div className="flex flex-col">
                                         <div className="flex justify-between">                                
                                             <div className="flex gap-2 justify-center items-center mb-2">
@@ -404,7 +409,13 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                             <div className="relative">
                                                 <div
                                                     ref={descRef}
-                                                    className={isEditingNoteContent ? "" : "max-h-60 overflow-hidden"}
+                                                    className={
+                                                        isEditingNoteContent
+                                                            ? ""
+                                                            : isNoteContentExpanded
+                                                                ? "max-h-[calc(100dvh-128px)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent"
+                                                                : "max-h-110 overflow-hidden"
+                                                    }
                                                 >
                                                     <EditableText
                                                         value={note.content ?? ""}
@@ -421,20 +432,26 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                                     />
                                                 </div>
 
-                                                {!isEditingNoteContent && isNoteContentOverflowing && (
+                                                {!isEditingNoteContent && isNoteContentOverflowing && !isNoteContentExpanded && (
                                                     <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-(--bg-modal) to-transparent" />
                                                 )}
                                             </div>
+
+                                        {!isEditingNoteContent && isNoteContentOverflowing && (
+                                            <Button
+                                                variant="outline"
+                                                iconl={isNoteContentExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                                onClick={() => setIsNoteContentExpanded((v) => !v)}
+                                                className="w-full"
+                                            >
+                                                {isNoteContentExpanded ? "Show less" : "Show more"}
+                                            </Button>
+                                        )}
                                         </div>
                                     )}
                                     </div>
-
                                 </div>
-                                    {isNoteContentOverflowing && !isEditingNoteContent && (
-                                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-(--bg-modal) to-transparent" />
-                                    )}
                             </div>
-
                         </div>
                         <div className="flex flex-1 min-w-0 justify-items-start text-left p-6 bg-(--bg-notemodal-right) overflow-y-auto scrollbar-gutter-stable scrollbar-thin scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent">
                             {user && <CommentsPanel activity={activity} currentUserId={user.id} />}

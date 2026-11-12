@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 
-type ButtonVariant = "outline" | "primary" | "ghost" | "ghost_small" | "list";
+type ButtonVariant = "outline" | "outline_small" | "primary" | "ghost" | "ghost_small" | "list";
 
 type ButtonProps = ComponentProps<"button"> & {
     variant?: ButtonVariant;
@@ -14,6 +14,8 @@ const base =
 const variants: Record<ButtonVariant, string> = {
     outline:
         "border border-(color:--border-btn) px-2 text-[14px] text-(--text-mute) hover:bg-white/5 rounded-md",
+    outline_small:
+        "size-8 p-2 border border-(color:--border-btn) text-[14px] text-(--text-mute) hover:bg-white/5 rounded-md",
     primary:
         "bg-(--button) hover:bg-(--button-hover) px-3 text-base text-(--text-dark) rounded-md",
     ghost:

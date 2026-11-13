@@ -376,6 +376,15 @@ export async function setNoteCompleted(req, res) {
 const removeFiles = (names) =>
     Promise.all(names.map((n) => fs.unlink(path.join(UPLOAD_DIR, n)).catch(() => {})));
 
+const INLINE_TYPES = new Set([
+    "image/png",
+    "image/jpeg",
+    "image/gif",
+    "image/webp",
+    "application/pdf",
+    "text/plain",
+]);
+
 export async function uploadAttachments(req, res) {
     const files = req.files ?? [];
     try {
@@ -425,13 +434,22 @@ export async function downloadAttachment(req, res) {
         const att = note.attachments?.find((a) => String(a._id) === attachmentId);
         if (!att) return res.status(404).json({ message: "Attachment not found" });
 
-        res.setHeader("X-Content-Type-Options", "nosniff");
         const filePath = path.join(UPLOAD_DIR, att.filename);
+        const type = (att.mimeType ?? "").split(";")[0].trim().toLowerCase();
+        const inline = req.query.inline === "1" && INLINE_TYPES.has(type);
 
-        if (req.query.inline === "1" && att.mimeType?.startsWith("image/")) {
-            res.type(att.mimeType);
+        res.setHeader("X-Content-Type-Options", "nosniff");
+
+        if (inline) {
+            res.setHeader(
+                "Content-Type",
+                type === "text/plain" ? "text/plain; charset=utf-8" : type
+            );
+            res.setHeader("Content-Disposition", "inline");
             return res.sendFile(filePath);
         }
+
+        res.setHeader("Content-Type", "application/octet-stream");
         res.download(filePath, att.originalName);
     } catch (error) {
         console.error("Error in downloadAttachment controller", error);

@@ -78,6 +78,7 @@ function Editor_({ initial, placeholder, className, onSave, onCancel }: {
     const saveRef = useRef<() => void>(() => {});
     const cancelRef = useRef(onCancel);
     cancelRef.current = onCancel;
+    const [focused, setFocused] = useState(true);
 
     const editor = useEditor({
         shouldRerenderOnTransaction: true,
@@ -124,7 +125,16 @@ function Editor_({ initial, placeholder, className, onSave, onCancel }: {
 
     return (
         <div className="flex flex-col gap-2">
-            <div className="rounded outline-1 outline-(--border-active-textarea) bg-input">
+            <div 
+            onFocus={() => setFocused(true)}
+            onBlur={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
+            }}
+            className={`rounded outline-1 bg-input ${
+                focused
+                        ? "outline-(--border-active-textarea)"
+                        : "outline-(--border-mute)"
+                }`}>
                 <div className="flex flex-wrap gap-0.5 border-b border-(--border-mute) p-1">
                     <ToolbarButton label="Bold" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold size={16} /></ToolbarButton>
                     <ToolbarButton label="Italic" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic size={16} /></ToolbarButton>

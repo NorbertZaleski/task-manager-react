@@ -2,6 +2,11 @@ import { AxiosError } from 'axios';
 import api from "./api";
 import type { Note } from '../types/types';
 
+const PREVIEWABLE_TYPES = new Set([
+    "image/png", "image/jpeg", "image/gif", "image/webp",
+    "application/pdf", "text/plain",
+]);
+
 async function parseBlobError(error: AxiosError): Promise<unknown> {
     const data = error.response?.data;
     if (data instanceof Blob) {
@@ -131,16 +136,26 @@ export const notesService = {
         }
     },
 
-    async openAttachment(noteId: string, att: { id: string }): Promise<void> {
+    async openAttachment(noteId: string, att: { id: string; originalName: string }): Promise<void> {
+        const win = window.open("", "_blank");
         try {
             const response = await api.get(`/notes/${noteId}/attachments/${att.id}`, {
                 params: { inline: "1" },
                 responseType: "blob",
             });
+
+            const type = (response.data.type || "").split(";")[0].toLowerCase();
+            if (!PREVIEWABLE_TYPES.has(type)) {
+                win?.close();
+                return this.downloadAttachment(noteId, att);
+            }
+
             const url = URL.createObjectURL(response.data);
-            window.open(url, "_blank");
+            if (win) win.location.href = url;
+            else window.open(url, "_blank");
             setTimeout(() => URL.revokeObjectURL(url), 60_000);
         } catch (error) {
+            win?.close();
             if (error instanceof AxiosError) {
                 throw await parseBlobError(error);
             }

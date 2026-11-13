@@ -76,6 +76,14 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     const firstRun = useRef(true);
 
     const ACCEPT = ".txt,.md,.csv,.pdf,.png,.jpg,.jpeg,.webp,.gif,.docx,.xlsx";
+    const PREVIEWABLE_TYPES = new Set([
+        "image/png",
+        "image/jpeg",
+        "image/gif",
+        "image/webp",
+        "application/pdf",
+        "text/plain",
+    ]);
     const MAX_SIZE = 10 * 1024 * 1024;
 
     async function handleToggleLabel(labelId: string) {
@@ -151,9 +159,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     async function handleOpenAttachment(a: Attachment) {
         try {
             setUploadError(null);
-            const canPreview =
-                a.mimeType?.startsWith("image/") ||
-                ["application/pdf", "text/plain", "text/csv"].includes(a.mimeType ?? "");
+            const canPreview = PREVIEWABLE_TYPES.has((a.mimeType ?? "").toLowerCase());
 
             if (canPreview) await notesService.openAttachment(note.id, a);
             else await notesService.downloadAttachment(note.id, a);

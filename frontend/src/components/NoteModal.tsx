@@ -1,5 +1,5 @@
-import { ChevronDown, ChevronUp, Circle, CircleCheck, Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
-import type { Attachment, Label, Note } from "../types/types";
+import { CheckSquare2, ChevronDown, ChevronUp, Circle, CircleCheck, Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
+import type { Attachment, Checklist, Label, Note, User } from "../types/types";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
 import Button from "./Button";
@@ -19,10 +19,12 @@ import { useAuth } from "../context/AuthContext";
 import { useNoteActivity } from "../hooks/useNoteActivity";
 import RichTextEditor from "./RichTextEditor";
 import { formatSize } from "../utils/formatSize";
+import ChecklistBlock from "./ChecklistBlock";
 
 type NoteModalProps = {
     note: Note;
     columnTitle?: string;
+    members: User[];
     onClose: () => void;
     onSaveContent: (noteId: string, content: string) => void;
     onRenameNote: (noteId: string, title: string) => void;
@@ -32,7 +34,7 @@ type NoteModalProps = {
 
 const NOTE_CONTENT_COLLAPSED_MAX = 440;
 
-function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onDelete, onNoteUpdated}: NoteModalProps){
+function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRenameNote, onDelete, onNoteUpdated}: NoteModalProps){
 
     const { boardId } = useParams<{ boardId: string }>();
     const { user } = useAuth();
@@ -47,6 +49,8 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     const [isNoteContentVisible, setIsNoteContentVisible] = useState(true);
     const [isNoteContentOverflowing, setIsNoteContentOverflowing] = useState(false);
     const [isNoteContentExpanded, setIsNoteContentExpanded] = useState(false);
+
+    const [isToDoListVisible, setIsToDoListVisible] = useState(false);
 
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const [isDueOpen, setIsDueOpen] = useState(false);
@@ -71,6 +75,8 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
+
+    const [checklists, setChecklists] = useState<Checklist[]>(() => note.checklists ?? []);
 
     const activity = useNoteActivity(boardId ?? "", note.id);
     const firstRun = useRef(true);
@@ -176,6 +182,22 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
             console.error("Error:", err);
         }
     };
+
+    async function saveChecklists(next: Checklist[]) {
+        const prev = checklists;
+        setChecklists(next);
+        try {
+            const updated = await notesService.setChecklists(note.id, next);
+            setChecklists(updated.checklists ?? next);
+            onNoteUpdated?.(updated);
+        } catch (err) {
+            console.error("Error:", err);
+            setChecklists(prev);
+        }
+    }
+
+    const addChecklist = () =>
+        saveChecklists([...checklists, { id: crypto.randomUUID(), title: "Lista zadań", items: [] }]);
 
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
@@ -388,7 +410,12 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                                 Date 
                                             </Button>
                                         )}
-                                        <Button iconl={<SquareCheck size={16} className="-mr-0.5" />}> To do list </Button>
+                                        <Button 
+                                            iconl={<SquareCheck size={16} className="-mr-0.5" />}
+                                            onClick={addChecklist}
+                                        > 
+                                            To do list 
+                                        </Button>
                                         <Button iconl={<UserRoundPlus size={16} className="-mr-0.5" />}> Members </Button>
                                         <Button 
                                             iconl={<Paperclip size={16} 
@@ -502,9 +529,10 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                                 {uploadError && <p className="text-xs text-red-400">{uploadError}</p>}
                                             </div>
                                         )}
+
                                     </div>
                                     
-                                    <div className="flex flex-col">
+                                    <div className="flex flex-col gap-8">
                                         <div className="flex justify-between">                                
                                             <div className="flex gap-2 justify-center items-center mb-2">
                                                 <button
@@ -514,7 +542,7 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                                     if (isNoteContentVisible===false) setIsNoteContentVisible(true);
                                                 }}
                                                 >
-                                                    <TextAlignStart />
+                                                    <TextAlignStart size={18} />
                                                 </button>
                                                 <p className="text-[14px] font-semibold">
                                                 Description
@@ -522,46 +550,75 @@ function NoteModal({note, columnTitle, onClose, onSaveContent, onRenameNote, onD
                                             </div>
                                         </div>
 
-                                    {isNoteContentVisible && (
-                                        <div className="ml-8">
-                                            <div className="relative">
-                                                <div
-                                                    ref={descRef}
-                                                    className={
-                                                        isEditingNoteContent
-                                                            ? ""
-                                                            : isNoteContentExpanded
-                                                                ? "max-h-[calc(100dvh-128px)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent"
-                                                                : "max-h-110 overflow-hidden"
-                                                    }
-                                                >
-                                                    <RichTextEditor
-                                                        value={note.content ?? ""}
-                                                        placeholder="Add content..."
-                                                        onCommit={(content) => onSaveContent(note.id, content)}
-                                                        onEditingChange={setIsEditingNoteContent}
-                                                        className="w-full"
-                                                        viewClassName="text-(--text-mute) px-3 py-2"
-                                                    />
+                                        {isNoteContentVisible && (
+                                            <div className="ml-8">
+                                                <div className="relative">
+                                                    <div
+                                                        ref={descRef}
+                                                        className={
+                                                            isEditingNoteContent
+                                                                ? ""
+                                                                : isNoteContentExpanded
+                                                                    ? "max-h-[calc(100dvh-128px)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent"
+                                                                    : "max-h-110 overflow-hidden"
+                                                        }
+                                                    >
+                                                        <RichTextEditor
+                                                            value={note.content ?? ""}
+                                                            placeholder="Add content..."
+                                                            onCommit={(content) => onSaveContent(note.id, content)}
+                                                            onEditingChange={setIsEditingNoteContent}
+                                                            className="w-full"
+                                                            viewClassName="text-(--text-mute) px-3 py-2"
+                                                        />
+                                                    </div>
+
+                                                    {!isEditingNoteContent && isNoteContentOverflowing && !isNoteContentExpanded && (
+                                                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-(--bg-modal) to-transparent" />
+                                                    )}
                                                 </div>
 
-                                                {!isEditingNoteContent && isNoteContentOverflowing && !isNoteContentExpanded && (
-                                                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-(--bg-modal) to-transparent" />
-                                                )}
+                                            {!isEditingNoteContent && isNoteContentOverflowing && (
+                                                <Button
+                                                    variant="outline"
+                                                    iconl={isNoteContentExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                                    onClick={() => setIsNoteContentExpanded((v) => !v)}
+                                                    className="w-full"
+                                                >
+                                                    {isNoteContentExpanded ? "Show less" : "Show more"}
+                                                </Button>
+                                            )}
                                             </div>
-
-                                        {!isEditingNoteContent && isNoteContentOverflowing && (
-                                            <Button
-                                                variant="outline"
-                                                iconl={isNoteContentExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                                                onClick={() => setIsNoteContentExpanded((v) => !v)}
-                                                className="w-full"
-                                            >
-                                                {isNoteContentExpanded ? "Show less" : "Show more"}
-                                            </Button>
                                         )}
+
+                                        <div className="flex justify-between">                                
+                                            <div className="flex gap-2 justify-center items-center mb-2">
+                                                <button
+                                                className="cursor-pointer"
+                                                onClick={()=> {
+                                                    if (isToDoListVisible===true) setIsToDoListVisible(false);
+                                                    if (isToDoListVisible===false) setIsToDoListVisible(true);
+                                                }}
+                                                >
+                                                    <CheckSquare2 size={18} />
+                                                </button>
+                                                <p className="text-[14px] font-semibold">
+                                                To do list
+                                                </p>
+                                            </div>
                                         </div>
-                                    )}
+
+                                        {checklists.map((cl) => (
+                                            <div key={cl.id} className="ml-8">
+                                                <ChecklistBlock
+                                                    key={cl.id}
+                                                    checklist={cl}
+                                                    members={members}
+                                                    onChange={(next) => saveChecklists(checklists.map((c) => (c.id === cl.id ? next : c)))}
+                                                    onDelete={() => saveChecklists(checklists.filter((c) => c.id !== cl.id))}
+                                                />
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>

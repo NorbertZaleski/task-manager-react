@@ -20,6 +20,20 @@ export type Attachment = {
   createdAt?: string;
 };
 
+export type ChecklistItem = {
+    id: string;
+    text: string;
+    done: boolean;
+    assignees: string[];
+    dueDate: string | null;
+};
+
+export type Checklist = {
+    id: string;
+    title: string;
+    items: ChecklistItem[];
+};
+
 export type Note = {
   id: string;
   title?: string;
@@ -31,6 +45,7 @@ export type Note = {
   completed?: boolean;
   position: number;
   attachments?: Attachment[];
+  checklists?: Checklist[];
 };
 
 export type Column = {

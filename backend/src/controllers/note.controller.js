@@ -482,3 +482,82 @@ export async function deleteAttachment(req, res) {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+async function sanitizeChecklists(input, boardId) {
+    if (!Array.isArray(input) || input.length > 10) return null;
+
+    const memberCache = new Map();
+    const isMember = async (uid) => {
+        if (!memberCache.has(uid)) {
+            memberCache.set(uid, !!(await getMembership(boardId, uid)));
+        }
+        return memberCache.get(uid);
+    };
+
+    const out = [];
+    for (const c of input) {
+        if (!c || typeof c !== "object" || !Array.isArray(c.items) || c.items.length > 100) return null;
+        const title = typeof c.title === "string" ? c.title.trim().slice(0, 100) : "";
+
+        const items = [];
+        for (const i of c.items) {
+            const text = typeof i?.text === "string" ? i.text.trim() : "";
+            if (!text || text.length > 500) return null;
+
+            const assignees = Array.isArray(i.assignees) ? [...new Set(i.assignees.map(String))] : [];
+            if (assignees.length > 20 || !assignees.every((a) => mongoose.isValidObjectId(a))) return null;
+            for (const uid of assignees) {
+                if (!(await isMember(uid))) return null;
+            }
+
+            let dueDate = null;
+            if (i.dueDate != null) {
+                dueDate = new Date(i.dueDate);
+                if (Number.isNaN(dueDate.getTime())) return null;
+            }
+
+            items.push({
+                ...(mongoose.isValidObjectId(i.id) ? { _id: i.id } : {}),
+                text,
+                done: i.done === true,
+                assignees,
+                dueDate,
+            });
+        }
+
+        out.push({
+            ...(mongoose.isValidObjectId(c.id) ? { _id: c.id } : {}),
+            title: title || "Lista zadań",
+            items,
+        });
+    }
+    return out;
+};
+
+export async function setNoteChecklists(req, res) {
+    try {
+        const { id } = req.params;
+        const { checklists } = req.body;
+
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: "Invalid note ID" });
+        }
+
+        const note = await Note.findById(id);
+        if (!note) return res.status(404).json({ message: "Note not found" });
+
+        const membership = await getMembership(note.board, req.user._id);
+        if (!membership) return res.status(404).json({ message: "Board not found" });
+
+        const clean = await sanitizeChecklists(checklists, note.board);
+        if (!clean) return res.status(400).json({ message: "Invalid checklists" });
+
+        note.checklists = clean;
+        await note.save();
+
+        res.status(200).json(toClientNote(note.toObject()));
+    } catch (error) {
+        console.error("Error in setNoteChecklists controller", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};

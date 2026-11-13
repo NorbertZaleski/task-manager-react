@@ -12,7 +12,7 @@ export const toClientColumn = ({ _id, __v, board, ...rest }) => ({ id: _id.toStr
 
 export const toClientLabel = ({ _id, __v, board, ...rest }) => ({ id: _id.toString(), ...rest });
 
-export const toClientNote = ({ _id, __v, board, column, labels = [], assignees = [], dueDate, completed = false, attachments=[], ...rest }) => ({
+export const toClientNote = ({ _id, __v, board, column, labels = [], assignees = [], dueDate, completed = false, attachments= [], checklists= [], ...rest }) => ({
     id: _id.toString(),
     columnId: column?.toString() ?? null,
     labelIds: labels.map((l) => (l._id ?? l).toString()),
@@ -26,6 +26,17 @@ export const toClientNote = ({ _id, __v, board, column, labels = [], assignees =
         size: a.size,
         uploadedBy: a.uploadedBy ? a.uploadedBy.toString() : undefined,
         createdAt: a.createdAt ? new Date(a.createdAt).toISOString() : undefined,
+    })),
+    checklists: checklists.map((c) => ({
+        id: c._id.toString(),
+        title: c.title,
+        items: (c.items ?? []).map((i) => ({
+            id: i._id.toString(),
+            text: i.text,
+            done: !!i.done,
+            assignees: (i.assignees ?? []).map((a) => (a._id ?? a).toString()),
+            dueDate: i.dueDate ? new Date(i.dueDate).toISOString() : null,
+        })),
     })),
     ...rest,
 });

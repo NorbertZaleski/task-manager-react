@@ -24,7 +24,7 @@ function SearchBoxMembers({onSelect}: SearchBoxMembersProps) {
                 setIsModalOpen(true);
             }}
             ref={inputRef}
-            className="bg-(--bg-input) rounded-sm"
+            className="bg-input rounded-sm"
             />
             {isModalOpen && (
                 <MembersModal 

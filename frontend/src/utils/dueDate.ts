@@ -22,6 +22,17 @@ export function formatDue(iso: string) {
     }).format(new Date(iso));
 }
 
+export function formatDueDate(iso: string) {
+    const d = new Date(iso);
+    const sameYear = d.getFullYear() === new Date().getFullYear();
+
+    return new Intl.DateTimeFormat("en-GB", {
+        day: "numeric",
+        month: "short",
+        ...(sameYear ? {} : { year: "numeric" }),
+    }).format(d);
+}
+
 export type DueStatus = "completed" | "overdue" | "soon" | "normal";
 
 export function getDueStatus(iso: string, completed = false): DueStatus {

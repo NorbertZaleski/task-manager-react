@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
 import api from "./api";
-import type { Note } from '../types/types';
+import type { Checklist, Note } from '../types/types';
 
 const PREVIEWABLE_TYPES = new Set([
     "image/png", "image/jpeg", "image/gif", "image/webp",
@@ -156,6 +156,18 @@ export const notesService = {
             setTimeout(() => URL.revokeObjectURL(url), 60_000);
         } catch (error) {
             win?.close();
+            if (error instanceof AxiosError) {
+                throw await parseBlobError(error);
+            }
+            throw error;
+        }
+    },
+
+    setChecklists: async (noteId: string, checklists: Checklist[]) => {
+        try {
+            const response = await api.put(`/notes/${noteId}/checklists`, { checklists });
+            return response.data as Note;
+        } catch (error) {
             if (error instanceof AxiosError) {
                 throw await parseBlobError(error);
             }

@@ -327,6 +327,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                 onRenameNote={renameNote}
                 onDelete={handleDeleteNote}
                 onNoteUpdated={handleNoteUpdated}
+                members={board.members}
                 />
             )}
     

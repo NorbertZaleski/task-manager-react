@@ -21,25 +21,30 @@ const toISO = (y: number, m: number, d: number) => `${y}-${pad(m + 1)}-${pad(d)}
 function parseISO(s: string): { y: number; m: number } | null {
     const match = /^(\d{4})-(\d{2})-\d{2}$/.exec(s);
     return match ? { y: Number(match[1]), m: Number(match[2]) - 1 } : null;
-}
+};
 
 function isoToDisplay(iso: string): string {
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
     return m ? `${m[3]}.${m[2]}.${m[1]}` : "";
-}
+};
 
 function displayToIso(text: string): string | null {
-    const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(text.trim());
+    const t = text.trim();
+    const m =
+        /^(\d{1,2})[.\-/ ](\d{1,2})[.\-/ ](\d{4})$/.exec(t) ?? // 12.05.2025, 12-5-2025, 12/05/2025
+        /^(\d{2})(\d{2})(\d{4})$/.exec(t);                      // 12052025
     if (!m) return null;
+
     const d = Number(m[1]);
     const mo = Number(m[2]);
     const y = Number(m[3]);
+
     const check = new Date(y, mo - 1, d);
     if (check.getFullYear() !== y || check.getMonth() !== mo - 1 || check.getDate() !== d) {
         return null;
     }
     return `${y}-${pad(mo)}-${pad(d)}`;
-}
+};
 
 function DueDateForm({ value, onSave }: DueDateFormProps) {
     const initial = toDateInputs(value);
@@ -59,7 +64,7 @@ function DueDateForm({ value, onSave }: DueDateFormProps) {
     function selectDate(iso: string) {
         setDate(iso);
         setDateText(isoToDisplay(iso));
-    }
+    };
 
     function normalizeTime(text: string): string | null {
         const t = text.trim();
@@ -69,21 +74,64 @@ function DueDateForm({ value, onSave }: DueDateFormProps) {
         const min = Number(m[2]);
         if (h > 23 || min > 59) return null;
         return `${pad(h)}:${pad(min)}`;
-    }
+    };
 
     function shiftMonth(delta: number) {
         const d = new Date(viewYear, viewMonth + delta, 1);
         setViewYear(d.getFullYear());
         setViewMonth(d.getMonth());
-    }
+    };
 
     function shiftYear(delta: number) {
         setViewYear((y) => y + delta);
-    }
+    };
+
+    function formatDateTyping(raw: string, deleting: boolean): string | null {
+        const digits = raw.replace(/\D/g, "").slice(0, 8);
+        let p = 0;
+
+        let day = "";
+        if (p < digits.length) {
+            const d1 = digits[p++];
+            if (Number(d1) > 3) {
+                day = "0" + d1;
+            } else {
+                day = d1;
+                if (p < digits.length) day += digits[p++];
+            }
+        }
+        if (day.length === 2 && (Number(day) < 1 || Number(day) > 31)) return null;
+
+        let month = "";
+        if (p < digits.length) {
+            const m1 = digits[p++];
+            if (Number(m1) > 1) {
+                month = "0" + m1;
+            } else {
+                month = m1;
+                if (p < digits.length) month += digits[p++];
+            }
+        }
+        if (month.length === 2 && (Number(month) < 1 || Number(month) > 12)) return null;
+
+        const year = digits.slice(p, p + 4);
+
+        let out = day;
+        if (day.length === 2 && (month.length > 0 || !deleting)) out += ".";
+        out += month;
+        if (month.length === 2 && (year.length > 0 || !deleting)) out += ".";
+        out += year;
+
+        return out;
+    };
 
     function handleDateInput(text: string) {
-        setDateText(text);
-        const iso = displayToIso(text);
+        const deleting = text.length < dateText.length;
+        const formatted = formatDateTyping(text, deleting);
+        if (formatted === null) return;
+
+        setDateText(formatted);
+        const iso = displayToIso(formatted);
         if (iso) {
             setDate(iso);
             const parsed = parseISO(iso);
@@ -91,27 +139,28 @@ function DueDateForm({ value, onSave }: DueDateFormProps) {
                 setViewYear(parsed.y);
                 setViewMonth(parsed.m);
             }
-        } else {
-            setDate("");
         }
-    }
+    };
 
     function handleDateBlur() {
-        setDateText(isoToDisplay(date));
-    }
+        const iso = displayToIso(dateText);
+        const next = iso ?? date;
+        setDate(next);
+        setDateText(isoToDisplay(next));
+    };
 
     function handleTimeInput(text: string) {
         setTimeText(text);
         const normalized = normalizeTime(text);
         if (normalized) setTime(normalized);
-    }
+    };
 
     function handleTimeBlur() {
         const normalized = normalizeTime(timeText);
         const next = normalized ?? time; // błędne -> wróć do ostatniej poprawnej
         setTime(next);
         setTimeText(next);
-    }
+    };
 
     const [timeOpen, setTimeOpen] = useState(false);
     const timeWrapRef = useRef<HTMLDivElement>(null);

@@ -6,7 +6,7 @@ import Button from "./Button";
 import Avatar from "./Avatar";
 import OptionsModal from "./OptionsModal";
 import DueDateForm from "./DueDateForm";
-import { formatDueDate, getDueStatus } from "../utils/dueDate";
+import { dueClassBase, dueStatusClass, formatDueDate, getDueStatus, type DueStatus } from "../utils/dueDate";
 import Input from "./Input";
 
 type Props = {
@@ -21,7 +21,7 @@ type Picker = { target: string; kind: "assign" | "due" } | null;
 
 const emptyDraft: Draft = { text: "", assignees: [], dueDate: null };
 
-function ChecklistBlock({ checklist, members=[], onChange, onDelete }: Props) {
+function ChecklistBlock({ checklist, members=[], onChange }: Props) {
     const [adding, setAdding] = useState(false);
     const [draft, setDraft] = useState<Draft>(emptyDraft);
     const [picker, setPicker] = useState<Picker>(null);
@@ -88,6 +88,8 @@ function ChecklistBlock({ checklist, members=[], onChange, onDelete }: Props) {
         setPicker(null);
     };
 
+    const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? "Unknown";
+
     const AssigneeStack = ({ ids }: { ids: string[] }) => (
         <span className="flex -space-x-1">
             {ids.map((id) => {
@@ -97,21 +99,10 @@ function ChecklistBlock({ checklist, members=[], onChange, onDelete }: Props) {
         </span>
     );
 
+    const MAX_VISIBLE = 3;
+
     return (
         <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <EditableText
-                        value={checklist.title}
-                        maxLength={100}
-                        onCommit={(title) => onChange({ ...checklist, title })}
-                        className="w-full text-sm font-semibold px-1 py-0.5 rounded-xs"
-                        viewClassName="outline-1 outline-transparent cursor-text"
-                        editClassName="outline-1 outline-(--border-active-textarea)"
-                    />
-                </div>
-                <Button variant="outline" onClick={onDelete}>Delete</Button>
-            </div>
 
             <div className="flex items-center gap-3">
                 <span className="w-8 text-[11px] text-(--text-mute)">{percent}%</span>
@@ -125,7 +116,7 @@ function ChecklistBlock({ checklist, members=[], onChange, onDelete }: Props) {
 
             <ul className="flex flex-col">
                 {items.map((item) => {
-                    const overdue = item.dueDate && getDueStatus(item.dueDate, item.done) === "overdue";
+                    const status: DueStatus = item.dueDate ? getDueStatus(item.dueDate, item.done) : "normal";
                     const hasMeta = !!item.dueDate || item.assignees.length > 0;
                     const reveal = hasMeta
                         ? "opacity-100"
@@ -161,11 +152,12 @@ function ChecklistBlock({ checklist, members=[], onChange, onDelete }: Props) {
                                     <button
                                         type="button"
                                         onClick={(e) => openPicker(e, item.id, "due")}
-                                        className={`flex items-center gap-1 rounded px-1.5 py-1 text-xs cursor-pointer bg-white/10 hover:bg-white/20 ${
-                                            overdue ? "text-red-400" : "text-(--text-mute)"
-                                        }`}
+                                        className="flex items-center gap-1.5 rounded px-1.5 py-1 text-xs cursor-pointer bg-white/10 hover:bg-white/15 text-(--text-mute)"
                                     >
-                                        <Clock size={12} /> {formatDueDate(item.dueDate)}
+                                        <Clock size={12} className="-mr-0.5"/> {formatDueDate(item.dueDate)}
+                                        {status === "completed" && <span className={`${dueClassBase} ${dueStatusClass[status]}`}>Completed</span>}
+                                        {status === "soon" && <span className={`${dueClassBase} ${dueStatusClass[status]}`}>Due soon</span>}
+                                        {status === "overdue" && <span className={`${dueClassBase} ${dueStatusClass[status]}`}>Overdue</span>}
                                     </button>
                                 )}
 
@@ -173,9 +165,24 @@ function ChecklistBlock({ checklist, members=[], onChange, onDelete }: Props) {
                                     type="button"
                                     onClick={(e) => openPicker(e, item.id, "assign")}
                                     aria-label="Assign"
-                                    className={`flex items-center cursor-pointer rounded p-1 text-(--text-mute) hover:bg-white/10 hover:text-white ${reveal}`}
+                                    className={`flex h-6 items-center cursor-pointer rounded px-1 text-(--text-mute) hover:text-white ${reveal}`}
                                 >
-                                    {item.assignees.length ? <AssigneeStack ids={item.assignees} /> : <UserRoundPlus size={16} />}
+                                    {item.assignees.length ? (
+                                        <div className="flex items-center">
+                                            <AssigneeStack ids={item.assignees.slice(0, MAX_VISIBLE)} />
+                                            {item.assignees.length > MAX_VISIBLE && (
+                                                <span
+                                                    title={item.assignees.slice(MAX_VISIBLE).map(nameOf).join(", ")}
+                                                    className="relative z-10 -ml-1 flex size-6 items-center justify-center rounded-full
+                                                     bg-white/10 hover:bg-white/15 text-[10px] font-semibold"
+                                                >
+                                                    +{item.assignees.length - MAX_VISIBLE}
+                                                </span>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <UserRoundPlus size={16} />
+                                    )}
                                 </button>
 
                                 {!item.dueDate && (
@@ -183,7 +190,7 @@ function ChecklistBlock({ checklist, members=[], onChange, onDelete }: Props) {
                                         type="button"
                                         onClick={(e) => openPicker(e, item.id, "due")}
                                         aria-label="Due date"
-                                        className={`cursor-pointer rounded p-1 text-(--text-mute) hover:bg-white/10 hover:text-white ${reveal}`}
+                                        className={`cursor-pointer rounded p-1 text-(--text-mute) hover:text-white ${reveal}`}
                                     >
                                         <Clock size={16} />
                                     </button>
@@ -226,7 +233,7 @@ function ChecklistBlock({ checklist, members=[], onChange, onDelete }: Props) {
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex gap-1">
                             <Button variant="primary" onClick={addItem}>Add</Button>
-                            <Button variant="ghost" onClick={cancelAdd}>Canncel</Button>
+                            <Button variant="ghost" onClick={cancelAdd}>Cancel</Button>
                         </div>
                         <div className="flex gap-1">
                             <Button

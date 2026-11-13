@@ -39,7 +39,7 @@ export function getDueStatus(iso: string, completed = false): DueStatus {
     if (completed) return "completed";
     const diff = new Date(iso).getTime() - Date.now();
     if (diff < 0) return "overdue";
-    if (diff < 60 * 60 * 1000) return "soon";
+    if (diff < 24 * 60 * 60 * 1000) return "soon";
     return "normal";
 }
 

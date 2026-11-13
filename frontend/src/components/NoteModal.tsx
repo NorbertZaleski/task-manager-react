@@ -50,7 +50,8 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
     const [isNoteContentOverflowing, setIsNoteContentOverflowing] = useState(false);
     const [isNoteContentExpanded, setIsNoteContentExpanded] = useState(false);
 
-    const [isToDoListVisible, setIsToDoListVisible] = useState(false);
+    const [isToDoListVisible, setIsToDoListVisible] = useState(true);
+    const [checklists, setChecklists] = useState<Checklist[]>(() => note.checklists ?? []);
 
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const [isDueOpen, setIsDueOpen] = useState(false);
@@ -75,8 +76,6 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
-
-    const [checklists, setChecklists] = useState<Checklist[]>(() => note.checklists ?? []);
 
     const activity = useNoteActivity(boardId ?? "", note.id);
     const firstRun = useRef(true);
@@ -388,7 +387,7 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
 
                             <div className="relative flex flex-col">
                                 <div
-                                    className="flex flex-col gap-4"
+                                    className="flex flex-col gap-6"
                                 >
 
                                     <div className="flex gap-2 py-2 ml-8">
@@ -410,12 +409,14 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                                 Date 
                                             </Button>
                                         )}
-                                        <Button 
-                                            iconl={<SquareCheck size={16} className="-mr-0.5" />}
-                                            onClick={addChecklist}
-                                        > 
-                                            To do list 
-                                        </Button>
+                                        {!note.checklists?.length && (
+                                            <Button 
+                                                iconl={<SquareCheck size={16} className="-mr-0.5" />}
+                                                onClick={addChecklist}
+                                            > 
+                                                To do list 
+                                            </Button>
+                                        )}
                                         <Button iconl={<UserRoundPlus size={16} className="-mr-0.5" />}> Members </Button>
                                         <Button 
                                             iconl={<Paperclip size={16} 
@@ -525,14 +526,12 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                                     </Button>
                                                 ))}
 
-                                                {uploading && <p className="text-xs">Uploading...</p>}
                                                 {uploadError && <p className="text-xs text-red-400">{uploadError}</p>}
                                             </div>
                                         )}
-
                                     </div>
-                                    
-                                    <div className="flex flex-col gap-8">
+
+                                    <div className="flex flex-col">
                                         <div className="flex justify-between">                                
                                             <div className="flex gap-2 justify-center items-center mb-2">
                                                 <button
@@ -590,36 +589,52 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                             )}
                                             </div>
                                         )}
-
-                                        <div className="flex justify-between">                                
-                                            <div className="flex gap-2 justify-center items-center mb-2">
-                                                <button
-                                                className="cursor-pointer"
-                                                onClick={()=> {
-                                                    if (isToDoListVisible===true) setIsToDoListVisible(false);
-                                                    if (isToDoListVisible===false) setIsToDoListVisible(true);
-                                                }}
-                                                >
-                                                    <CheckSquare2 size={18} />
-                                                </button>
-                                                <p className="text-[14px] font-semibold">
-                                                To do list
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        {checklists.map((cl) => (
-                                            <div key={cl.id} className="ml-8">
-                                                <ChecklistBlock
-                                                    key={cl.id}
-                                                    checklist={cl}
-                                                    members={members}
-                                                    onChange={(next) => saveChecklists(checklists.map((c) => (c.id === cl.id ? next : c)))}
-                                                    onDelete={() => saveChecklists(checklists.filter((c) => c.id !== cl.id))}
-                                                />
-                                            </div>
-                                        ))}
                                     </div>
+                                    
+                                    {checklists.map((cl) => (
+                                        <div key={cl.id} className="flex flex-col">
+                                            <div className="flex items-center justify-between gap-2 mb-2">
+                                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                                    <button
+                                                        className="cursor-pointer shrink-0"
+                                                        onClick={() => setIsToDoListVisible((v) => !v)}
+                                                    >
+                                                        <CheckSquare2 size={18} />
+                                                    </button>
+                                                    <EditableText
+                                                        value={cl.title}
+                                                        maxLength={100}
+                                                        onCommit={(title) =>
+                                                            saveChecklists(checklists.map((c) => (c.id === cl.id ? { ...c, title } : c)))
+                                                        }
+                                                        className="w-full text-[14px] font-semibold px-2 py-1 rounded-xs"
+                                                        viewClassName="outline-1 outline-transparent cursor-text"
+                                                        editClassName="outline-1 outline-(--border-active-textarea)"
+                                                    />
+                                                </div>
+
+                                                {isToDoListVisible && (
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => saveChecklists(checklists.filter((c) => c.id !== cl.id))}
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                )}
+                                            </div>
+
+                                            {isToDoListVisible && (
+                                                <div className="ml-8">
+                                                    <ChecklistBlock
+                                                        checklist={cl}
+                                                        members={members}
+                                                        onChange={(next) => saveChecklists(checklists.map((c) => (c.id === cl.id ? next : c)))}
+                                                        onDelete={() => saveChecklists(checklists.filter((c) => c.id !== cl.id))}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>

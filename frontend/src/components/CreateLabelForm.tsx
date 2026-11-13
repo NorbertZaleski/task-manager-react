@@ -30,7 +30,7 @@ function CreateLabelForm({ onSubmit, onCancel }: CreateLabelFormProps) {
         <div className="flex flex-col gap-3">
             <div className="flex items-center justify-center py-2">
                 <span
-                    className="text-xs font-medium px-2 py-1 min-w-20 rounded text-center whitespace-normal wrap-break-word"
+                    className="text-xs font-medium px-2 py-1 min-w-20 min-h-6 rounded text-center whitespace-normal wrap-break-word"
                     style={{ backgroundColor: color}}
                 >
                     {title.trim()}
@@ -46,7 +46,7 @@ function CreateLabelForm({ onSubmit, onCancel }: CreateLabelFormProps) {
                 placeholder="Label title (optional)"
                 maxLength={30}
                 autoFocus
-                className="px-2 py-1 rounded bg-(--bg-input) w-full min-w-0 truncate overflow-hidden"
+                className="px-2 py-1 rounded bg-input w-full min-w-0 truncate overflow-hidden"
             />
 
             <ColorPicker value={color} onChange={setColor} />

@@ -6,6 +6,7 @@ export type User = {
 };
 
 export type BoardRole = "owner" | "admin" | "member";
+export type AssignableRole = Exclude<BoardRole, "owner">;
 
 export type BoardMember = User & {
   role: BoardRole;

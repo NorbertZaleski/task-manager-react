@@ -1,34 +1,76 @@
-import { ChevronDown, Link2, X } from "lucide-react";
+import { Check, ChevronDown, Link2, X } from "lucide-react";
 import Button from "./Button";
 import MembersList from "./MembersList";
-import type { Board, User } from "../types/types";
+import type { AssignableRole, Board, User } from "../types/types";
 import SearchBoxMembers from "./SearchBoxMembers";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import OptionsModal from "./OptionsModal";
 
 type ShareBoardModalProps = {
     board: Board;
     onClose: () => void;
-    addMember: (userId: string) => Promise<void>;
+    addMember: (userId: string, role: AssignableRole) => Promise<void>;
+    updateMemberRole: (userId: string, role: AssignableRole) => Promise<void>;
+    removeMember: (userId: string) => Promise<void>;
 }
 
-function ShareBoardModal({board, onClose, addMember}: ShareBoardModalProps) {
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+const ROLE_OPTIONS: { value: AssignableRole; label: string }[] = [
+    { value: "admin", label: "Admin" },
+    { value: "member", label: "Member" },
+];
+
+function ShareBoardModal({board, onClose, addMember, removeMember, updateMemberRole}: ShareBoardModalProps) {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+    const {user} = useAuth();
+    const [inviteRole, setInviteRole] = useState<AssignableRole>("member");
+    const [isRoleOpen, setIsRoleOpen] = useState(false);
+    const roleBtnRef = useRef<HTMLButtonElement | null>(null);
+
 
     const handleInvite = async () => {
-        if (!selectedUser) return;
+        if (!selectedUsers.length) return;
+        setSubmitting(true);
+        setError(null);
+
+        const failed: User[] = [];
+        for (const selected of selectedUsers) {
+            try {
+                await addMember(selected.id, inviteRole);
+            } catch {
+                failed.push(selected);
+            }
+        }
+
+        setSelectedUsers(failed);
+        if (failed.length) {
+            setError(`Could not add: ${failed.map((u) => u.name).join(", ")}`);
+        }
+        setSubmitting(false);
+    };
+
+    const handleChangeRole = async (userId: string, role: AssignableRole) => {
         try {
-            setSubmitting(true);
             setError(null);
-            await addMember(selectedUser.id);
-            setSelectedUser(null);
+            await updateMemberRole(userId, role);
         } catch (err: any) {
-            setError(err?.response?.data?.message ?? "Could not add member");
-        } finally {
-            setSubmitting(false);
+            setError(err?.message ?? "Could not change role");
         }
     };
+
+    const handleRemove = async (userId: string) => {
+        try {
+            setError(null);
+            await removeMember(userId);
+        } catch (err: any) {
+            setError(err?.message ?? "Could not remove member");
+        }
+    };
+
+    const excludeIds = board.members.map((m) => m.id);
+    const currentUserId = user?.id;
 
     return (
         <div className="fixed inset-0 z-98 bg-black/80"
@@ -51,27 +93,37 @@ function ShareBoardModal({board, onClose, addMember}: ShareBoardModalProps) {
 
                 <div className="flex w-full justify-between gap-2">
 
-                    <SearchBoxMembers onSelect={setSelectedUser}/>
+                <SearchBoxMembers
+                    selected={selectedUsers}
+                    excludeIds={excludeIds}
+                    onSelect={(user) =>
+                        setSelectedUsers((prev) => (prev.some((u) => u.id === user.id) ? prev : [...prev, user]))
+                    }
+                    onRemove={(id) => setSelectedUsers((prev) => prev.filter((u) => u.id !== id))}
+                />
 
                     <div className="flex gap-2">
 
                         <Button
-                        variant="list"
-                        iconr={<ChevronDown size={16} className="-mr-1"/>}
+                            variant="list"
+                            iconr={<ChevronDown size={16} className="-mr-1" />}
+                            onClick={(e) => {
+                                roleBtnRef.current = e.currentTarget as HTMLButtonElement;
+                                setIsRoleOpen(true);
+                            }}
                         >
-                            Member
+                            {inviteRole === "admin" ? "Admin" : "Member"}
                         </Button>
                         
-                        <Button 
-                        variant="primary"
-                        onClick={handleInvite}
-                        disabled={!selectedUser || submitting}
+                        <Button
+                            variant="primary"
+                            onClick={handleInvite}
+                            disabled={!selectedUsers.length || submitting}
                         >
                             Invite
                         </Button>
 
                     </div>
-                    {error && <p className="text-sm text-red-500">{error}</p>}
                 </div>
 
                 <div className="flex text-left gap-2 items-center">
@@ -83,8 +135,42 @@ function ShareBoardModal({board, onClose, addMember}: ShareBoardModalProps) {
                 </div>
 
                 <div>
-                    <MembersList members={board.members} />
+                    <MembersList
+                        members={board.members}
+                        currentUserId={currentUserId}
+                        onChangeRole={handleChangeRole}
+                        onRemove={handleRemove}
+                    />
                 </div>
+
+                {isRoleOpen && (
+                    <OptionsModal
+                        title="Role"
+                        onClose={() => setIsRoleOpen(false)}
+                        anchorRef={roleBtnRef as React.RefObject<HTMLButtonElement>}
+                        options={[]}
+                        width={220}
+                        compOptions={
+                            <ul className="flex w-full flex-col gap-1 py-1">
+                                {ROLE_OPTIONS.map((r) => (
+                                    <li key={r.value}>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setInviteRole(r.value);
+                                                setIsRoleOpen(false);
+                                            }}
+                                            className="flex w-full items-center justify-between rounded px-2 py-1.5 text-sm cursor-pointer hover:bg-white/5"
+                                        >
+                                            {r.label}
+                                            {inviteRole === r.value && <Check size={16} />}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        }
+                    />
+                )}
             </div>
         </ div>
     )

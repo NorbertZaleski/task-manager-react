@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Board, Column, Note, DragState, DropTarget } from "../types/types";
+import type { Board, Column, Note, DragState, DropTarget, AssignableRole } from "../types/types";
 import CardColumn from "./CardColumn";
 import { columnsService } from "../services/columns.service";
 import notesService from "../services/notes.service";
@@ -211,14 +211,29 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
         }
     };
 
-    async function handleAddMember(userId: string) {
+    async function handleAddMember(userId: string, role: AssignableRole) {
         try {
-            setIsMemberInviteModalOpen(true);
-            const member = await boardsService.addMember(board.id, userId);
+            const member = await boardsService.addMember(board.id, userId, role);
             setBoard((prev) => prev ? { ...prev, members: [...(prev.members ?? []), member] } : prev);
         } catch (error) {
             console.log("Error in addMember function: ", error)
         }
+    }; 
+
+    const handleUpdateMember = async (userId: string, role: AssignableRole) => {
+        const updated = await boardsService.updateMemberRole(board.id, userId, role);
+        setBoard((b) => b && {
+            ...b,
+            members: b.members.map((m) => (m.id === userId ? { ...m, role: updated.role } : m)),
+        });
+    };
+
+    const handleRemoveMember = async (userId: string) => {
+        await boardsService.removeMember(board.id, userId);
+        setBoard((b) => b && {
+            ...b,
+            members: b.members.filter((m) => m.id !== userId),
+        });
     };
 
     function handleNoteUpdated(updated: Note) {
@@ -336,6 +351,8 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                 board={board}
                 onClose={() => setIsMemberInviteModalOpen(false)}
                 addMember={handleAddMember}
+                removeMember={handleRemoveMember}
+                updateMemberRole={handleUpdateMember}
                 />
             )}
 

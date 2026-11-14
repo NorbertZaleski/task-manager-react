@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
 import api from "./api";
-import type { Board, BoardBackground, BoardMember, BoardRole, Column } from '../types/types';
+import type { AssignableRole, Board, BoardBackground, BoardMember, Column } from '../types/types';
 
 type CreateBoardInput = {
     title: string;
@@ -80,7 +80,7 @@ export const boardsService = {
         }
     },
 
-    addMember: async (boardId: string, userId: string, role: BoardRole = "member"): Promise<BoardMember> => {
+    addMember: async (boardId: string, userId: string, role: AssignableRole = "member"): Promise<BoardMember> => {
         try {
             const response = await api.post<BoardMember>(`/boards/${boardId}/members`, {userId, role});
             return response.data;
@@ -92,7 +92,7 @@ export const boardsService = {
         }
     },
 
-    updateMemberRole: async (boardId: string, userId: string, role: BoardRole): Promise<BoardMember> => {
+    updateMemberRole: async (boardId: string, userId: string, role: AssignableRole): Promise<BoardMember> => {
         try {
             const res = await api.patch<BoardMember>(`/boards/${boardId}/members/${userId}`, { role });
             return res.data;

@@ -163,6 +163,21 @@ export const notesService = {
         }
     },
 
+    async getAttachmentBlobUrl(noteId: string, attachmentId: string): Promise<string> {
+        try {
+            const response = await api.get(`/notes/${noteId}/attachments/${attachmentId}`, {
+                params: { inline: "1" },
+                responseType: "blob",
+            });
+            return URL.createObjectURL(response.data);
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                throw await parseBlobError(error);
+            }
+            throw error;
+        }
+    },
+
     setChecklists: async (noteId: string, checklists: Checklist[]) => {
         try {
             const response = await api.put(`/notes/${noteId}/checklists`, { checklists });

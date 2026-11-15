@@ -18,9 +18,9 @@ import CommentsPanel from "./CommentsPanel";
 import { useAuth } from "../context/AuthContext";
 import { useNoteActivity } from "../hooks/useNoteActivity";
 import RichTextEditor from "./RichTextEditor";
-import { formatSize } from "../utils/formatSize";
 import ChecklistBlock from "./ChecklistBlock";
 import Avatar from "./Avatar";
+import AttachmentsBlock from "./AttachmentsBlock";
 
 type NoteModalProps = {
     note: Note;
@@ -494,14 +494,15 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                                 Members
                                             </Button>
                                         )}
-                                        <Button 
-                                            iconl={<Paperclip size={16} 
-                                            className="-mr-0.5" />}
-                                            onClick={() => fileInputRef.current?.click()}
-                                        > 
-                                            Files 
-                                        </Button>
-
+                                        {!note.attachments?.length && (
+                                            <Button 
+                                                iconl={<Paperclip size={16} 
+                                                className="-mr-0.5" />}
+                                                onClick={() => fileInputRef.current?.click()}
+                                            > 
+                                                Files 
+                                            </Button>
+                                        )}
                                         <input
                                             ref={fileInputRef}
                                             type="file"
@@ -562,48 +563,6 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                                     {status === "overdue" && <span className={`${dueClassBase} ${dueStatusClass[status]}`}>Overdue</span>}
                                                     <ChevronDown size={16}/>
                                                 </Button>
-                                            </div>
-                                        )}
-
-                                        {(note.attachments?.length || uploading || uploadError) && (
-                                            <div className="flex flex-col gap-1 min-w-0 max-w-full text-(--text-mute)">
-                                                <label className="text-xs">Attachments</label>
-
-                                                {note.attachments?.map((a) => (
-                                                    <Button
-                                                        key={a.id}
-                                                        variant="outline"
-                                                        onClick={() => handleOpenAttachment(a)}
-                                                        title={a.originalName}
-                                                        className="flex w-full min-w-0 items-center gap-2 rounded px-2 py-1 text-sm"
-                                                    >
-                                                        <Paperclip size={14} className="shrink-0" />
-                                                        <span className="min-w-0 truncate text-left">{a.originalName}</span>
-                                                        <span className="shrink-0 text-xs">{formatSize(a.size)}</span>
-
-                                                        <span
-                                                            role="button"
-                                                            tabIndex={0}
-                                                            aria-label={`Delete ${a.originalName}`}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleDeleteAttachment(a.id);
-                                                            }}
-                                                            onKeyDown={(e) => {
-                                                                if (e.key === "Enter" || e.key === " ") {
-                                                                    e.preventDefault();
-                                                                    e.stopPropagation();
-                                                                    handleDeleteAttachment(a.id);
-                                                                }
-                                                            }}
-                                                            className="ml-auto shrink-0 p-1 cursor-pointer text-(--text-mute) border-none rounded-full hover:bg-white/5"
-                                                        >
-                                                            <X size={14} />
-                                                        </span>
-                                                    </Button>
-                                                ))}
-
-                                                {uploadError && <p className="text-xs text-red-400">{uploadError}</p>}
                                             </div>
                                         )}
 
@@ -752,6 +711,19 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                             )}
                                         </div>
                                     ))}
+
+                                    {(Boolean(note.attachments?.length) || uploading || uploadError) && (
+                                        <AttachmentsBlock
+                                            noteId={note.id}
+                                            attachments={note.attachments ?? []}
+                                            uploading={uploading}
+                                            error={uploadError}
+                                            onOpen={handleOpenAttachment}
+                                            onDelete={handleDeleteAttachment}
+                                            onAdd={() => fileInputRef.current?.click()}
+                                        />
+                                    )}
+
                                 </div>
                             </div>
                         </div>

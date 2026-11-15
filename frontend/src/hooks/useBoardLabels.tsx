@@ -5,7 +5,7 @@ import { LabelsService } from "../services/labels.service";
 function useBoardLabels(boardId: string | undefined) {
     const [labels, setLabels] = useState<Label[] | []>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<String | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const load = useCallback(async () => {
         if (!boardId) {

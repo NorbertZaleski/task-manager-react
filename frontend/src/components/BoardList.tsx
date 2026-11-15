@@ -267,7 +267,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                     editClassName="outline-1 outline-white field-sizing-content"
                 />
                 
-                <div className="flex gap-4">
+                <div className="flex gap-2">
                     <BoardMembers members={board.members}/>
 
                     <button

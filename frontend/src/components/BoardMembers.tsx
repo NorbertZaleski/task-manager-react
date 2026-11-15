@@ -24,7 +24,7 @@ function BoardMembers({ members = [], max = 4 }: BoardMembersProps) {
                         .slice(max)
                         .map((m) => m.name)
                         .join(", ")}
-                    className="-ml-0.5 size-7 rounded-full flex items-center justify-center text-xs font-medium 
+                    className="ml-2 size-7 rounded-full flex items-center justify-center text-xs font-medium 
                     text-(--text-mute) hover:text-white bg-white/10 hover:bg-white/15 ease-in"
                 >
                     +{hidden}

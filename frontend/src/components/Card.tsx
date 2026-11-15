@@ -15,7 +15,7 @@ type CardProps = {
 }
 
 function Card({ note, onOpen, onDropNote, isDragging, onDragStartNote, onDragHover, onDragEnd }: CardProps) {
-    const { labels } = useLabels();
+    const { labels, compactLabels, toggleCompactLabels } = useLabels();
     const noteLabels = labels.filter((l) => note.labelIds?.includes(l.id));
     const dueStatus = note.dueDate ? getDueStatus(note.dueDate, note.completed) : null;
 
@@ -54,17 +54,28 @@ function Card({ note, onOpen, onDropNote, isDragging, onDragStartNote, onDragHov
             }}
             onClick={onOpen}
         >
+
             {noteLabels.length > 0 && (
                 <div className="flex flex-wrap gap-1 items-center w-full">
                     {noteLabels.map((label) => (
                         <span
                             key={label.id}
-                            className={`text-xs font-medium px-2 min-h-6 rounded flex items-center justify-start max-w-full overflow-hidden select-none ${
-                                label.title ? "min-w-10 " : "min-w-4"
+                            role="button"
+                            title={label.title || undefined}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                toggleCompactLabels();
+                            }}
+                            className={`cursor-pointer select-none overflow-hidden max-w-full rounded-sm transition-[height,width,padding] duration-100 ${
+                                compactLabels
+                                    ? "h-2 w-10"
+                                    : `min-h-6 px-2 flex items-center justify-start text-xs font-medium ${
+                                        label.title ? "min-w-10" : "min-w-4"
+                                    }`
                             }`}
                             style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
                         >
-                            <span className="truncate min-w-0">{label.title}</span>
+                            {!compactLabels && <span className="truncate min-w-0">{label.title}</span>}
                         </span>
                     ))}
                 </div>

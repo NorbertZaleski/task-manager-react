@@ -143,7 +143,7 @@ function CommentsPanel({ activity, currentUserId }: CommentsPanelProps) {
           showActions
           maxLength={2000}
           className="w-full text-sm whitespace-pre-wrap"
-          viewClassName="rounded-md px-3 py-2 bg-input hover:bg-black/10 cursor-pointer hover:shadow-[inset_0_-2px_0_0_var(--bg-input)]"
+          viewClassName="rounded-md px-3 py-2 bg-input text-(--text-mute) cursor-pointer hover:bg-black/10 hover:shadow-[inset_0_-2px_0_0_var(--bg-input)]"
           editClassName="rounded-md px-3 py-2 outline outline-1"
         />
       </div>

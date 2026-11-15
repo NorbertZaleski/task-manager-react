@@ -1,4 +1,4 @@
-import { CheckSquare2, ChevronDown, ChevronUp, Circle, CircleCheck, Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
+import { Check, CheckSquare2, ChevronDown, ChevronUp, Circle, CircleCheck, Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
 import type { Attachment, Checklist, Label, Note, User } from "../types/types";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
@@ -20,6 +20,7 @@ import { useNoteActivity } from "../hooks/useNoteActivity";
 import RichTextEditor from "./RichTextEditor";
 import { formatSize } from "../utils/formatSize";
 import ChecklistBlock from "./ChecklistBlock";
+import Avatar from "./Avatar";
 
 type NoteModalProps = {
     note: Note;
@@ -80,6 +81,18 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
     const activity = useNoteActivity(boardId ?? "", note.id);
     const firstRun = useRef(true);
 
+    const [isNoteAssigneesOpen, setIsNoteAssigneesOpen] = useState(false);
+    const noteAssigneesRef = useRef<HTMLButtonElement>(null);
+    const noteAssigneesRefActive = useRef<HTMLButtonElement>(null);
+    const [noteAssigneesAnchor, setNoteAssigneesAnchor] = useState<"toolbar" | "badge">("toolbar");
+    const noteAssigneesAnchorRef =
+        noteAssigneesAnchor === "badge" && (note.assigneeIds?.length ?? 0) > 0
+            ? noteAssigneesRefActive
+            : noteAssigneesRef;
+    const isTogglingNoteAssigneeRef = useRef(false);
+    const MAX_VISIBLE_NOTE_ASSIGNEES = 3;
+    const noteAssignees = members.filter((m) => note.assigneeIds?.includes(m.id));
+
     const ACCEPT = ".txt,.md,.csv,.pdf,.png,.jpg,.jpeg,.webp,.gif,.docx,.xlsx";
     const PREVIEWABLE_TYPES = new Set([
         "image/png",
@@ -124,6 +137,19 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
         setEditingLabel(null);
         setLabelsModal("list");
     };
+
+    async function handleDeleteLabel() {
+        if (!boardId || !editingLabel) return;
+        try {
+            await LabelsService.deleteLabel(boardId, editingLabel.id);
+            setSelectedLabelIds((prev) => prev.filter((id) => id !== editingLabel.id));
+            await reloadLabels();
+            setEditingLabel(null);
+            setLabelsModal("list");
+        } catch (err) {
+            console.error("Error:", err);
+        }
+    }
 
     async function handleSaveDueDate(dueDate: string | null) {
         try {
@@ -197,6 +223,23 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
 
     const addChecklist = () =>
         saveChecklists([...checklists, { id: crypto.randomUUID(), title: "Lista zadań", items: [] }]);
+
+    async function handleToggleNoteAssignee(userId: string) {
+        if (isTogglingNoteAssigneeRef.current) return;
+        isTogglingNoteAssigneeRef.current = true;
+        const current = note.assigneeIds ?? [];
+        const next = current.includes(userId)
+            ? current.filter((id) => id !== userId)
+            : [...current, userId];
+        try {
+            const updated = await notesService.setAssignees(note.id, next);
+            onNoteUpdated?.(updated);
+        } catch (err) {
+            console.error("Error:", err);
+        } finally {
+            isTogglingNoteAssigneeRef.current = false;
+        }
+    }
 
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
@@ -362,7 +405,7 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                             <LabelEditModal
                                             label={editingLabel}
                                             onSubmit={handleEditLabel} 
-                                            onCancel={()=> setLabelsModal("list")}
+                                            onDelete={handleDeleteLabel}
                                             />
                                         )
                                     }
@@ -385,11 +428,36 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                 />
                             )}
 
+                            {isNoteAssigneesOpen && (
+                                <OptionsModal
+                                    title="Members"
+                                    onClose={() => setIsNoteAssigneesOpen(false)}
+                                    anchorRef={noteAssigneesAnchorRef}
+                                    width={304}
+                                    compOptions={
+                                        <div className="flex w-full flex-col gap-1">
+                                            {members.map((m) => (
+                                                <button
+                                                    key={m.id}
+                                                    type="button"
+                                                    onClick={() => handleToggleNoteAssignee(m.id)}
+                                                    className="flex items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-(--hover-white) cursor-pointer"
+                                                >
+                                                    <Avatar user={m} />
+                                                    <span className="min-w-0 flex-1 truncate">{m.name}</span>
+                                                    {note.assigneeIds?.includes(m.id) && <Check size={16} />}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    }
+                                />
+                            )}
+
                             <div className="relative flex flex-col">
                                 <div
                                     className="flex flex-col gap-6"
                                 >
-
+                                    {/* badge buttons */}
                                     <div className="flex gap-2 py-2 ml-8">
                                         {!noteLabels?.length && (
                                             <Button 
@@ -409,7 +477,7 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                                 Date 
                                             </Button>
                                         )}
-                                        {!note.checklists?.length && (
+                                        {!checklists.length && (
                                             <Button 
                                                 iconl={<SquareCheck size={16} className="-mr-0.5" />}
                                                 onClick={addChecklist}
@@ -417,7 +485,15 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                                 To do list 
                                             </Button>
                                         )}
-                                        <Button iconl={<UserRoundPlus size={16} className="-mr-0.5" />}> Members </Button>
+                                        {!note.assigneeIds?.length && (
+                                            <Button
+                                                iconl={<UserRoundPlus size={16} className="-mr-0.5" />}
+                                                onClick={() => { setNoteAssigneesAnchor("toolbar"); setIsNoteAssigneesOpen(true); }}
+                                                ref={noteAssigneesRef}
+                                            >
+                                                Members
+                                            </Button>
+                                        )}
                                         <Button 
                                             iconl={<Paperclip size={16} 
                                             className="-mr-0.5" />}
@@ -439,6 +515,7 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                         />
 
                                     </div>
+
                                     <div className="ml-8 flex flex-wrap items-start gap-x-4 gap-y-3 min-w-0">
                                         {noteLabels.length > 0 && (
                                             <div className="flex flex-col gap-1 shrink-0 max-w-full text-(--text-mute)">
@@ -462,7 +539,7 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                                     <Button
                                                         variant="outline_small"
                                                         onClick={() => { setLabelsAnchor("badge"); setLabelsModal("create"); }}
-                                                        className="p-0 w-7 h-7 shrink-0 flex items-center justify-center rounded-md"
+                                                        className="p-0! size-8! min-w-8! min-h-8! max-w-8! max-h-8! shrink-0 flex items-center justify-center rounded-md!"
                                                     >
                                                         <Plus size={18} />
                                                     </Button>
@@ -519,7 +596,7 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                                                     handleDeleteAttachment(a.id);
                                                                 }
                                                             }}
-                                                            className="ml-auto shrink-0 p-1 cursor-poiner text-(--text-mute) border-none rounded-full hover:bg-white/5"
+                                                            className="ml-auto shrink-0 p-1 cursor-pointer text-(--text-mute) border-none rounded-full hover:bg-white/5"
                                                         >
                                                             <X size={14} />
                                                         </span>
@@ -527,6 +604,46 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                                 ))}
 
                                                 {uploadError && <p className="text-xs text-red-400">{uploadError}</p>}
+                                            </div>
+                                        )}
+
+                                        {noteAssignees.length > 0 && (
+                                            <div className="flex flex-col gap-1 shrink-0 text-(--text-mute)">
+                                                <label className="text-xs">Members</label>
+                                                <div className="flex items-center gap-1">
+                                                    <div className="flex items-center pl-1">
+                                                        {noteAssignees.slice(0, MAX_VISIBLE_NOTE_ASSIGNEES).map((m) => (
+                                                            <div
+                                                                key={m.id}
+                                                                title={m.name}
+                                                                className="-ml-1 rounded-full ring-2 ring-(--bg-modal)"
+                                                            >
+                                                                <Avatar user={m} />
+                                                            </div>
+                                                        ))}
+
+                                                        {noteAssignees.length > MAX_VISIBLE_NOTE_ASSIGNEES && (
+                                                            <button
+                                                                type="button"
+                                                                title={noteAssignees.slice(MAX_VISIBLE_NOTE_ASSIGNEES).map((m) => m.name).join(", ")}
+                                                                onClick={() => { setNoteAssigneesAnchor("badge"); setIsNoteAssigneesOpen(true); }}
+                                                                className="-ml-1 flex size-8 shrink-0 items-center justify-center rounded-full
+                                                                bg-(--hover-white) text-xs font-medium ring-2 ring-(--bg-modal) cursor-pointer"
+                                                            >
+                                                                +{noteAssignees.length - MAX_VISIBLE_NOTE_ASSIGNEES}
+                                                            </button>
+                                                        )}
+                                                    </div>
+
+                                                    <Button
+                                                        variant="outline_small"
+                                                        ref={noteAssigneesRefActive}
+                                                        onClick={() => { setNoteAssigneesAnchor("badge"); setIsNoteAssigneesOpen(true); }}
+                                                        className="p-0! size-8! min-w-0! shrink-0 flex items-center justify-center rounded-full!"
+                                                    >
+                                                        <Plus size={16} />
+                                                    </Button>
+                                                </div>
                                             </div>
                                         )}
                                     </div>

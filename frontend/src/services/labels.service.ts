@@ -38,6 +38,17 @@ export const LabelsService = {
             }
             throw error;
         }
-    }
+    },
+
+    deleteLabel: async (boardId: string, labelId: string): Promise<void> => {
+        try {
+            await api.delete(`/boards/${boardId}/labels/${labelId}`);
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
+        }
+    },
 
 }

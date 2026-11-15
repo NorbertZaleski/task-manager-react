@@ -18,7 +18,7 @@ function LabelsPicker({labels, selectedIds, onToggle, onEdit, max=8}: LabelsPick
 
     return (
         <>
-            <div className="w-full flex flex-col py-2 max-h-125 scrollbar-thick scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent overflow-auto">
+            <div className="w-full flex flex-col py-2 max-h-125 scrollbar-thin scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent overflow-auto">
                 {visible.map((label)=> {
                     const selected = selectedIds.includes(label.id);
 

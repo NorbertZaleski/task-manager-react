@@ -174,6 +174,18 @@ export const notesService = {
             throw error;
         }
     },
+
+    setAssignees: async (noteId: string, assigneeIds: string[]): Promise<Note> => {
+        try {
+            const response = await api.put(`/notes/${noteId}/assignees`, { assignees: assigneeIds });
+            return response.data;
+        } catch (error) {
+            if (error instanceof AxiosError) {
+                throw error.response?.data ?? error;
+            }
+            throw error;
+        }
+    },
 };
 
 

@@ -74,21 +74,22 @@ export async function updateLabel(req,res){
     }
 };
 
-export async function deleteLabel(req,res){
+export async function deleteLabel(req, res) {
     try {
-        const label = await Label.findById(req.params.id).populate("board", "user");
-        if (!label || !label.board) return res.status(404).json({message: "Label not found"});
-
-        if (label.board.user.toString() !== req.user._id.toString()) {
-            return res.status(403).json({message: "Not authorized"});
+        const { boardId, id } = req.params;
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: "Invalid label ID" });
         }
 
-        await Note.updateMany({labels: label._id}, {$pull: {labels: label._id}});
+        const label = await Label.findOne({ _id: id, board: boardId });
+        if (!label) return res.status(404).json({ message: "Label not found" });
+
+        await Note.updateMany({ board: boardId, labels: label._id }, { $pull: { labels: label._id } });
         await label.deleteOne();
 
-        return res.status(200).json({message: "label deleted", label: label});
+        return res.status(200).json({ message: "label deleted", label });
     } catch (error) {
         console.error("Error in deleteLabel controller", error);
-        res.status(500).json({message:"Internal server error"});
+        res.status(500).json({ message: "Internal server error" });
     }
 };

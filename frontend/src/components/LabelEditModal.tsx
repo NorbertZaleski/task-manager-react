@@ -5,11 +5,11 @@ import type { Label } from "../types/types";
 
 type LabelEditModalProps = {
     onSubmit: (data: { title: string; color: string }) => Promise<void>;
-    onCancel: () => void;
+    onDelete: () => void;
     label: Label;
 }
 
-function LabelEditModal({onSubmit, onCancel, label}: LabelEditModalProps) {
+function LabelEditModal({onSubmit, onDelete, label}: LabelEditModalProps) {
     const [title, setTitle] = useState(label.title ?? "");
     const [color, setColor] = useState(label.color ?? "#000000");
     const [submitting, setSubmitting] = useState(false);
@@ -50,7 +50,7 @@ function LabelEditModal({onSubmit, onCancel, label}: LabelEditModalProps) {
                     placeholder="Label title (optional)"
                     maxLength={30}
                     autoFocus
-                    className="px-2 py-1 rounded bg-(--bg-input) w-full min-w-0 truncate overflow-hidden"
+                    className="px-2 py-1 rounded bg-input w-full min-w-0 truncate overflow-hidden"
                 />
 
                 <ColorPicker value={color} onChange={setColor}/>
@@ -66,9 +66,10 @@ function LabelEditModal({onSubmit, onCancel, label}: LabelEditModalProps) {
                         Save
                     </Button>
                     <Button
-                    onClick={onCancel}
+                    variant="outline"
+                    onClick={onDelete}
                     >
-                        Cancel
+                        Delete
                     </Button>
                 </div>
             </div>

@@ -216,8 +216,8 @@ export async function deleteNote(req, res){
         const membership = await getMembership(note.board, req.user._id);
         if (!membership) return res.status(404).json({ message: "Board not found" });
 
+        note.deleteOne();
         await Promise.all([
-            note.deleteOne(),
             NoteActivityModel.deleteMany({ note: note._id }),
             removeFiles(note.attachments.map((a) => a.filename)),
         ]);
@@ -558,6 +558,45 @@ export async function setNoteChecklists(req, res) {
         res.status(200).json(toClientNote(note.toObject()));
     } catch (error) {
         console.error("Error in setNoteChecklists controller", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+async function resolveAssignees(ids, boardId) {
+    if (!Array.isArray(ids) || !ids.every((i) => mongoose.isValidObjectId(i))) return null;
+    const unique = [...new Set(ids.map(String))];
+    const memberships = await Promise.all(unique.map((uid) => getMembership(boardId, uid)));
+    return memberships.every(Boolean) ? unique : null;
+};
+
+export async function setNoteAssignees(req, res) {
+    try {
+        const { id } = req.params;
+        const { assignees } = req.body;
+
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: "Invalid note ID" });
+        }
+
+        const before = await Note.findById(id).select("board").lean();
+        if (!before) return res.status(404).json({ message: "Note not found" });
+
+        const membership = await getMembership(before.board, req.user._id);
+        if (!membership) return res.status(404).json({ message: "Board not found" });
+
+        const assigneeIds = await resolveAssignees(assignees, before.board);
+        if (!assigneeIds) return res.status(400).json({ message: "Invalid assignees" });
+
+        const note = await Note.findByIdAndUpdate(
+            id,
+            { $set: { assignees: assigneeIds } },
+            { new: true }
+        ).lean();
+        if (!note) return res.status(404).json({ message: "Note not found" });
+
+        res.status(200).json(toClientNote(note));
+    } catch (error) {
+        console.error("Error in setNoteAssignees controller", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };

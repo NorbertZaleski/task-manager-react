@@ -102,8 +102,15 @@ export type ActivityLogItem = Base & {
 
 export type NoteActivityItem = CommentItem | ActivityLogItem;
 
+//drag
 export type DragState = { id: string; height: number } | null;
 
 export type DropTarget =
   | { columnId: string; noteId: string | null; after: boolean }
   | null;
+
+//search
+export type SearchResults = {
+  boards: { id: string; title: string }[];
+  notes: { id: string; title: string; boardId: string; boardTitle: string; snippet: string }[];
+};

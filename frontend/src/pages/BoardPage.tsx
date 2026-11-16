@@ -18,7 +18,7 @@ function BoardPage(){
     return (
         <LabelsProvider boardId={boardId}>
             <div className="h-full w-full" style={getBoardStyle(board.background)}>
-                <BoardList board={board} setBoard={setBoard} onBoardRenamed={updateBoardTitle} onBoardDeleted={removeBoard}/>
+                <BoardList key={board.id} board={board} setBoard={setBoard} onBoardRenamed={updateBoardTitle} onBoardDeleted={removeBoard}/>
             </div>
         </LabelsProvider>
     )

@@ -3,6 +3,7 @@ import noteRoutes from './note.routes.js';
 import boardRoutes from './board.routes.js';
 import userRoutes from './user.routes.js';
 import authRoutes from './auth.routes.js';
+import searchRoutes from './search.routes.js';
 
 import protect from "../middleware/auth.js";
 
@@ -12,5 +13,6 @@ router.use('/auth', authRoutes);
 router.use('/users', protect, userRoutes);
 router.use('/boards', protect, boardRoutes);
 router.use('/notes', protect, noteRoutes);
+router.use('/search', protect, searchRoutes);
 
 export default router;

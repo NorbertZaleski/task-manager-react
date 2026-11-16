@@ -6,7 +6,7 @@ import notesService from "../services/notes.service";
 import { Ellipsis, Plus } from "lucide-react";
 import FloatingBottomBar from "./FloatingBottomBar.js";
 import { boardsService } from "../services/boards.service.js";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import EditableText from "./EditableText.js";
 import BoardMembers from "./BoardMembers.js";
 import OptionsModal from "./OptionsModal.js";
@@ -23,6 +23,7 @@ type BoardListProps = {
 
 function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListProps) {
 
+    const { boardId } = useParams<{ boardId: string }>();
     const [notes, setNotes] = useState<Note[]>(board.notes ?? []);
     const [columns, setColumns] = useState<Column[]>(board.columns ?? []);
     const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
@@ -43,6 +44,8 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
     useDragScroll(boardScrollRef, !!drag, { axis: "x" });
 
     const sortedColumns = [...columns].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+
+    const [searchParams, setSearchParams] = useSearchParams();
 
     function getNewPosition(items: { position: number }[], index: number): number {
         const prev = items[index - 1];
@@ -142,7 +145,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
         } catch (error) {
             console.log("Error in deleteNote function: ", error);
         }
-    }
+    };
 
     async function renameColumn(boardId: string, columnId: string, title: string){
         try {
@@ -239,6 +242,17 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
     function handleNoteUpdated(updated: Note) {
         setNotes((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
     }
+
+    useEffect(() => {
+        const noteId = searchParams.get("note");
+        if (!noteId || boardId !== board.id) return;
+
+        if (notes.some((n) => n.id === noteId)) setSelectedNoteId(noteId);
+
+        const next = new URLSearchParams(searchParams);
+        next.delete("note");
+        setSearchParams(next, { replace: true });
+    }, [searchParams, notes, board.id, boardId]);
 
     useEffect(() => {
         const reset = () => {

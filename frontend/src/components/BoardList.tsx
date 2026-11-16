@@ -132,7 +132,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
     async function handleCreateNote(columnId: string, title: string) {
         try {
             const note = await notesService.createNote(columnId, { title });
-            setNotes((prev) => [...prev, note]);
+            setNotes((prev) => [ note, ...prev]);
         } catch (error) {
             console.log("Error in createNote function: ", error);
         }

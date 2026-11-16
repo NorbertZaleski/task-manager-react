@@ -56,7 +56,7 @@ export async function getAllNotes(req, res) {
         const membership = await getMembership(boardId, req.user._id);
         if (!membership) return res.status(404).json({ message: "Board not found" });
 
-        const notes = await Note.find({board: boardId}).sort({createdAt: -1}).lean();
+        const notes = await Note.find({board: boardId}).sort({position: 1}).lean();
 
         res.status(200).json(notes.map(toClientNote));
     } catch (error) {
@@ -105,17 +105,19 @@ export async function createNote(req,res) {
         const labelIds = await resolveLabels(labels, column.board);
         if (!labelIds) return res.status(400).json({ message: "Invalid labels" });
 
-        const last = await Note.findOne({ column: column._id }).sort({ position: -1 });
-        const position = last ? last.position + 1 : 0;
-
         const note = await Note.create({
             board: column.board,
             column: column._id,
             title,
             content,
             labels: labelIds,
-            position,
+            position: 0,
         });
+
+        await Note.updateMany(
+            { column: column._id, _id: { $ne: note._id } },
+            { $inc: { position: 1 } }
+        );
 
         await logActivity({
             note,

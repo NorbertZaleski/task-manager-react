@@ -19,7 +19,7 @@ type EditableTextProps = {
 
 function EditableText({ value, onCommit, onEditingChange, multiline = false, allowEmpty = false, showActions = false, editing, maxLength, 
     placeholder = "Add title...", className = "", viewClassName = "", editClassName = "", clickToEdit = true}: EditableTextProps) {
-    const [isEditing, setIsEditing] = useState(false);
+    const [isEditing, setIsEditing] = useState(editing ?? false);
     const [focused, setFocused] = useState(true);
     const [draft, setDraft] = useState(value);
     const ref = useRef<HTMLTextAreaElement>(null);

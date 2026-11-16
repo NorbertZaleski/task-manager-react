@@ -548,19 +548,23 @@ export async function setNoteChecklists(req, res) {
             return res.status(400).json({ message: "Invalid note ID" });
         }
 
-        const note = await Note.findById(id);
-        if (!note) return res.status(404).json({ message: "Note not found" });
+        const before = await Note.findById(id).select("board").lean();
+        if (!before) return res.status(404).json({ message: "Note not found" });
 
-        const membership = await getMembership(note.board, req.user._id);
+        const membership = await getMembership(before.board, req.user._id);
         if (!membership) return res.status(404).json({ message: "Board not found" });
 
-        const clean = await sanitizeChecklists(checklists, note.board);
+        const clean = await sanitizeChecklists(checklists, before.board);
         if (!clean) return res.status(400).json({ message: "Invalid checklists" });
 
-        note.checklists = clean;
-        await note.save();
+        const note = await Note.findByIdAndUpdate(
+            id,
+            { $set: { checklists: clean } },
+            { new: true, runValidators: true }
+        ).lean();
+        if (!note) return res.status(404).json({ message: "Note not found" });
 
-        res.status(200).json(toClientNote(note.toObject()));
+        res.status(200).json(toClientNote(note));
     } catch (error) {
         console.error("Error in setNoteChecklists controller", error);
         res.status(500).json({ message: "Internal server error" });

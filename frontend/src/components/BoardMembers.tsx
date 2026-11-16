@@ -1,5 +1,7 @@
+import { useRef, useState } from "react";
 import type { BoardMember } from "../types/types";
 import Avatar from "./Avatar";
+import OptionsModal from "./OptionsModal";
 
 type BoardMembersProps = {
     members: BoardMember[];
@@ -9,12 +11,20 @@ type BoardMembersProps = {
 function BoardMembers({ members = [], max = 4 }: BoardMembersProps) {
     const visible = members.slice(0, max);
     const hidden = members.length - visible.length;
+    const [isMembersPanelOpen, setIsMembersPanelOpen] = useState(false);
+    const boardMembersRef = useRef<HTMLDivElement>(null);
 
     return (
-        <div className="flex items-center -space-x-1">
+        <div 
+        ref={boardMembersRef}
+        className="flex items-center -space-x-1"
+        >
             {visible.map((member) => (
-                <span key={member.id} title={member.name} className="flex">
-                    <Avatar user={member} className="border border-(--border-avatar) cursor-pointer bg-black/5" />
+                <span key={member.id} title={member.name} className="flex" onClick={()=>setIsMembersPanelOpen(true)}>
+                    <Avatar 
+                    user={member}
+                    className="border border-(--border-avatar) cursor-pointer bg-black/5" 
+                    />
                 </span>
             ))}
 
@@ -30,6 +40,27 @@ function BoardMembers({ members = [], max = 4 }: BoardMembersProps) {
                     +{hidden}
                 </div>
             )}
+
+            {isMembersPanelOpen && (
+                <OptionsModal 
+                title="Board members"
+                onClose={()=>setIsMembersPanelOpen(false)}
+                anchorRef={boardMembersRef}
+                compOptions={
+                    <div className="flex gap-1 flex-wrap">
+                        {members.map((m) => (
+                            <div
+                                key={m.id}
+                                className="flex items-center gap-1"
+                            >
+                                <Avatar user={m} className="" />
+                            </div>
+                        ))}
+                    </div>
+                }
+                />
+            )}
+
         </div>
     );
 }

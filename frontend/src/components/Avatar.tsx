@@ -24,7 +24,7 @@ const getAvatarColor = (seed: string) => {
 
 function Avatar ({user, className=""}: AvatarProps) {
 
-    const base = "flex items-center justify-center size-7 rounded-full overflow-hidden text-sm font-medium text-(--text)"
+    const base = "flex items-center justify-center size-7 rounded-full overflow-hidden text-sm font-medium text-(--text) hover:bg-black/5"
 
     if (!user) {
         return (

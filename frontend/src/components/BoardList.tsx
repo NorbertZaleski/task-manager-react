@@ -31,6 +31,8 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
     const selectedNote = notes.find((note)=> note.id === selectedNoteId) ?? null;
     const selectedColumn = columns.find((column)=> column.id === selectedNote?.columnId);
     
+    const [newColumnId , setNewColumnId ] = useState<string | null>(null);
+
     const navigate = useNavigate();
 
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
@@ -124,6 +126,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
         try {
             const newColumn = await columnsService.createColumn(board.id, {title: "New list"});
             setColumns((prev)=>[...prev, newColumn]);
+            setNewColumnId(newColumn.id);
         } catch (error) {
             console.log("Error in addColumn function: ", error);
         }
@@ -316,6 +319,8 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                             <CardColumn
                                 board={board}
                                 column={column}
+                                isEditingTitle={newColumnId === column.id}
+                                onTitleEditingEnd={() => setNewColumnId(null)}
                                 columnIndex={index}
                                 columnsCount={sortedColumns.length}
                                 onMoveColumn={handleMoveColumn}

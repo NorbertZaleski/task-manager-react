@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Clock, Square, SquareCheck, UserRoundPlus, X, Check } from "lucide-react";
+import { Clock, Square, SquareCheck, UserRoundPlus, X } from "lucide-react";
 import type { Checklist, ChecklistItem, User } from "../types/types";
 import EditableText from "./EditableText";
 import Button from "./Button";
@@ -7,7 +7,7 @@ import Avatar from "./Avatar";
 import OptionsModal from "./OptionsModal";
 import DueDateForm from "./DueDateForm";
 import { dueClassBase, dueStatusClass, formatDueDate, getDueStatus, type DueStatus } from "../utils/dueDate";
-import Input from "./Input";
+import SearchBoxMembersSmall from "./SearchBoxMembersSmall";
 
 type Props = {
     checklist: Checklist;
@@ -30,17 +30,6 @@ function ChecklistBlock({ checklist, members=[], onChange }: Props) {
     const items = checklist.items ?? [];
     const doneCount = items.filter((i) => i.done).length;
     const percent = items.length ? Math.round((doneCount / items.length) * 100) : 0;
-
-    const [memberQuery, setMemberQuery] = useState("");
-
-    const filteredMembers = members.filter((m) => {
-        const q = memberQuery.trim().toLowerCase();
-        if (!q) return true;
-        return (
-            m.name.toLowerCase().includes(q) ||
-            (m.email ?? "").toLowerCase().includes(q)
-        );
-    });
 
     const updateItem = (id: string, patch: Partial<ChecklistItem>) =>
         onChange({ ...checklist, items: items.map((i) => (i.id === id ? { ...i, ...patch } : i)) });
@@ -68,7 +57,6 @@ function ChecklistBlock({ checklist, members=[], onChange }: Props) {
 
     const openPicker = (e: React.MouseEvent<HTMLButtonElement>, target: string, kind: "assign" | "due") => {
         anchorRef.current = e.currentTarget;
-        setMemberQuery("");
         setPicker({ target, kind });
     };
 
@@ -165,7 +153,7 @@ function ChecklistBlock({ checklist, members=[], onChange }: Props) {
                                     type="button"
                                     onClick={(e) => openPicker(e, item.id, "assign")}
                                     aria-label="Assign"
-                                    className={`flex h-6 items-center cursor-pointer rounded px-1 text-(--text-mute) hover:text-white ${reveal}`}
+                                    className={`flex h-6 items-center cursor-pointer rounded px-1 text-(--text-mute) ${reveal}`}
                                 >
                                     {item.assignees.length ? (
                                         <div className="flex items-center">
@@ -174,7 +162,7 @@ function ChecklistBlock({ checklist, members=[], onChange }: Props) {
                                                 <span
                                                     title={item.assignees.slice(MAX_VISIBLE).map(nameOf).join(", ")}
                                                     className="relative z-10 -ml-1 flex size-6 items-center justify-center rounded-full
-                                                     bg-white/10 hover:bg-white/15 text-[10px] font-semibold"
+                                                     hover:bg-white/10 ease-in duration-100 text-[10px] font-semibold"
                                                 >
                                                     +{item.assignees.length - MAX_VISIBLE}
                                                 </span>
@@ -267,44 +255,11 @@ function ChecklistBlock({ checklist, members=[], onChange }: Props) {
                     options={[]}
                     width={304}
                     compOptions={
-                        <div className="flex w-full flex-col gap-2">
-                            <Input
-                                autoFocus
-                                placeholder="Search members"
-                                value={memberQuery}
-                                onChange={(e) => setMemberQuery(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === "Escape") e.stopPropagation();
-                                }}
-                                className="bg-input rounded-sm my-2"
-                            />
-
-                            <ul className="flex w-full max-h-60 flex-col gap-1 overflow-y-auto 
-                            scrollbar-gutter-stable scrollbar-thin scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent">
-                                {filteredMembers.map((m) => {
-                                    const selected = currentAssignees(picker.target).includes(m.id);
-                                    return (
-                                        <li key={m.id} className="w-full">
-                                            <button
-                                                type="button"
-                                                onClick={() => toggleAssignee(picker.target, m.id)}
-                                                className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm cursor-pointer hover:bg-white/5 ${
-                                                    selected ? "bg-white/5" : ""
-                                                }`}
-                                            >
-                                                <Avatar user={m} />
-                                                <span className="min-w-0 flex-1 truncate text-left">{m.name}</span>
-                                                {selected && <Check size={16} className="shrink-0" />}
-                                            </button>
-                                        </li>
-                                    );
-                                })}
-
-                                {filteredMembers.length === 0 && (
-                                    <li className="px-2 py-1.5 text-sm text-(--text-mute)">No members found</li>
-                                )}
-                            </ul>
-                        </div>
+                        <SearchBoxMembersSmall
+                            members={members}
+                            selectedIds={currentAssignees(picker.target)}
+                            onToggle={(id) => toggleAssignee(picker.target, id)}
+                        />
                     }
                 />
             )}

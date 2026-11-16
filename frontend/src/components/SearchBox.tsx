@@ -5,7 +5,13 @@ import Input from "./Input";
 import { searchService } from "../services/search.service";
 import type { SearchResults } from "../types/types";
 
-type Hit = { key: string; kind: "board" | "note"; title: string; sub?: string; to: string };
+type Hit = { 
+    key: string; 
+    kind: "board" | "note"; 
+    title: string; 
+    sub?: string; 
+    to: string 
+};
 
 function SearchBox() {
     const [query, setQuery] = useState("");

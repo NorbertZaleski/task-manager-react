@@ -15,6 +15,8 @@ type CardColumnProps = {
     onDragChange: (drag: DragState) => void;
     dropTarget: DropTarget;
     onDropTargetChange: (t: DropTarget) => void;
+    isEditingTitle: boolean;
+    onTitleEditingEnd?: ()=> void;
     columnIndex: number;
     columnsCount: number;
     onMoveColumn: (columnId: string, newIndex: number) => void;
@@ -51,7 +53,7 @@ function Placeholder({
 };
 
 function CardColumn({column, board, notes, drag, onDragChange, onDropNote, dropTarget, onDropTargetChange, onMoveColumn, onMoveNote, onCreateNote, 
-    onDeleteColumn, onOpenNote, onRenameColumn, columnIndex, columnsCount}: CardColumnProps) {
+    onDeleteColumn, onOpenNote, onRenameColumn, columnIndex, columnsCount, isEditingTitle, onTitleEditingEnd}: CardColumnProps) {
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const ellipsisRef = useRef<HTMLButtonElement>(null);
     const [isMoveColumnOpen, setIsMoveColumnOpen] = useState(false);
@@ -116,6 +118,10 @@ function CardColumn({column, board, notes, drag, onDragChange, onDropNote, dropT
                     <EditableText
                         value={column.title}
                         maxLength={100}
+                        editing={isEditingTitle}
+                        onEditingChange={(editing) => {
+                            if (!editing) onTitleEditingEnd?.();
+                        }}
                         onCommit={(title) => onRenameColumn(board.id, column.id, title)}
                         className="py-1 px-2 rounded-sm text-normal font-medium"
                         viewClassName="cursor-pointer"

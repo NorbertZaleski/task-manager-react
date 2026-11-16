@@ -1,4 +1,4 @@
-import { Check, CheckSquare2, ChevronDown, ChevronUp, Circle, CircleCheck, Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
+import { CheckSquare2, ChevronDown, ChevronUp, Circle, CircleCheck, Clock, Ellipsis, LucideTag, Paperclip, Plus, SquareCheck, TextAlignStart, UserRoundPlus, X } from "lucide-react";
 import type { Attachment, Checklist, Label, Note, User } from "../types/types";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import EditableText from "./EditableText";
@@ -21,6 +21,7 @@ import RichTextEditor from "./RichTextEditor";
 import ChecklistBlock from "./ChecklistBlock";
 import Avatar from "./Avatar";
 import AttachmentsBlock from "./AttachmentsBlock";
+import SearchBoxMembersSmall from "./SearchBoxMembersSmall";
 
 type NoteModalProps = {
     note: Note;
@@ -208,18 +209,22 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
         }
     };
 
+    const saveQueue = useRef<Promise<unknown>>(Promise.resolve());
+
     async function saveChecklists(next: Checklist[]) {
         const prev = checklists;
         setChecklists(next);
-        try {
-            const updated = await notesService.setChecklists(note.id, next);
-            setChecklists(updated.checklists ?? next);
-            onNoteUpdated?.(updated);
-        } catch (err) {
-            console.error("Error:", err);
-            setChecklists(prev);
-        }
-    }
+
+        saveQueue.current = saveQueue.current.then(async () => {
+            try {
+                const updated = await notesService.setChecklists(note.id, next);
+                onNoteUpdated?.(updated);
+            } catch (err) {
+                console.error("Error:", err);
+                setChecklists(prev);
+            }
+        });
+    };
 
     const addChecklist = () =>
         saveChecklists([...checklists, { id: crypto.randomUUID(), title: "Lista zadań", items: [] }]);
@@ -436,18 +441,11 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                     width={304}
                                     compOptions={
                                         <div className="flex w-full flex-col gap-1">
-                                            {members.map((m) => (
-                                                <button
-                                                    key={m.id}
-                                                    type="button"
-                                                    onClick={() => handleToggleNoteAssignee(m.id)}
-                                                    className="flex items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-(--hover-white) cursor-pointer"
-                                                >
-                                                    <Avatar user={m} />
-                                                    <span className="min-w-0 flex-1 truncate">{m.name}</span>
-                                                    {note.assigneeIds?.includes(m.id) && <Check size={16} />}
-                                                </button>
-                                            ))}
+                                            <SearchBoxMembersSmall
+                                                members={members}
+                                                selectedIds={note.assigneeIds ?? []}
+                                                onToggle={handleToggleNoteAssignee}
+                                            />
                                         </div>
                                     }
                                 />
@@ -587,7 +585,7 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                                                 title={noteAssignees.slice(MAX_VISIBLE_NOTE_ASSIGNEES).map((m) => m.name).join(", ")}
                                                                 onClick={() => { setNoteAssigneesAnchor("badge"); setIsNoteAssigneesOpen(true); }}
                                                                 className="-ml-1 flex size-8 shrink-0 items-center justify-center rounded-full
-                                                                bg-(--hover-white) text-xs font-medium ring-2 ring-(--bg-modal) cursor-pointer"
+                                                                hover:bg-white/10 text-xs font-medium cursor-pointer ease-in duration-100"
                                                             >
                                                                 +{noteAssignees.length - MAX_VISIBLE_NOTE_ASSIGNEES}
                                                             </button>
@@ -606,6 +604,18 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                             </div>
                                         )}
                                     </div>
+
+                                    {(Boolean(note.attachments?.length) || uploading || uploadError) && (
+                                        <AttachmentsBlock
+                                            noteId={note.id}
+                                            attachments={note.attachments ?? []}
+                                            uploading={uploading}
+                                            error={uploadError}
+                                            onOpen={handleOpenAttachment}
+                                            onDelete={handleDeleteAttachment}
+                                            onAdd={() => fileInputRef.current?.click()}
+                                        />
+                                    )}
 
                                     <div className="flex flex-col">
                                         <div className="flex justify-between">                                
@@ -666,7 +676,7 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                             </div>
                                         )}
                                     </div>
-                                    
+
                                     {checklists.map((cl) => (
                                         <div key={cl.id} className="flex flex-col">
                                             <div className="flex items-center justify-between gap-2 mb-2">
@@ -711,18 +721,6 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                             )}
                                         </div>
                                     ))}
-
-                                    {(Boolean(note.attachments?.length) || uploading || uploadError) && (
-                                        <AttachmentsBlock
-                                            noteId={note.id}
-                                            attachments={note.attachments ?? []}
-                                            uploading={uploading}
-                                            error={uploadError}
-                                            onOpen={handleOpenAttachment}
-                                            onDelete={handleDeleteAttachment}
-                                            onAdd={() => fileInputRef.current?.click()}
-                                        />
-                                    )}
 
                                 </div>
                             </div>

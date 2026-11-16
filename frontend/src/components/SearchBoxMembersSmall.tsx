@@ -7,11 +7,12 @@ import type { User } from "../types/types";
 type SearchBoxMembersSmallProps = {
     members: User[];
     selectedIds?: string[];
-    onToggle: (memberId: string) => void;
+    onToggle?: (memberId: string) => void; // brak = tylko wyszukiwanie
 };
 
 function SearchBoxMembersSmall({ members, selectedIds = [], onToggle }: SearchBoxMembersSmallProps) {
     const [memberQuery, setMemberQuery] = useState("");
+    const selectable = !!onToggle;
 
     const q = memberQuery.trim().toLowerCase();
     const filteredMembers = q
@@ -21,6 +22,8 @@ function SearchBoxMembersSmall({ members, selectedIds = [], onToggle }: SearchBo
                   (m.email ?? "").toLowerCase().includes(q)
           )
         : members;
+
+    const rowClass = "flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm";
 
     return (
         <div className="flex w-full flex-col gap-2">
@@ -39,19 +42,27 @@ function SearchBoxMembersSmall({ members, selectedIds = [], onToggle }: SearchBo
             scrollbar-gutter-stable scrollbar-thin scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent">
                 {filteredMembers.map((m) => {
                     const selected = selectedIds.includes(m.id);
+                    const content = (
+                        <>
+                            <Avatar user={m} />
+                            <span className="min-w-0 flex-1 truncate text-left">{m.name}</span>
+                            {selectable && selected && <Check size={16} className="shrink-0" />}
+                        </>
+                    );
+
                     return (
                         <li key={m.id} className="w-full">
-                            <button
-                                type="button"
-                                onClick={() => onToggle(m.id)}
-                                className={`flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm cursor-pointer hover:bg-white/5 ${
-                                    selected ? "bg-white/5" : ""
-                                }`}
-                            >
-                                <Avatar user={m} />
-                                <span className="min-w-0 flex-1 truncate text-left">{m.name}</span>
-                                {selected && <Check size={16} className="shrink-0" />}
-                            </button>
+                            {selectable ? (
+                                <button
+                                    type="button"
+                                    onClick={() => onToggle(m.id)}
+                                    className={`${rowClass} cursor-pointer hover:bg-white/5 ${selected ? "bg-white/5" : ""}`}
+                                >
+                                    {content}
+                                </button>
+                            ) : (
+                                <div className={rowClass}>{content}</div>
+                            )}
                         </li>
                     );
                 })}

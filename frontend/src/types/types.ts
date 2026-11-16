@@ -5,7 +5,7 @@ export type User = {
   avatar?: string | null;
 };
 
-export type BoardRole = "owner" | "admin" | "member";
+export type BoardRole = "owner" | "admin" | "member" | "guest";
 export type AssignableRole = Exclude<BoardRole, "owner">;
 
 export type BoardMember = User & {

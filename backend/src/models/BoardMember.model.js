@@ -14,7 +14,7 @@ const boardMemberSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ["owner", "admin", "member"], default: "member"
+        enum: ["owner", "admin", "member, guest"], default: "member"
     },
 }, {timestamps: true});
 

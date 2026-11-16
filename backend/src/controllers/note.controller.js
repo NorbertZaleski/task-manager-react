@@ -216,10 +216,13 @@ export async function deleteNote(req, res){
         const membership = await getMembership(note.board, req.user._id);
         if (!membership) return res.status(404).json({ message: "Board not found" });
 
-        note.deleteOne();
-        await Promise.all([
+        const filenames = (note.attachments ?? []).map((a) => a.filename);
+
+        await note.deleteOne();
+
+        await Promise.allSettled([
             NoteActivityModel.deleteMany({ note: note._id }),
-            removeFiles(note.attachments.map((a) => a.filename)),
+            filenames.length ? removeFiles(filenames) : Promise.resolve(),
         ]);
 
         res.status(200).json({message: "note deleted", note: note});

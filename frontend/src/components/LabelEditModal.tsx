@@ -2,6 +2,7 @@ import { useState } from "react";
 import ColorPicker from "./ColorPicker";
 import Button from "./Button";
 import type { Label } from "../types/types";
+import { getTextColor } from "../utils/getTextColor";
 
 type LabelEditModalProps = {
     onSubmit: (data: { title: string; color: string }) => Promise<void>;
@@ -35,7 +36,7 @@ function LabelEditModal({onSubmit, onDelete, label}: LabelEditModalProps) {
                 <div className="flex items-center justify-center py-2">
                     <span
                         className="text-xs font-medium px-2 py-1 min-w-20 rounded text-center whitespace-normal wrap-break-word"
-                        style={{ backgroundColor: color}}
+                        style={{ backgroundColor: color, color: getTextColor(color)}}
                     >
                         {title.trim()}
                     </span>

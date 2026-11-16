@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Button from "./Button";
 import ColorPicker from "./ColorPicker";
+import { getTextColor } from "../utils/getTextColor";
 
 type CreateLabelFormProps = {
     onSubmit: (data: { title: string; color: string }) => Promise<void>;
@@ -31,7 +32,7 @@ function CreateLabelForm({ onSubmit, onCancel }: CreateLabelFormProps) {
             <div className="flex items-center justify-center py-2">
                 <span
                     className="text-xs font-medium px-2 py-1 min-w-20 min-h-6 rounded text-center whitespace-normal wrap-break-word"
-                    style={{ backgroundColor: color}}
+                    style={{ backgroundColor: color, color: getTextColor(color)}}
                 >
                     {title.trim()}
                 </span>

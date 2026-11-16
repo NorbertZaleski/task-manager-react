@@ -3,7 +3,7 @@ import Card from "./Card";
 import { ChevronDown, ChevronUp, Ellipsis } from 'lucide-react'
 import CreateNoteButton from "./CreateNoteButton";
 import EditableText from "./EditableText";
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useLayoutEffect, useRef, useState } from "react";
 import OptionsModal from "./OptionsModal";
 import { useDragScroll } from "../hooks/useDragScroll";
 
@@ -65,6 +65,7 @@ function CardColumn({column, board, notes, drag, onDragChange, onDropNote, dropT
 
     const scrollRef = useRef<HTMLDivElement>(null);
     useDragScroll(scrollRef, !!drag);  
+    const [hasScroll, setHasScroll] = useState(false);
 
     function setTarget(noteId: string | null, after: boolean) {
         const same = dropTarget?.columnId === column.id
@@ -92,6 +93,16 @@ function CardColumn({column, board, notes, drag, onDragChange, onDropNote, dropT
         if (sorted.some((n) => n.id === draggedId)) return;
         onMoveNote(draggedId, column.id);
     };
+
+    useLayoutEffect(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+        const check = () => setHasScroll(el.scrollHeight > el.clientHeight + 1);
+        check();
+        const ro = new ResizeObserver(check);
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, [notes.length]);
 
     return(
             <div 
@@ -221,8 +232,8 @@ function CardColumn({column, board, notes, drag, onDragChange, onDropNote, dropT
 
                 <div 
                 ref={scrollRef}
-                className="flex flex-col gap-2 px-2 my-1 overflow-y-auto min-h-0 
-                scrollbar-thin scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent overflow-auto"
+                className={`flex flex-col gap-2 pl-2 ${hasScroll ? "pr-2" : "pr-1"} my-1 overflow-y-auto min-h-0 
+                scrollbar-thin scroll-smooth scrollbar-thumb-gray-700 scrollbar-track-transparent overflow-auto`}
                 onDragOver={(e) => {
                     if (!e.dataTransfer.types.includes("note-id")) return;
                     if (e.target !== e.currentTarget) return;
@@ -303,7 +314,7 @@ function CardColumn({column, board, notes, drag, onDragChange, onDropNote, dropT
 
                 </div>
 
-                <div className="shrink-0 px-2 pt-1">
+                <div className={`shrink-0 pl-2 ${hasScroll ? "pr-2" : "pr-1"} pt-1`}>
                     <CreateNoteButton onCreate={(content) => onCreateNote(column.id, content)}></CreateNoteButton>
                 </div>
             </div>

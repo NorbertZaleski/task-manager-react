@@ -6,6 +6,7 @@ import type { BoardBackground } from "../types/types";
 import { COLORS, IMAGES } from "../constants/backgroundConstants";
 import { getBackgroundStyle } from "../utils/getBackgroundStyle";
 import Button from "./Button";
+import Input from "./Input";
 
 type ButtonCreateBoardProps = {
     onCreate: (title: string, background: BoardBackground) => Promise<void>;
@@ -103,6 +104,7 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
                                             src={src}
                                             selected={background.type === "image" && background.value === src}
                                             onSelect={() => setBackground({ type: "image", value: src })}
+                                            className="cursor-pointer"
                                         />
                                     ))}
                                 </div>
@@ -115,6 +117,7 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
                                                 color={color}
                                                 selected={background.type === "color" && background.value === color}
                                                 onSelect={() => setBackground({ type: "color", value: color })}
+                                                className="cursor-pointer"
                                             />
                                         ))}
                                         <button 
@@ -128,19 +131,26 @@ function ButtonCreateBoard({ onCreate }: ButtonCreateBoardProps) {
                             </div>
 
                             <div className="flex flex-col gap-1">
-                                <input
+                                <Input
                                     autoFocus
                                     maxLength={30}
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="Board title"
-                                    className="w-full rounded outline-1 outline-(--border-mute) px-2 py-1"
                                 />
                                 {!title && <p className="text-sm text-(--mute) font-medium">Board title is required</p>}
                                 {title.length>=30 && <p className="text-sm text-(--mute) font-medium">Board title can't be longer than 30 characters</p>}
                             </div>
 
-                            <div>Visibility options</div>
+                            <div className="flex flex-col">
+                                <span className="font-semibold text-xs">Visibility options</span>
+                                <Button
+                                variant="outline"
+                                className="justify-center"
+                                >
+                                    text
+                                </Button>
+                            </div>
 
                             <button 
                             type="submit"

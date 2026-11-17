@@ -130,10 +130,10 @@ function Editor_({ initial, placeholder, className, onSave, onCancel }: {
             onBlur={(e) => {
                 if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
             }}
-            className={`rounded outline-1 bg-input ${
+            className={`rounded bg-input ${
                 focused
-                        ? "outline-(--border-active-textarea)"
-                        : "outline-(--border-mute)"
+                        ? "outline-2 outline-(--border-active-textarea)"
+                        : "outline-1 outline-(--border-mute)"
                 }`}>
                 <div className="flex flex-wrap gap-0.5 border-b border-(--border-mute) p-1">
                     <ToolbarButton label="Bold" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold size={16} /></ToolbarButton>

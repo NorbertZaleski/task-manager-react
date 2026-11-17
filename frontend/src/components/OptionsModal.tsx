@@ -11,7 +11,7 @@ export type ModalOption = {
 }
 
 type OptionsModalProps = {
-    title: string;
+    title?: string;
     onClose: () => void;
     options?: ModalOption[];
     anchorRef: RefObject<HTMLElement | null>;
@@ -22,6 +22,15 @@ type OptionsModalProps = {
 
 const DEFAULT_WIDTH = 240;
 const GAP = 8;
+
+export const itemClass =
+    "flex w-full items-center justify-between rounded-sm px-2 py-2 text-left text-sm hover:bg-(--hover-white)";
+
+export const Divider = () => <div className="my-2 h-px w-full bg-white/10" />;
+
+export const SectionLabel = ({ children }: { children: string }) => (
+    <p className="px-2 pt-1 pb-2 text-xs font-semibold uppercase text-(--text-mute)">{children}</p>
+);
 
 function OptionsModal({title, onClose, options=[], anchorRef, compOptions, className, width = DEFAULT_WIDTH}: OptionsModalProps) {
     const popRef = useRef<HTMLDivElement>(null);
@@ -73,18 +82,17 @@ function OptionsModal({title, onClose, options=[], anchorRef, compOptions, class
                     maxHeight: `calc(100dvh - ${GAP * 2}px)`,
                     visibility: pos ? "visible" : "hidden",
                 }}
-                className={`fixed z-100 overflow-y-auto rounded-lg bg-(--bg-modal) py-2 px-3 shadow-2xl flex flex-col gap-1 ${className}`}
+                className={`fixed z-100 overflow-y-auto rounded-lg bg-(--bg-modal-light) py-2 px-3 shadow-2xl flex flex-col gap-1 ${className}`}
             >
-                <div className="flex items-center justify-between text-center">
-                    <div className="p-2"></div>
-                    <h3 className="text-sm font-semibold text-(--text-mute)">{title}</h3>
-                    <Button
-                    variant="ghost_small"
-                    onClick={onClose}
-                    >
-                        <X size={16} />
-                    </Button>
-                </div>
+                {title && (
+                    <div className="flex items-center justify-between text-center">
+                        <div className="p-2"></div>
+                        <h3 className="text-sm font-semibold text-(--text-mute)">{title}</h3>
+                        <Button variant="ghost_small" onClick={onClose}>
+                            <X size={16} />
+                        </Button>
+                    </div>
+                )}
 
                 {options.map((option)=> (
                     

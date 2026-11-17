@@ -80,7 +80,7 @@ function CommentRow({
           maxLength={2000}
           className="w-full text-sm whitespace-pre-wrap"
           viewClassName="rounded-md px-3 py-2 bg-input"
-          editClassName="rounded-md px-3 py-2 outline outline-1 outline-(--border-mute)"
+          editClassName="rounded-md px-3 py-2"
         />
       ) : (
         <p className="rounded-md px-3 py-2 bg-input text-sm whitespace-pre-wrap wrap-break-word">

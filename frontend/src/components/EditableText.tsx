@@ -93,8 +93,8 @@ function EditableText({ value, onCommit, onEditingChange, multiline = false, all
                 }}
                 className={`${base} ${className} ${editClassName || "bg-transparent"} ${
                 focused
-                        ? "outline-(--border-active-textarea)"
-                        : "outline-(--border-mute)"
+                        ? "outline-2 outline-(--border-active-textarea)"
+                        : "outline-1 outline-(--border-mute)"
                 } resize-none overflow-hidden`}
             />
         );

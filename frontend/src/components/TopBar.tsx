@@ -6,8 +6,8 @@ import type { BoardBackground } from "../types/types";
 import SearchBox from "./SearchBox";
 import Avatar from "./Avatar";
 import { useAuth } from "../context/AuthContext";
-import OptionsModal from "./OptionsModal";
 import { useRef, useState } from "react";
+import AccountMenuModal from "./AccountMenuModal";
 
 type TopBarPops = { 
     onBoardCreated: () => void 
@@ -15,7 +15,7 @@ type TopBarPops = {
 
 function TopBar({onBoardCreated}: TopBarPops) {
     const navigate = useNavigate();
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const avatarRef = useRef<HTMLButtonElement>(null);
 
@@ -57,16 +57,12 @@ function TopBar({onBoardCreated}: TopBarPops) {
                 </button>
 
                 {isOptionsOpen && (
-                    <OptionsModal 
-                    title="Account"
-                    anchorRef={avatarRef}
-                    options={[
-                        { id: "settings", label: "Account settings", onClick: () => navigate("/settings")},
-                        { id: "logout", label: "Log out", onClick: () => logout()}
-                    ]}
-                    onClose={() => setIsOptionsOpen(false)} 
-                    />
+                    <AccountMenuModal
+                        anchorRef={avatarRef} 
+                        onClose={() => setIsOptionsOpen(false)}
+                     />
                 )}
+
             </div>
         </div>
     )

@@ -7,7 +7,7 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 function Input({ className = "", ref, onFocus, onBlur, ...props }: InputProps) {
     const [focused, setFocused] = useState(false);
 
-    const base = "border-0 outline outline-2 rounded-md px-2 py-1 flex-1 text-normal";
+    const base = "border-0 outline rounded-sm px-2 py-1 flex-1 text-normal";
 
     return (
         <input
@@ -22,8 +22,8 @@ function Input({ className = "", ref, onFocus, onBlur, ...props }: InputProps) {
             }}
             className={`${base} ${
                 focused
-                    ? "outline-(--border-active-textarea)"
-                    : "outline-(--border-mute)"
+                    ? "outline-2 outline-(--border-active-textarea)"
+                    : "outline-1 outline-(--border-mute)"
             } ${className}`}
             {...props}
         />

@@ -98,7 +98,7 @@ function AccountMenuModal({ anchorRef, onClose, width = 304 }: AccountMenuModalP
                         <Avatar user={user} className="size-10"/>
                         <div className="flex min-w-0 flex-col">
                             <span className="truncate text-sm font-semibold">{user.name}</span>
-                            <span className="truncate text-xs text-(--text-mute)">{user.email}</span>
+                            <span className="truncate text-xs text-(--text-mute)">@{user.username}</span>
                         </div>
                     </div>
                 )}

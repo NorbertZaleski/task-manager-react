@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import User from "../models/User.model.js";
 
 export async function getAllUser(_,res){
@@ -60,17 +61,64 @@ export async function createUser(req,res){
     }
 };
 
-export async function updateUser(req,res){
+export async function updateUser(req, res) {
     try {
-        const {name, email, password} = req.body;
-        const updatedUser = await User.findByIdAndUpdate(req.params.id);
+        const { id } = req.params;
 
-        if (!updatedUser) return res.status(404).json({message: "User not found"});
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({ message: "Invalid user ID" });
+        }
+        if (String(req.user._id) !== id) {
+            return res.status(403).json({ message: "Forbidden" });
+        }
 
-        res.status(200).json({message:"user updated: ", user: updatedUser});
+        const update = {};
+
+        if (req.body.username !== undefined) {
+            if (typeof req.body.username !== "string") {
+                return res.status(400).json({ message: "Invalid username" });
+            }
+            const username = req.body.username.trim().toLowerCase();
+            if (!/^[a-z0-9_.]{3,30}$/.test(username)) {
+                return res.status(400).json({
+                    message: "Username must be 3-30 characters: letters, numbers, _ and .",
+                });
+            }
+            const taken = await User.exists({ username, _id: { $ne: id } });
+            if (taken) return res.status(400).json({ message: "Username already taken" });
+            update.username = username;
+        }
+
+        if (req.body.name !== undefined) update.name = req.body.name;
+
+        if (Object.keys(update).length === 0) {
+            return res.status(400).json({ message: "Nothing to update" });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            id,
+            { $set: update },
+            { new: true, runValidators: true }
+        ).select("name username email avatar");
+
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        res.status(200).json({
+            id: user.id,
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            avatar: user.avatar ?? null,
+        });
     } catch (error) {
+        if (error.name === "ValidationError") {
+            return res.status(400).json({ message: Object.values(error.errors)[0].message });
+        }
+        if (error.code === 11000) {
+            return res.status(400).json({ message: "Username already taken" });
+        }
         console.error("Error in updateUser controller", error);
-        res.status(500).json({message:"Internal server error"});
+        res.status(500).json({ message: "Internal server error" });
     }
 };
 

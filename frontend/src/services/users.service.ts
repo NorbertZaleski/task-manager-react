@@ -8,9 +8,9 @@ export const usersService = {
         return response.data;
     },
 
-    updateUser: async (userId: string, data: {nickname?: string}): Promise<User> => {
+    updateUser: async (userId: string, data: {username?: string; name?: string}): Promise<User> => {
         try {
-            const response = await api.patch(`/users/${userId}`, {data});
+            const response = await api.patch(`/users/${userId}`, data);
             return response.data;
         } catch (error) {
             if (error instanceof AxiosError) {
@@ -20,6 +20,6 @@ export const usersService = {
         }
     },
 
-    
+
 }
 

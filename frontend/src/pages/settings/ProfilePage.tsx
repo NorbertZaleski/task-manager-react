@@ -1,18 +1,32 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
 import { useAuth } from "../../context/AuthContext";
+import { usersService } from "../../services/users.service";
 
 function ProfilePage() {
-    const { user } = useAuth();
+    const { user, setUser } = useAuth();
+    const [error, setError] = useState<string | null>(null);
 
     const [username, setUsername] = useState(user?.username ?? "");
     const [bio, setBio] = useState("");
 
-    const handleSave = (e: React.FormEvent) => {
+    useEffect(() => {
+        if (user) setUsername(user.username ?? "");
+    }, [user?.username]);
+
+    const handleSave = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // TODO: wywołaj usersService.updateProfile({ username, bio })
-        console.log("Save profile", { username, bio });
+        if (!user) return;
+        setError(null);
+
+        try {
+            const updated = await usersService.updateUser(user.id, { username: username.trim() });
+            setUser((prev) => (prev ? { ...prev, username: updated.username } : prev));
+        } catch (error) {
+            console.error("Error in handleSave:", error);
+            setError("Could not save profile");
+        }
     };
 
     return (
@@ -54,7 +68,9 @@ function ProfilePage() {
                 <div className="mt-12 flex justify-end">
                     <Button
                     variant="primary"
-                    disabled={!username.trim()}>
+                    type="submit"
+                    disabled={!username.trim()}
+                    >
                         Save
                     </Button>
                 </div>

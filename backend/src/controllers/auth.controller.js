@@ -40,17 +40,18 @@ export async function login(req,res){
 
 export async function register(req, res){
     try {
-        const {name, email, password} = req.body;
+        const {name, username, email, password} = req.body;
 
-        if (!name || !email || !password) {
+        if (!name || !username || !email || !password) {
             return res.status(400).json({message: "Please add all fields"});
         }
 
         //czy user istnieje już?
-        const userExists = await User.findOne({email});
-
+        const normalizedUsername = username.trim().toLowerCase();
+        const userExists = await User.findOne({ $or: [{ email }, { username: normalizedUsername }] });
         if (userExists) {
-            return res.status(400).json({message: "User already exists with that email"});
+            const field = userExists.email === email ? "email" : "username";
+            return res.status(400).json({ message: `User already exists with that ${field}` });
         }
 
         //hashowanie hasła
@@ -58,13 +59,14 @@ export async function register(req, res){
         const hashedPassword = await bcrypt.hash(password, salt);
 
         //stworz usera
-        const user = await User.create({name, email, password: hashedPassword});
+        const user = await User.create({name, username, email, password: hashedPassword});
 
         //wygeneruj token jwt
         if (user) {
             res.status(201).json({
                 _id: user.id,
                 name: user.name,
+                username: user.username,
                 email: user.email,
                 token: generateToken(user._id)
             })
@@ -82,6 +84,7 @@ export function getMe(req, res) {
     res.json({
         id: req.user.id,
         name: req.user.name,
+        username: req.user.username,
         avatar: req.user.avatar ?? null,
     });
 };

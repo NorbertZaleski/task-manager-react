@@ -6,7 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 function ProfilePage() {
     const { user } = useAuth();
 
-    const [username, setUsername] = useState(user?.name ?? "");
+    const [username, setUsername] = useState(user?.username ?? "");
     const [bio, setBio] = useState("");
 
     const handleSave = (e: React.FormEvent) => {

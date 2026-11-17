@@ -7,7 +7,7 @@ import type { User } from "../types/types";
 type SearchBoxMembersSmallProps = {
     members: User[];
     selectedIds?: string[];
-    onToggle?: (memberId: string) => void; // brak = tylko wyszukiwanie
+    onToggle?: (memberId: string) => void;
 };
 
 function SearchBoxMembersSmall({ members, selectedIds = [], onToggle }: SearchBoxMembersSmallProps) {

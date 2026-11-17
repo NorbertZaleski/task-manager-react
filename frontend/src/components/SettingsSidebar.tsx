@@ -66,10 +66,6 @@ function SettingsSidebar() {
                     ))}
                 </nav>
             </div>
-
-            <span className="mt-8 w-fit rounded-sm border border-violet-400/60 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-violet-300">
-                STANDARD
-            </span>
         </aside>
     );
 }

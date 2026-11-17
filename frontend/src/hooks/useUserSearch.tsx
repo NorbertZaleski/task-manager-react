@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { User } from "../types/types";
-import { searchUsers } from "../services/users.service";
+import { usersService } from "../services/users.service";
 
 function useUserSearch(query: string) {
     const [results, setResults] = useState<User[]>([]);
@@ -18,7 +18,7 @@ function useUserSearch(query: string) {
         const timer = setTimeout(async () => {
             try {
                 setLoading(true);
-                setResults(await searchUsers(q, controller.signal));
+                setResults(await usersService.searchUsers(q, controller.signal));
             } catch (error) {
                 if (!controller.signal.aborted) {
                     console.error("Error in useUserSearch", error);

@@ -10,8 +10,8 @@ export const authService = {
         return res.data.token;
     },
 
-    register: async (email: string, password: string, name?: string): Promise<string> => {
-        const res = await api.post<{ token: string }>("/auth/register", { email, password, name });
+    register: async (email: string, password: string, name: string, username: string): Promise<string> => {
+        const res = await api.post<{ token: string }>("/auth/register", { email, password, name, username });
         localStorage.setItem(TOKEN_KEY, res.data.token);
         return res.data.token;
     },

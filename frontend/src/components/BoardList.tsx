@@ -9,12 +9,13 @@ import { boardsService } from "../services/boards.service.js";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import EditableText from "./EditableText.js";
 import BoardMembers from "./BoardMembers.js";
-import OptionsModal from "./OptionsModal.js";
+import OptionsModal, { type ModalOption } from "./OptionsModal.js";
 import ShareBoardModal from "./ShareBoardModal.js";
 import NoteModal from "./NoteModal.js";
 import { useDragScroll } from "../hooks/useDragScroll.js";
 import Button from "./Button.js";
 import { Can } from "./Can.js";
+import { useBoardPermissions } from "../context/BoardPermissionsContext.js";
 
 type BoardListProps = {
     board: Board;
@@ -50,6 +51,38 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
     const sortedColumns = [...columns].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 
     const [searchParams, setSearchParams] = useSearchParams();
+
+    //options in board menu
+    const { can } = useBoardPermissions();
+
+    const allOptions: ModalOption[] = [
+    { id: 'addMember', label: 'Share', icon: <UserPlus2 size={18} />, permission: 'inviteMembers', onClick: () => setIsMemberInviteModalOpen(true) },
+
+    { id: 'about', label: 'About this board', icon: <Info size={18} />, dividerBefore: true, onClick: () => {/* TODO */} },
+    { id: 'visibility', label: 'Visibility: Private', icon: <Lock size={18} />, onClick: () => {/* TODO */} },
+    { id: 'star', label: 'Star board', icon: <Star size={18} />, onClick: () => {/* TODO */} },
+
+    { id: 'settings', label: 'Settings', icon: <Settings size={18} />, dividerBefore: true, permission: 'editPermissions', onClick: () => {/* TODO */} },
+    { id: 'background', label: 'Change background', icon: <Image size={18} />, permission: 'updateBoard', onClick: () => {/* TODO */} },
+    { id: 'labels', label: 'Labels', icon: <Tag size={18} />, permission: 'manageLabels', onClick: () => {/* TODO */} },
+
+    { id: 'activity', label: 'Activity', icon: <History size={18} />, dividerBefore: true, onClick: () => {/* TODO */} },
+    { id: 'archived', label: 'Archived items', icon: <Archive size={18} />, onClick: () => {/* TODO */} },
+
+    { id: 'watch', label: 'Watch', icon: <Eye size={18} />, dividerBefore: true, onClick: () => {/* TODO */} },
+    { id: 'collapse', label: 'Collapse all lists', icon: <FoldHorizontal size={18} />, onClick: () => {/* TODO */} },
+    { id: 'copy', label: 'Copy board', icon: <Copy size={18} />, onClick: () => {/* TODO */} },
+
+    ...(board.role !== 'owner'
+        ? [{ id: 'leave', label: 'Leave board', icon: <LogOut size={18} />, dividerBefore: true, onClick: () => {/* TODO */} }]
+        : []),
+    { id: 'delete', label: 'Delete board', icon: <Trash2 size={18} />, dividerBefore: board.role === 'owner', permission: 'deleteBoard', onClick: () => handleDeleteBoard(board.id) },
+    ];
+
+    const visible = allOptions.filter((o) => !o.permission || can(o.permission));
+
+    const boardMenuOptions = visible.map((o, i) => (i === 0 ? { ...o, dividerBefore: false } : o));
+//
 
     function getNewPosition(items: { position: number }[], index: number): number {
         const prev = items[index - 1];
@@ -315,27 +348,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                         anchorRef={ellipsisRef}
                         onClose={() => setIsOptionsOpen(false)}
                         width={354}
-                        options={[
-                        { id: 'addMember', label: 'Share', icon: <UserPlus2 size={18} />, onClick: () => setIsMemberInviteModalOpen(true) },
-
-                        { id: 'about', label: 'About this board', icon: <Info size={18} />, dividerBefore: true, onClick: () => {/* TODO */} },
-                        { id: 'visibility', label: 'Visibility: Private', icon: <Lock size={18} />, onClick: () => {/* TODO */} },
-                        { id: 'star', label: 'Star board', icon: <Star size={18} />, onClick: () => {/* TODO */} },
-
-                        { id: 'settings', label: 'Settings', icon: <Settings size={18} />, dividerBefore: true, onClick: () => {/* TODO */} },
-                        { id: 'background', label: 'Change background', icon: <Image size={18} />, onClick: () => {/* TODO */} },
-                        { id: 'labels', label: 'Labels', icon: <Tag size={18} />, onClick: () => {/* TODO */} },
-
-                        { id: 'activity', label: 'Activity', icon: <History size={18} />, dividerBefore: true, onClick: () => {/* TODO */} },
-                        { id: 'archived', label: 'Archived items', icon: <Archive size={18} />, onClick: () => {/* TODO */} },
-
-                        { id: 'watch', label: 'Watch', icon: <Eye size={18} />, dividerBefore: true, onClick: () => {/* TODO */} },
-                        { id: 'collapse', label: 'Collapse all lists', icon: <FoldHorizontal size={18} />, onClick: () => {/* TODO */} },
-                        { id: 'copy', label: 'Copy board', icon: <Copy size={18} />, onClick: () => {/* TODO */} },
-
-                        { id: 'leave', label: 'Leave board', icon: <LogOut size={18} />, dividerBefore: true, onClick: () => {/* TODO */} },
-                        { id: 'delete', label: 'Delete board', icon: <Trash2 size={18} />, onClick: () => handleDeleteBoard(board.id) },
-                        ]}
+                        options={boardMenuOptions}
                     />
                     )}
 

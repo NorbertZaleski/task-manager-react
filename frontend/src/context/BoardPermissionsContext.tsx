@@ -30,3 +30,4 @@ export function BoardPermissionsProvider({
 }
 
 export const useCan = (action: PermissionKey) => useContext(Ctx).can(action);
+export const useBoardPermissions = () => useContext(Ctx);

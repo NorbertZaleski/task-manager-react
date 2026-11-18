@@ -6,6 +6,7 @@ import SearchBoxMembers from "./SearchBoxMembers";
 import { useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import OptionsModal from "./OptionsModal";
+import { Can } from "./Can";
 
 type ShareBoardModalProps = {
     board: Board;
@@ -115,13 +116,16 @@ function ShareBoardModal({board, onClose, addMember, removeMember, updateMemberR
                             {inviteRole === "admin" ? "Admin" : "Member"}
                         </Button>
                         
-                        <Button
-                            variant="primary"
-                            onClick={handleInvite}
-                            disabled={!selectedUsers.length || submitting}
-                        >
-                            Invite
-                        </Button>
+                        <Can mode="disable" action="inviteMembers">
+                            <Button
+                                variant="primary"
+                                onClick={handleInvite}
+                                disabled={!selectedUsers.length || submitting}
+                            >
+                                Invite
+                            </Button>
+                        </Can>
+
 
                     </div>
                 </div>

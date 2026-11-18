@@ -1,5 +1,4 @@
-import mongoose, { mongo } from "mongoose";
-import Board from "../models/Board.model.js";
+import mongoose from "mongoose";
 import Column from "../models/Column.model.js";
 import { toClientColumn } from "./board.controller.js";
 import Note from "../models/Note.model.js";
@@ -30,7 +29,7 @@ export async function createColumn(req,res) {
 export async function updateColumn(req, res) {
     try {
         const { boardId, columnId } = req.params;
-        const { title } = req.body;
+        const { title, position } = req.body;
 
         if (!mongoose.isValidObjectId(columnId)) {
             return res.status(404).json({ message: "Column not found" });
@@ -39,9 +38,6 @@ export async function updateColumn(req, res) {
         const column = await Column.findOne({ _id: columnId, board: boardId });
         if (!column) return res.status(404).json({ message: "Column not found" });
 
-        const membership = await getMembership(column.board, req.user._id);
-        if (!membership) return res.status(404).json({ message: "Column not found" });
-
         if (title !== undefined) {
             if (typeof title !== "string" || !title.trim()) {
                 return res.status(400).json({ message: "Title is required" });
@@ -49,9 +45,19 @@ export async function updateColumn(req, res) {
             column.title = title.trim();
         }
 
+        if (position !== undefined) {
+            if (typeof position !== "number" || !Number.isFinite(position)) {
+                return res.status(400).json({ message: "Invalid position" });
+            }
+            column.position = position;
+        }
+
         await column.save();
 
-        return res.status(200).json({ message: "Column updated", column });
+        return res.status(200).json({
+            message: "Column updated",
+            column: toClientColumn(column.toObject()),
+        });
     } catch (error) {
         console.error("Error in updateColumn controller", error);
         res.status(500).json({ message: "Internal server error" });

@@ -3,6 +3,7 @@ import { Fragment, useLayoutEffect, useRef, useState, type ReactNode, type RefOb
 import { createPortal } from "react-dom";
 import Button from "./Button";
 import { MenuItem, MenuDivider, MenuSectionLabel } from "./MenuItem";
+import type { PermissionKey } from "../types/permissions";
 
 export type ModalOption = {
     id: string;
@@ -12,6 +13,7 @@ export type ModalOption = {
     trailing?: ReactNode;
     dividerBefore?: boolean;
     onClick: () => void;
+    permission?: PermissionKey;
 }
 
 type OptionsModalProps = {

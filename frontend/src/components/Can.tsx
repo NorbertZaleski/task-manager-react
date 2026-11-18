@@ -25,7 +25,7 @@ export function Can({ action, mode = "hide", children }: Props) {
   return cloneElement(children, {
     disabled: true,
     "aria-disabled": true,
-    title: "Nie masz uprawnień do tej akcji",
+    title: "You do not have permission to do this action",
     className: `${children.props.className ?? ""} cursor-not-allowed opacity-50`.trim(),
     onClick: undefined,
   });

@@ -39,7 +39,7 @@ function MembersModal({onSelect, onClose, results, anchorRef}: MembersModalProps
                             <button
                             type="button"
                             onClick={()=>onSelect(user)}
-                            className="flex gap-3 max-h-15 w-full rounded-xs px-2 py-1 hover:bg-white/30 "
+                            className="flex gap-3 max-h-15 w-full rounded-xs px-2 py-1 hover:bg-white/5"
                             >
                                 <div className="flex py-2 gap-2 items-center">
                                     <Avatar user={user} className="ring-(--border-avatar-shareboard)"/>

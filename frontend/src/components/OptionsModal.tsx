@@ -1,12 +1,16 @@
 import { X } from "lucide-react";
-import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { Fragment, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import Button from "./Button";
+import { MenuItem, MenuDivider, MenuSectionLabel } from "./MenuItem";
 
 export type ModalOption = {
     id: string;
     label: string;
     category?: string;
+    icon?: ReactNode;
+    trailing?: ReactNode;
+    dividerBefore?: boolean;
     onClick: () => void;
 }
 
@@ -23,16 +27,7 @@ type OptionsModalProps = {
 const DEFAULT_WIDTH = 240;
 const GAP = 8;
 
-export const itemClass =
-    "flex w-full items-center justify-between rounded-sm px-2 py-2 text-left text-sm hover:bg-(--hover-white)";
-
-export const Divider = () => <div className="my-2 h-px w-full bg-white/10" />;
-
-export const SectionLabel = ({ children }: { children: string }) => (
-    <p className="px-2 pt-1 pb-2 text-xs font-semibold uppercase text-(--text-mute)">{children}</p>
-);
-
-function OptionsModal({title, onClose, options=[], anchorRef, compOptions, className, width = DEFAULT_WIDTH}: OptionsModalProps) {
+function OptionsModal({ title, onClose, options = [], anchorRef, compOptions, className = "", width = DEFAULT_WIDTH }: OptionsModalProps) {
     const popRef = useRef<HTMLDivElement>(null);
     const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
@@ -82,11 +77,11 @@ function OptionsModal({title, onClose, options=[], anchorRef, compOptions, class
                     maxHeight: `calc(100dvh - ${GAP * 2}px)`,
                     visibility: pos ? "visible" : "hidden",
                 }}
-                className={`fixed z-100 overflow-y-auto rounded-lg bg-(--bg-modal-light) py-2 px-3 shadow-2xl flex flex-col gap-1 ${className}`}
+                className={`fixed z-100 flex flex-col gap-1 overflow-y-auto rounded-lg bg-(--bg-modal-light) px-3 py-2 shadow-2xl ${className}`}
             >
                 {title && (
                     <div className="flex items-center justify-between text-center">
-                        <div className="p-2"></div>
+                        <div className="p-2" />
                         <h3 className="text-sm font-semibold text-(--text-mute)">{title}</h3>
                         <Button variant="ghost_small" onClick={onClose}>
                             <X size={16} />
@@ -94,32 +89,28 @@ function OptionsModal({title, onClose, options=[], anchorRef, compOptions, class
                     </div>
                 )}
 
-                {options.map((option)=> (
-                    
-                    <div key={option.id} className="flex flex-col">
+                {options.map((option) => (
+                    <Fragment key={option.id}>
+                        {option.dividerBefore && <MenuDivider />}
+                        {option.category && <MenuSectionLabel>{option.category}</MenuSectionLabel>}
 
-                        <p className="font-semibold px-2 py-1 text-sm text-left">{option.category}</p>
-
-                        <button
-                        type="button"
-                        key={option.id}
-                        onClick={() => {
-                            option.onClick();
-                            onClose();
-                        }}
-                        className="flex items-center px-2 py-1 text-left rounded-sm hover:bg-(--hover-white)"
-                        >
-                            <span>{option.label}</span>
-                        </button>
-                    </div>
+                        <MenuItem
+                            label={option.label}
+                            icon={option.icon}
+                            trailing={option.trailing}
+                            onClick={() => {
+                                option.onClick();
+                                onClose();
+                            }}
+                        />
+                    </Fragment>
                 ))}
 
                 {compOptions && (
-                    <div className="flex flex-col gap-2 items-center w-full">
+                    <div className="flex w-full flex-col items-center gap-2">
                         {compOptions}
                     </div>
                 )}
-
             </div>
         </>,
         document.body

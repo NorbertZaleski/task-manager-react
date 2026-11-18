@@ -3,7 +3,7 @@ import type { Board, Column, Note, DragState, DropTarget, AssignableRole } from 
 import CardColumn from "./CardColumn";
 import { columnsService } from "../services/columns.service";
 import notesService from "../services/notes.service";
-import { Ellipsis, Plus } from "lucide-react";
+import { Archive, Copy, Ellipsis, Eye, FoldHorizontal, History, Image, Info, Lock, LogOut, Plus, Settings, Star, Tag, Trash2, UserPlus2 } from "lucide-react";
 import FloatingBottomBar from "./FloatingBottomBar.js";
 import { boardsService } from "../services/boards.service.js";
 import { useNavigate, useParams, useSearchParams } from "react-router";
@@ -13,6 +13,7 @@ import OptionsModal from "./OptionsModal.js";
 import ShareBoardModal from "./ShareBoardModal.js";
 import NoteModal from "./NoteModal.js";
 import { useDragScroll } from "../hooks/useDragScroll.js";
+import Button from "./Button.js";
 
 type BoardListProps = {
     board: Board;
@@ -286,26 +287,51 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                 
                 <div className="flex gap-2">
                     <BoardMembers members={board.members}/>
-
-                    <button
-                    type="button"
+                    <Button
+                    variant="primary"
+                    className="border-0 bg-(--text) hover:bg-white"
+                    iconl={<UserPlus2 size={16}/>}
+                    onClick={() => setIsMemberInviteModalOpen(true)}
+                    >
+                        <span>Share board</span>
+                    </Button>
+                    <Button
+                    variant="ghost_small"
                     ref={ellipsisRef}
-                    className="rounded-md size-8 hover:bg-(--hover-white) flex justify-center items-center"
+                    className="size-8 p-1! rounded-md hover:bg-(--hover-white)"
                     onClick={()=> setIsOptionsOpen(true)}
                     >
                         <Ellipsis size={24} className=""/>
-                    </button>
+                    </Button>
 
                     {isOptionsOpen && (
-                        <OptionsModal 
+                    <OptionsModal
                         title="Menu"
                         anchorRef={ellipsisRef}
-                        onClose={()=> setIsOptionsOpen(false)}
+                        onClose={() => setIsOptionsOpen(false)}
+                        width={354}
                         options={[
-                            {id: "addMember", label: "Add members", onClick: () => setIsMemberInviteModalOpen(true)},
-                            {id: "delete", label: "Delete board", onClick: () => handleDeleteBoard(board.id)}
+                        { id: 'addMember', label: 'Share', icon: <UserPlus2 size={18} />, onClick: () => setIsMemberInviteModalOpen(true) },
+
+                        { id: 'about', label: 'About this board', icon: <Info size={18} />, dividerBefore: true, onClick: () => {/* TODO */} },
+                        { id: 'visibility', label: 'Visibility: Private', icon: <Lock size={18} />, onClick: () => {/* TODO */} },
+                        { id: 'star', label: 'Star board', icon: <Star size={18} />, onClick: () => {/* TODO */} },
+
+                        { id: 'settings', label: 'Settings', icon: <Settings size={18} />, dividerBefore: true, onClick: () => {/* TODO */} },
+                        { id: 'background', label: 'Change background', icon: <Image size={18} />, onClick: () => {/* TODO */} },
+                        { id: 'labels', label: 'Labels', icon: <Tag size={18} />, onClick: () => {/* TODO */} },
+
+                        { id: 'activity', label: 'Activity', icon: <History size={18} />, dividerBefore: true, onClick: () => {/* TODO */} },
+                        { id: 'archived', label: 'Archived items', icon: <Archive size={18} />, onClick: () => {/* TODO */} },
+
+                        { id: 'watch', label: 'Watch', icon: <Eye size={18} />, dividerBefore: true, onClick: () => {/* TODO */} },
+                        { id: 'collapse', label: 'Collapse all lists', icon: <FoldHorizontal size={18} />, onClick: () => {/* TODO */} },
+                        { id: 'copy', label: 'Copy board', icon: <Copy size={18} />, onClick: () => {/* TODO */} },
+
+                        { id: 'leave', label: 'Leave board', icon: <LogOut size={18} />, dividerBefore: true, onClick: () => {/* TODO */} },
+                        { id: 'delete', label: 'Delete board', icon: <Trash2 size={18} />, onClick: () => handleDeleteBoard(board.id) },
                         ]}
-                        />
+                    />
                     )}
 
                 </div>

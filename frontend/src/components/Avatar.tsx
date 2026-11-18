@@ -1,8 +1,10 @@
 import { COLORS_AVATAR } from "../constants/backgroundConstants";
 import type { User } from "../types/types";
 
+type AvatarUser = Pick<User, "id" | "name" | "avatar">;
+
 type AvatarProps = {
-    user?: User | null;
+    user?: AvatarUser | null;
     className?: string;
 };
 

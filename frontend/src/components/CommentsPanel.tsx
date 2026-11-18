@@ -61,7 +61,7 @@ function CommentRow({
     <li className="flex flex-col gap-1">
       <div className="flex items-baseline gap-2 text-xs">
         <span><Avatar user={comment.author}/></span>
-        <span className="font-semibold">{comment.author?.name ?? "Deleted user"}</span>
+        <span className="text-base font-semibold">{comment.author?.name ?? "Deleted user"}</span>
         <span className="opacity-60">
           {formatDate(comment.createdAt)}
           {comment.editedAt && " (edited)"}

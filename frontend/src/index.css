@@ -55,13 +55,20 @@
     background: transparent;
   }
   *::-webkit-scrollbar-thumb {
-    background-color: #4b5563;
+    background-color: #374151;
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: content-box;
   }
   *::-webkit-scrollbar-thumb:hover {
-    background-color: #6b7280;
+    background-color: #4b5563;
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #374151 transparent;
+    }
   }
 
   @media (max-width: 1024px) {

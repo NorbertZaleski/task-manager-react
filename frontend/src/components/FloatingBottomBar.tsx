@@ -1,4 +1,4 @@
-import { LayoutGrid, List, Pin, Search } from "lucide-react";
+import { Inbox, LayoutGrid, List, Pin, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
 import useBoards from "../hooks/useBoards";
@@ -6,6 +6,8 @@ import type { Board } from "../types/types";
 import { getBackgroundStyle } from "../utils/getBackgroundStyle";
 import Input from "./Input";
 import Button from "./Button";
+import BoardSwapIcon from '../assets/board-swap-icon.svg?react';
+import BoardSingleIcon from '../assets/board-single-icon.svg?react';
 
 function BoardPickerTile({ board, active, onPick }: { board: Board; active: boolean; onPick: () => void }) {
     return (
@@ -58,7 +60,7 @@ function FloatingBottomBar() {
     const [isBoardPickerOpen, setIsBoardPickerOpen] = useState(false);
     const [query, setQuery] = useState("");
 
-    const [view, setView] = useState<BoardPickerView>("grid");
+    const [viewBoardPicker, setViewBoardPicker] = useState<BoardPickerView>("grid");
 
     const closePicker = () => {
         setIsBoardPickerOpen(false);
@@ -102,10 +104,10 @@ function FloatingBottomBar() {
                             </div>
                             <Button
                                 variant="outline_small"
-                                onClick={() => setView((v) => (v === "grid" ? "list" : "grid"))}
-                                aria-label={view === "grid" ? "List view" : "Grid view"}
+                                onClick={() => setViewBoardPicker((v) => (v === "grid" ? "list" : "grid"))}
+                                aria-label={viewBoardPicker === "grid" ? "List view" : "Grid view"}
                             >
-                                {view === "grid" ? <List size={16} strokeWidth={2} /> : <LayoutGrid size={16} strokeWidth={2} />}
+                                {viewBoardPicker === "grid" ? <List size={16} strokeWidth={2} /> : <LayoutGrid size={16} strokeWidth={2} />}
                             </Button>
                             <Button
                                 variant="outline_small"
@@ -120,7 +122,7 @@ function FloatingBottomBar() {
                         <div className="mt-4 min-h-0 flex-1 overflow-y-auto pr-1">
                             {filtered.length === 0 ? (
                                 <p className="py-8 text-center text-sm text-(--text-mute)">No boards found</p>
-                            ) : view === "grid" ? (
+                            ) : viewBoardPicker === "grid" ? (
                                 <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-3">
                                     {filtered.map((board) => (
                                         <BoardPickerTile
@@ -148,11 +150,31 @@ function FloatingBottomBar() {
                 </>
             )}
 
-            <div className="fixed bottom-3 left-1/2 z-50 flex h-fit w-fit -translate-x-1/2 gap-2 rounded-md border-2 border-(--card) bg-(--panel) p-2 font-semibold">
-                <button type="button">Calendar</button>
-                <button type="button">Board</button>
-                <button type="button" onClick={() => setIsBoardPickerOpen((o) => !o)}>
-                    Swap board
+            <div className="fixed bottom-3 left-1/2 z-50 flex items-center p-1 h-fit w-fit -translate-x-1/2 gap-2 rounded-xl border-2 border-(--card) bg-(--panel) font-semibold">
+                <div className="flex gap-2">
+                    <button 
+                    type="button"
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-lg hover:text-(--text-mute) transition-colors cursor-pointer hover:bg-white/10"
+                    >
+                        <Inbox size={16}/>
+                        <span>Inbox</span>
+                    </button>
+                    <button 
+                    type="button"
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-lg hover:text-(--text-mute) transition-colors cursor-pointer hover:bg-white/10"
+                    >
+                        <BoardSingleIcon className="w-4 h-4 shrink-0"/>
+                        <span>Board</span>
+                    </button>
+                </div>
+                <div className="h-4 w-px bg-white/30" />
+                <button
+                type="button"
+                onClick={() => setIsBoardPickerOpen((o) => !o)}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-lg hover:text-(--text-mute) transition-colors cursor-pointer hover:bg-white/10"
+                >
+                    <BoardSwapIcon className="w-4 h-4 shrink-0" />
+                    <span>Swap board</span>
                 </button>
             </div>
         </>

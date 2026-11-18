@@ -145,7 +145,7 @@ function CardColumn({column, board, notes, drag, onDragChange, onDropNote, dropT
                         ref={ellipsisRef}
                         type="button" 
                         onClick={() => setIsOptionsOpen(true)}
-                        className="p-1 hover:bg-(--hover-white) flex items-center justify-center rounded-md text-(--text-mute)"
+                        className="p-1 hover:bg-(--hover-white) flex items-center justify-center rounded-md text-(--text-mute) cursor-pointer"
                         >
                             <Ellipsis size={18}/>
                         </button>

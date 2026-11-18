@@ -280,7 +280,7 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                     maxLength={40}
                     onCommit={(title) => handleRenameBoard(board.id, title)}
                     className="px-2 py-1 text-lg font-semibold rounded-sm"
-                    viewClassName="hover:bg-(--hover-white)"
+                    viewClassName="hover:bg-(--hover-white) cursor-pointer"
                     editClassName="outline-1 outline-white field-sizing-content"
                 />
                 

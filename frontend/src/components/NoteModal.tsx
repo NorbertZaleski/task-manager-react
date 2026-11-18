@@ -643,7 +643,7 @@ function NoteModal({note, columnTitle, members, onClose, onSaveContent, onRename
                                                             isEditingNoteContent
                                                                 ? ""
                                                                 : isNoteContentExpanded
-                                                                    ? "max-h-[calc(100dvh-128px)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent"
+                                                                    ? "max-h-[calc(100dvh-128px)] overflow-y-auto scrollbar-thin"
                                                                     : "max-h-110 overflow-hidden"
                                                         }
                                                     >

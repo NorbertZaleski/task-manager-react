@@ -4,6 +4,7 @@ lucide-react
 react-router
 @tiptap/react @tiptap/pm @tiptap/starter-kit @tiptap/extension-image @tiptap/extension-placeholder dompurify
 -D @types/dompurify
+-D vite-plugin-svgr
 
 back: npm i
 express

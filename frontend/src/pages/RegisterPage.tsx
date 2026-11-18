@@ -2,39 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
-
-type Field = "name" | "username" | "email" | "password";
-type Errors = Partial<Record<Field, string>>;
-
-const NAME_RE = /^\p{L}[\p{L}'’-]*(?: \p{L}[\p{L}'’-]*)+$/u;
-const USERNAME_RE = /^[a-z0-9_.]+$/i;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function validate(values: Record<Field, string>): Errors {
-    const errors: Errors = {};
-    const name = values.name.replace(/\s+/g, " ").trim();
-    const username = values.username.trim();
-    const email = values.email.trim();
-    const { password } = values;
-
-    if (!name) errors.name = "Name is required";
-    else if (name.length < 3) errors.name = "Name must be at least 3 characters";
-    else if (name.length > 60) errors.name = "Name can be at most 60 characters";
-    else if (!NAME_RE.test(name)) errors.name = "Enter your first and last name (letters only)";
-
-    if (!username) errors.username = "Username is required";
-    else if (username.length < 3) errors.username = "Username must be at least 3 characters";
-    else if (username.length > 30) errors.username = "Username can be at most 30 characters";
-    else if (!USERNAME_RE.test(username)) errors.username = "Only letters, numbers, _ and . are allowed";
-
-    if (!email) errors.email = "Email is required";
-    else if (!EMAIL_RE.test(email)) errors.email = "Enter a valid email address";
-
-    if (!password) errors.password = "Password is required";
-    else if (password.length < 6) errors.password = "Password must be at least 6 characters";
-
-    return errors;
-}
+import { LIMITS, normalizeEmail, normalizeName, normalizeUsername, validateRegister, type Field } from "../utils/validation";
 
 const inputClass = (hasError: boolean) =>
     `rounded outline-1 px-2 py-1 ${
@@ -54,7 +22,7 @@ function RegisterPage() {
     const [error, setError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
-    const errors = validate(values);
+    const errors = validateRegister(values);
     const showError = (f: Field) => (touched[f] ? errors[f] : undefined);
 
     function setField(field: Field, value: string) {
@@ -77,10 +45,10 @@ function RegisterPage() {
         setSubmitting(true);
         try {
             await register(
-                values.email.trim(),
+                normalizeEmail(values.email),
                 values.password,
-                values.name.replace(/\s+/g, " ").trim(),
-                values.username.trim()
+                normalizeName(values.name),
+                normalizeUsername(values.username)
             );
             navigate("/boards", { replace: true });
         } catch (error) {
@@ -103,7 +71,7 @@ function RegisterPage() {
                     onChange={(e) => setField("name", e.target.value)}
                     onBlur={() => touch("name")}
                     autoComplete="name"
-                    maxLength={60}
+                    maxLength={LIMITS.name.max}
                     aria-invalid={!!showError("name")}
                     className={inputClass(!!showError("name"))}
                 />
@@ -117,7 +85,7 @@ function RegisterPage() {
                     onChange={(e) => setField("username", e.target.value)}
                     onBlur={() => touch("username")}
                     autoComplete="username"
-                    maxLength={30}
+                    maxLength={LIMITS.username.max}
                     aria-invalid={!!showError("username")}
                     className={inputClass(!!showError("username"))}
                 />
@@ -132,6 +100,7 @@ function RegisterPage() {
                     onChange={(e) => setField("email", e.target.value)}
                     onBlur={() => touch("email")}
                     autoComplete="email"
+                    maxLength={LIMITS.email.max}
                     aria-invalid={!!showError("email")}
                     className={inputClass(!!showError("email"))}
                 />
@@ -146,6 +115,7 @@ function RegisterPage() {
                     onChange={(e) => setField("password", e.target.value)}
                     onBlur={() => touch("password")}
                     autoComplete="new-password"
+                    maxLength={LIMITS.password.max}
                     aria-invalid={!!showError("password")}
                     className={inputClass(!!showError("password"))}
                 />

@@ -113,7 +113,7 @@ function AccountMenuModal({ anchorRef, onClose, width = 304 }: AccountMenuModalP
                 <MenuSectionLabel>App</MenuSectionLabel>
                 <MenuItem label="Profile" onClick={act(()=> navigate(`/profile`))} />
                 <MenuItem label="Activity" onClick={act(()=> navigate(`/activity`))} />
-                <MenuItem label="Settings" onClick={act(()=> navigate(`/settings`))} />
+                <MenuItem label="Settings" onClick={act(()=> navigate(`/account-settings`))} />
                 <MenuItem
                     label="Theme"
                     icon={<Contrast size={16} />}

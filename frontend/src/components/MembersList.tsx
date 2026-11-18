@@ -63,7 +63,13 @@ function MembersList({ members, currentUserId, onChangeRole, onRemove }: Members
                                         {ROLE_LABEL[member.role]}
                                     </Button>
                                 ) : (
-                                    <span className="px-3 text-sm text-(--text-mute)">{ROLE_LABEL[member.role]}</span>
+                                    <Button
+                                        variant="list"
+                                        iconr={<ChevronDown size={16} className="-mr-1" />}
+                                        className="cursor-not-allowed!"
+                                    >
+                                        {ROLE_LABEL[member.role]}
+                                    </Button>
                                 )}
                             </div>
                         </div>

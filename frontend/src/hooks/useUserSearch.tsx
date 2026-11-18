@@ -10,18 +10,23 @@ function useUserSearch(query: string) {
     useEffect(() => {
         const q = query.trim();
         if (q.length < 2) {
-            setResults([]);
-            return;
+        setResults([]);
+        setError(null);
+        setLoading(false);
+        return;
         }
 
         const controller = new AbortController();
         const timer = setTimeout(async () => {
             try {
                 setLoading(true);
-                setResults(await usersService.searchUsers(q, controller.signal));
+                setError(null);
+                const users = await usersService.searchUsers(q, controller.signal);
+                setResults(users);
             } catch (error) {
                 if (!controller.signal.aborted) {
                     console.error("Error in useUserSearch", error);
+                    setResults([]);
                     const message = error instanceof Error ? error.message : 'Error in fetching users';
                     setError(message);
                 }

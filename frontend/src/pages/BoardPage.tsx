@@ -4,6 +4,7 @@ import useBoard from "../hooks/useBoard";
 import { getBoardStyle } from "../utils/getBackgroundStyle";
 import type useBoards from "../hooks/useBoards";
 import { LabelsProvider } from "../context/LabelsContext";
+import { BoardPermissionsProvider } from "../context/BoardPermissionsContext";
 
 type BoardsContext = ReturnType<typeof useBoards>;
 
@@ -16,11 +17,13 @@ function BoardPage(){
     if (error || !board) return <Navigate to="/boards" replace />;
 
     return (
-        <LabelsProvider boardId={boardId}>
-            <div className="h-full w-full" style={getBoardStyle(board.background)}>
-                <BoardList key={board.id} board={board} setBoard={setBoard} onBoardRenamed={updateBoardTitle} onBoardDeleted={removeBoard}/>
-            </div>
-        </LabelsProvider>
+        <BoardPermissionsProvider myRole={board.role} permissions={board.permissions}>
+            <LabelsProvider boardId={boardId}>
+                <div className="h-full w-full" style={getBoardStyle(board.background)}>
+                    <BoardList key={board.id} board={board} setBoard={setBoard} onBoardRenamed={updateBoardTitle} onBoardDeleted={removeBoard}/>
+                </div>
+            </LabelsProvider>
+        </BoardPermissionsProvider>
     )
 }
 

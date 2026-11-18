@@ -1,3 +1,5 @@
+import type { BoardPermissions } from "./permissions";
+
 export type User = {
   id: string;
   name: string;
@@ -76,6 +78,7 @@ export type Board = {
   labels: Label[];
   members: BoardMember[];
   role: BoardRole;
+  permissions: BoardPermissions;
   background: BoardBackground;
 };
 

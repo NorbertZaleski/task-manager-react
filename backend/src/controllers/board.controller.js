@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 import { parseBackground } from "../utils/parseBackground.js";
 import BoardMember from "../models/BoardMember.model.js";
 
-const toClientBoard = ({ _id, __v, ...rest }) => ({ id: _id.toString(), ...rest });
+const toClientBoard = ({ _id, __v, permissions, ...rest }) => ({ id: _id.toString(), ...rest });
 
 export const toClientColumn = ({ _id, __v, board, ...rest }) => ({ id: _id.toString(), ...rest });
 
@@ -72,12 +72,8 @@ export async function getAllBoards(req, res) {
 
 export async function getBoard(req,res) {
     try {
-
-        const board = await Board.findById(req.params.boardId).lean();
+        const board = req.board;
         if (!board) return res.status(404).json({ message: "Board not found" });
-
-        const isMember = await BoardMember.exists({ board: board._id, user: req.user._id });
-        if (!isMember) return res.status(404).json({ message: "Board not found" });
 
         const [columns, notes, members] = await Promise.all([
             Column.find({ board: board._id }).sort({ position: 1, createdAt: 1 }).lean(),
@@ -94,6 +90,8 @@ export async function getBoard(req,res) {
             columns: columns.map(toClientColumn),
             notes: notes.map(toClientNote),
             members: members.filter((m) => m.user).map(toClientMember),
+            role: req.membership.role,
+            permissions: req.permissions,
         });
     } catch (error) {
         console.error("Error in getBoard controller", error);
@@ -189,18 +187,13 @@ export async function updateBoard(req, res) {
             update.background = parsed.value;
         }
 
-        const membership = await BoardMember.findOne({
-            board: req.params.boardId,
-            user: req.user._id,
-        }).lean();
-
-        if (!membership || !["owner", "admin"].includes(membership.role)) {
-            return res.status(404).json({ message: "Board not found" });
+        if (Object.keys(update).length === 0) {
+            return res.status(400).json({ message: "Nothing to update" });
         }
 
         const updatedBoard = await Board.findByIdAndUpdate(
-            req.params.boardId,
-            update,
+            req.board._id,
+            { $set: update },
             { new: true, runValidators: true }
         );
 
@@ -216,26 +209,17 @@ export async function updateBoard(req, res) {
 export async function deleteBoard(req, res){
     try {
 
-        const membership = await BoardMember.findOne({
-            board: req.params.boardId,
-            user: req.user._id,
-        }).lean();
-
-        if (!membership || membership.role !== "owner") {
-            return res.status(404).json({ message: "Board not found" });
-        }
-
-        const deletedBoard = await Board.findByIdAndDelete(req.params.boardId);
-        if (!deletedBoard) return res.status(404).json({message: "Board not found"});
+        const boardId = req.board._id;
 
         await Promise.all([
-            Note.deleteMany({ board: deletedBoard._id }),
-            Label.deleteMany({ board: deletedBoard._id }),
-            Column.deleteMany({ board: deletedBoard._id }),
-            BoardMember.deleteMany({ board: deletedBoard._id }),
+            Note.deleteMany({ board: boardId }),
+            Label.deleteMany({ board: boardId }),
+            Column.deleteMany({ board: boardId }),
+            BoardMember.deleteMany({ board: boardId }),
         ]);
+        await Board.deleteOne({ _id: boardId });
 
-        res.status(200).json({ message: "Board deleted", board: toClientBoard(deletedBoard.toObject()) });
+        res.status(200).json({ message: "Board deleted", board: toClientBoard(req.board) });
     } catch (error) {
         console.error("Error in deleteBoard controller", error);
         res.status(500).json({message:"Internal server error"});

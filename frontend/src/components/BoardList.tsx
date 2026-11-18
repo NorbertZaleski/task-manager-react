@@ -14,6 +14,7 @@ import ShareBoardModal from "./ShareBoardModal.js";
 import NoteModal from "./NoteModal.js";
 import { useDragScroll } from "../hooks/useDragScroll.js";
 import Button from "./Button.js";
+import { Can } from "./Can.js";
 
 type BoardListProps = {
     board: Board;
@@ -287,14 +288,18 @@ function BoardList({board, setBoard, onBoardDeleted, onBoardRenamed}: BoardListP
                 
                 <div className="flex gap-2">
                     <BoardMembers members={board.members}/>
-                    <Button
-                    variant="primary"
-                    className="border-0 bg-(--text) hover:bg-white"
-                    iconl={<UserPlus2 size={16}/>}
-                    onClick={() => setIsMemberInviteModalOpen(true)}
-                    >
-                        <span>Share board</span>
-                    </Button>
+                    
+                    <Can action="inviteMembers">
+                        <Button
+                        variant="primary"
+                        className="border-0 bg-(--text) hover:bg-white"
+                        iconl={<UserPlus2 size={16}/>}
+                        onClick={() => setIsMemberInviteModalOpen(true)}
+                        >
+                            <span>Share board</span>
+                        </Button>
+                    </Can>
+
                     <Button
                     variant="ghost_small"
                     ref={ellipsisRef}
